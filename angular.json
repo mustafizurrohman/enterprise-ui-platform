@@ -14,6 +14,9 @@
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "projects/enterprise-ui/ng-package.json"
+          },
           "configurations": {
             "production": {
               "tsConfig": "projects/enterprise-ui/tsconfig.lib.prod.json"
@@ -47,7 +50,9 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "projects/enterprise-ui-storybook/src/main.ts",
-            "polyfills": ["zone.js"],
+            "polyfills": [
+              "zone.js"
+            ],
             "tsConfig": "projects/enterprise-ui-storybook/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -56,7 +61,9 @@
                 "input": "projects/enterprise-ui-storybook/public"
               }
             ],
-            "styles": ["projects/enterprise-ui-storybook/src/styles.scss"]
+            "styles": [
+              "projects/enterprise-ui-storybook/src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
@@ -95,19 +102,24 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/enterprise-ui-storybook/tsconfig.spec.json"
+          }
         },
         "storybook": {
           "builder": "@storybook/angular-vite:start-storybook",
           "options": {
             "configDir": "projects/enterprise-ui-storybook/.storybook",
-            "browserTarget": "enterprise-ui-storybook:build",
+            "tsConfig": "projects/enterprise-ui-storybook/.storybook/tsconfig.json",
+            "styles": [
+              "projects/enterprise-ui-storybook/src/styles.scss"
+            ],
+            "zoneless": false,
             "compodoc": true,
             "compodocArgs": [
               "-e",
-              "json",
-              "-d",
-              "projects/enterprise-ui-storybook"
+              "json"
             ],
             "port": 6006
           }
@@ -116,13 +128,15 @@
           "builder": "@storybook/angular-vite:build-storybook",
           "options": {
             "configDir": "projects/enterprise-ui-storybook/.storybook",
-            "browserTarget": "enterprise-ui-storybook:build",
+            "tsConfig": "projects/enterprise-ui-storybook/.storybook/tsconfig.json",
+            "styles": [
+              "projects/enterprise-ui-storybook/src/styles.scss"
+            ],
+            "zoneless": false,
             "compodoc": true,
             "compodocArgs": [
               "-e",
-              "json",
-              "-d",
-              "projects/enterprise-ui-storybook"
+              "json"
             ],
             "outputDir": "dist/storybook/enterprise-ui-storybook"
           }

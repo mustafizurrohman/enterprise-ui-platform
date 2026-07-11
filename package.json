@@ -27,6 +27,7 @@
     "zone.js": "~0.16.0"
   },
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.6.1",
     "@angular-devkit/architect": "^0.2200.0",
     "@angular-devkit/build-angular": "^22.0.0",
     "@angular-devkit/core": "^22.0.0",
@@ -49,7 +50,7 @@
     "prettier": "^3.8.1",
     "storybook": "^10.5.0",
     "typescript": "~6.0.2",
-    "vite": "8.0.0",
+    "vite": "^8.1.4",
     "vitest": "^4.0.8"
   }
 }
