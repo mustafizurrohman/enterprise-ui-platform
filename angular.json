@@ -1,0 +1,133 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "packageManager": "npm"
+  },
+  "newProjectRoot": "projects",
+  "projects": {
+    "enterprise-ui": {
+      "projectType": "library",
+      "root": "projects/enterprise-ui",
+      "sourceRoot": "projects/enterprise-ui/src",
+      "prefix": "mr",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/enterprise-ui/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/enterprise-ui/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/enterprise-ui/tsconfig.spec.json"
+          }
+        }
+      }
+    },
+    "enterprise-ui-storybook": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/enterprise-ui-storybook",
+      "sourceRoot": "projects/enterprise-ui-storybook/src",
+      "prefix": "mr-storybook",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/enterprise-ui-storybook/src/main.ts",
+            "polyfills": ["zone.js"],
+            "tsConfig": "projects/enterprise-ui-storybook/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/enterprise-ui-storybook/public"
+              }
+            ],
+            "styles": ["projects/enterprise-ui-storybook/src/styles.scss"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "enterprise-ui-storybook:build:production"
+            },
+            "development": {
+              "buildTarget": "enterprise-ui-storybook:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
+        },
+        "storybook": {
+          "builder": "@storybook/angular-vite:start-storybook",
+          "options": {
+            "configDir": "projects/enterprise-ui-storybook/.storybook",
+            "browserTarget": "enterprise-ui-storybook:build",
+            "compodoc": true,
+            "compodocArgs": [
+              "-e",
+              "json",
+              "-d",
+              "projects/enterprise-ui-storybook"
+            ],
+            "port": 6006
+          }
+        },
+        "build-storybook": {
+          "builder": "@storybook/angular-vite:build-storybook",
+          "options": {
+            "configDir": "projects/enterprise-ui-storybook/.storybook",
+            "browserTarget": "enterprise-ui-storybook:build",
+            "compodoc": true,
+            "compodocArgs": [
+              "-e",
+              "json",
+              "-d",
+              "projects/enterprise-ui-storybook"
+            ],
+            "outputDir": "dist/storybook/enterprise-ui-storybook"
+          }
+        }
+      }
+    }
+  }
+}
