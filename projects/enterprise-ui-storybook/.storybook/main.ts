@@ -2,8 +2,10 @@ import type { StorybookConfig } from '@storybook/angular-vite';
 
 const config: StorybookConfig = {
   stories: [
-    '../projects/**/*.mdx',
-    '../projects/**/*.stories.@(js|jsx|mjs|ts|tsx)'
+    '../src/**/*.mdx',
+    '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+    '../../enterprise-ui/src/**/*.mdx',
+    '../../enterprise-ui/src/**/*.stories.@(js|jsx|mjs|ts|tsx)'
   ],
   addons: [
     '@storybook/addon-docs',

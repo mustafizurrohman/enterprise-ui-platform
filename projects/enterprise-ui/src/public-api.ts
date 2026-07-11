@@ -3,3 +3,4 @@
  */
 
 export * from './lib/enterprise-ui';
+export * from './lib/components/datepicker/datepicker';
