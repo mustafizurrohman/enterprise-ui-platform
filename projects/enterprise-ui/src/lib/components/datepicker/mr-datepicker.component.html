@@ -180,15 +180,23 @@
           }
         </div>
 
-        @for (week of grid; track $index) {
+        @for (week of grid; track $index; let weekIndex = $index) {
           <div role="row" class="mr-datepicker-week">
-            @for (date of week; track $index) {
+            @for (date of week; track $index; let cellIndex = $index) {
               <div
                 role="gridcell"
                 class="mr-datepicker-gridcell"
-                [attr.aria-selected]="isSelected(date)"
+                [attr.aria-label]="weekIndex === 0 && cellIndex === 0 ? monthAbbreviation : null"
+                [attr.aria-selected]="date ? isSelected(date) : null"
               >
-                @if (date; as calendarDate) {
+                @if (weekIndex === 0 && cellIndex === 0) {
+                  <span
+                    class="mr-datepicker-month-abbreviation"
+                    aria-hidden="true"
+                  >
+                    {{ monthAbbreviation }}
+                  </span>
+                } @else if (date; as calendarDate) {
                   <button
                     #calendarDay
                     type="button"

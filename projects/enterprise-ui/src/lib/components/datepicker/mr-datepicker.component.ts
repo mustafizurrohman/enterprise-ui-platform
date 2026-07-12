@@ -100,14 +100,15 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   ];
 
   daysOfWeek = [
+    { short: Info.weekdays('short')[6], long: Info.weekdays('long')[6] }, // Sun
     { short: Info.weekdays('short')[0], long: Info.weekdays('long')[0] }, // Mon
     { short: Info.weekdays('short')[1], long: Info.weekdays('long')[1] }, // Tue
     { short: Info.weekdays('short')[2], long: Info.weekdays('long')[2] }, // Wed
     { short: Info.weekdays('short')[3], long: Info.weekdays('long')[3] }, // Thu
     { short: Info.weekdays('short')[4], long: Info.weekdays('long')[4] }, // Fri
     { short: Info.weekdays('short')[5], long: Info.weekdays('long')[5] }, // Sat
-    { short: Info.weekdays('short')[6], long: Info.weekdays('long')[6] }, // Sun
   ];
+  protected monthAbbreviation = '';
   grid: (DateTime | null)[][] = [];
 
   onChange: (value: string | null) => void = () => {};
@@ -427,37 +428,35 @@ export class MrDatepickerComponent implements ControlValueAccessor {
 
   private generateGrid(): void {
     const startOfMonth = this.viewDate.startOf('month');
-    const endOfMonth = this.viewDate.endOf('month');
+    const daysInMonth = startOfMonth.daysInMonth ?? 0;
+    const sundayBasedFirstDayIndex = startOfMonth.weekday % 7;
 
-    // Start of the week for the first day of the month
-    // Luxon weekdays are 1 (Monday) to 7 (Sunday)
-    // We'll assume Sunday is 7 or 0?
-    // Info.weekdays('short') usually starts with Monday in many locales.
-    // Let's check startOfMonth.weekday
-    let startDay = startOfMonth.weekday; // 1-7 (Mon-Sun)
+    this.monthAbbreviation = startOfMonth.toFormat('LLL').toUpperCase();
 
-    // If we want the grid to start on Monday
-    // Monday (1) -> index 0, ..., Sunday (7) -> index 6.
-    const firstDayIndex = startDay - 1;
+    // The first cell is always reserved for the month abbreviation.
+    // A month beginning on Sunday therefore starts in the first column
+    // of the following row; all other months keep day 1 in its weekday column.
+    const leadingCellCount = sundayBasedFirstDayIndex === 0
+      ? 7
+      : sundayBasedFirstDayIndex;
 
-    const days: (DateTime | null)[] = [];
-    for (let i = 0; i < firstDayIndex; i++) {
-      days.push(null);
+    const cells: (DateTime | null)[] = Array.from(
+      { length: leadingCellCount },
+      () => null
+    );
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      cells.push(startOfMonth.set({ day }));
     }
 
-    for (let i = 1; i <= endOfMonth.day; i++) {
-      days.push(startOfMonth.set({ day: i }));
+    while (cells.length % 7 !== 0) {
+      cells.push(null);
     }
 
-    // Fill the rest of the last week with nulls
-    while (days.length % 7 !== 0) {
-      days.push(null);
-    }
-
-    this.grid = [];
-    for (let i = 0; i < days.length; i += 7) {
-      this.grid.push(days.slice(i, i + 7));
-    }
+    this.grid = Array.from(
+      { length: cells.length / 7 },
+      (_, rowIndex) => cells.slice(rowIndex * 7, rowIndex * 7 + 7)
+    );
   }
 
   isSelected(date: DateTime | null): boolean {

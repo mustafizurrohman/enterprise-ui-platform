@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MrDatepickerComponent } from './mr-datepicker.component';
-import { DateTime } from 'luxon';
+import { DateTime, Info } from 'luxon';
 
 describe('MrDatepickerComponent', () => {
   let component: MrDatepickerComponent;
@@ -47,6 +47,74 @@ describe('MrDatepickerComponent', () => {
     expect((component as any).isOpen()).toBeFalsy();
     calendar = document.querySelector('.mr-datepicker-calendar');
     expect(calendar).toBeNull();
+  });
+
+  describe('calendar day arrangement', () => {
+    it('should render July 2026 with the month label in the first cell and day 1 on Wednesday', async () => {
+      component.writeValue('2026-07-15T00:00:00');
+      (component as any).isOpen.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect((component as any).monthAbbreviation).toBe('JUL');
+      expect(component.grid[0].map(date => date?.day ?? null)).toEqual([
+        null,
+        null,
+        null,
+        1,
+        2,
+        3,
+        4
+      ]);
+
+      const weekdayCells = document.querySelectorAll(
+        '.mr-datepicker-weekday-row .mr-datepicker-day-name'
+      );
+      const weekRows = document.querySelectorAll('.mr-datepicker-week');
+      const firstRowCells = weekRows[0].querySelectorAll('.mr-datepicker-gridcell');
+
+      expect(weekdayCells).toHaveLength(7);
+      expect(firstRowCells).toHaveLength(7);
+      expect(firstRowCells[0].textContent?.trim()).toBe('JUL');
+      expect(firstRowCells[1].textContent?.trim()).toBe('');
+      expect(firstRowCells[2].textContent?.trim()).toBe('');
+      expect(firstRowCells[3].textContent?.trim()).toBe('1');
+
+      const renderedDates = Array.from(
+        document.querySelectorAll<HTMLButtonElement>('.mr-datepicker-day[data-date]')
+      ).map(button => button.dataset['date']);
+
+      expect(renderedDates).toHaveLength(31);
+      expect(renderedDates.every(date => date?.startsWith('2026-07-'))).toBeTruthy();
+    });
+
+    const monthStartCases: Array<[string, number, number]> = [
+      ['2026-06-15T00:00:00', 1, 0], // Monday
+      ['2026-09-15T00:00:00', 2, 0], // Tuesday
+      ['2026-08-15T00:00:00', 6, 0], // Saturday
+      ['2026-11-15T00:00:00', 0, 1]  // Sunday
+    ];
+
+    it.each(monthStartCases)(
+      'should place day 1 in the correct Sunday-first column for %s',
+      (value, expectedColumn, expectedRow) => {
+        component.writeValue(value);
+
+        const row = component.grid[expectedRow];
+
+        expect(row[expectedColumn]?.day).toBe(1);
+        expect(component.grid.every(week => week.length === 7)).toBeTruthy();
+      }
+    );
+
+    it('should expose weekday headings in Sunday-first order', () => {
+      const mondayFirstWeekdays = Info.weekdays('long');
+
+      expect(component.daysOfWeek.map(day => day.long)).toEqual([
+        mondayFirstWeekdays[6],
+        ...mondayFirstWeekdays.slice(0, 6)
+      ]);
+    });
   });
 
   it('should navigate to previous and next month', () => {

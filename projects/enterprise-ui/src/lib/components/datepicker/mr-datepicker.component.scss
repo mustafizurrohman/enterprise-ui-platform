@@ -135,10 +135,14 @@ $divider: rgba(0, 0, 0, 0.12);
   }
 
   .mr-datepicker-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    .mr-datepicker-weekday-row,
+    .mr-datepicker-week {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
 
-    .mr-datepicker-day-name {
+    .mr-datepicker-day-name,
+    .mr-datepicker-month-abbreviation {
       color: $foreground-secondary;
       font-size: 12px;
       font-weight: 500;
