@@ -59,9 +59,9 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   readonly showSeconds = input(false, { transform: booleanAttribute });
   readonly today = input<DateTime>(DateTime.now());
 
-  readonly disabledInput = input(false, { transform: booleanAttribute, alias: 'disabled' });
+  readonly disabled = input(false, { transform: booleanAttribute });
   private readonly _disabledForm = signal(false);
-  protected readonly disabled = computed(() => this.disabledInput() || this._disabledForm());
+  protected readonly computedDisabled = computed(() => this.disabled() || this._disabledForm());
 
   protected readonly inputId = `${this.componentId}-input`;
   protected readonly inputHintId = `${this.componentId}-hint`;
@@ -205,7 +205,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   protected openCalendar(): void {
-    if (this.disabled()) {
+    if (this.computedDisabled()) {
       return;
     }
     this.isOpen.set(true);
@@ -248,7 +248,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   protected toggleCalendar(): void {
-    if (this.disabled()) {
+    if (this.computedDisabled()) {
       return;
     }
     this.isOpen.update((isOpen) => !isOpen);

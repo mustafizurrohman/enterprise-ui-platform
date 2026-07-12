@@ -13,7 +13,7 @@ const meta: Meta<MrDatepickerComponent> = {
       control: 'boolean',
       description: 'Whether to show only the date or also the time',
     },
-    disabledInput: {
+    disabled: {
       control: 'boolean',
       description: 'Whether the datepicker is disabled',
     },
@@ -31,7 +31,7 @@ export const DateTime: Story = {
   args: {
     label: 'Datum auswählen',
     dateOnly: false,
-    disabledInput: false,
+    disabled: false,
     showSeconds: false,
   },
 };

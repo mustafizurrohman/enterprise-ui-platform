@@ -1,7 +1,7 @@
 <div class="mr-datepicker">
   <label
     class="mr-datepicker-label"
-    [class.mr-datepicker-label--disabled]="disabled()"
+    [class.mr-datepicker-label--disabled]="computedDisabled()"
     [for]="inputId"
   >
     {{ label() }}
@@ -11,7 +11,7 @@
     #calendarOrigin="cdkOverlayOrigin"
     cdkOverlayOrigin
     class="mr-datepicker-input"
-    [class.mr-datepicker-input--disabled]="disabled()"
+    [class.mr-datepicker-input--disabled]="computedDisabled()"
   >
     <input
       #dateInput
@@ -24,7 +24,7 @@
       [attr.aria-invalid]="hasInputError() ? 'true' : null"
       [value]="selectedDate() ? selectedDate()!.toFormat(dateFormat()) : ''"
       [placeholder]="dateFormatDescription()"
-      [disabled]="disabled()"
+      [disabled]="computedDisabled()"
       (click)="openCalendar()"
       (keydown.enter)="openCalendar()"
       (keydown.arrowdown)="openCalendar()"
@@ -35,7 +35,7 @@
     <button
       type="button"
       class="mr-datepicker-icon"
-      [disabled]="disabled()"
+      [disabled]="computedDisabled()"
       [attr.aria-label]="dateOnly()
         ? 'Kalender zur Auswahl eines Datums öffnen'
         : 'Kalender zur Auswahl von Datum und Uhrzeit öffnen'"
