@@ -188,4 +188,118 @@ describe('MrDatepickerComponent', () => {
       expect(component.selectedDate?.toISODate()).toBe(expectedDate.toISODate());
     });
   });
+
+  it('should have correct accessibility attributes', () => {
+    const label = fixture.nativeElement.querySelector('.mr-datepicker-label');
+    const input = fixture.nativeElement.querySelector('input');
+    const button = fixture.nativeElement.querySelector('.mr-datepicker-icon');
+
+    expect(label.textContent).toContain(component.label);
+    expect(label.getAttribute('for')).toBe(input.id);
+    expect(input.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(button.getAttribute('aria-label')).toContain('Kalender');
+    expect(button.getAttribute('aria-haspopup')).toBe('dialog');
+
+    const svg = button.querySelector('svg');
+    expect(svg.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('should trap focus and have dialog attributes when calendar is open', async () => {
+    const button = fixture.nativeElement.querySelector('.mr-datepicker-icon');
+    button.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dialog = document.querySelector('.mr-datepicker-calendar');
+    expect(dialog).toBeTruthy();
+    expect(dialog?.getAttribute('role')).toBe('dialog');
+    expect(dialog?.getAttribute('aria-modal')).toBe('true');
+    expect(dialog?.hasAttribute('cdktrapfocus')).toBeTruthy();
+
+    const title = document.getElementById(dialog?.getAttribute('aria-labelledby') || '');
+    expect(title?.classList.contains('mr-visually-hidden')).toBeTruthy();
+  });
+
+  it('should navigate calendar with keyboard', async () => {
+    const input = fixture.nativeElement.querySelector('input');
+    input.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const initialDate = (component as any).activeDate();
+    
+    // Simulate ArrowRight on the active day button
+    const activeDayButton = document.querySelector('.mr-datepicker-day[tabindex="0"]') as HTMLButtonElement;
+    expect(activeDayButton).toBeTruthy();
+    
+    const event = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true });
+    activeDayButton.dispatchEvent(event);
+    fixture.detectChanges();
+
+    expect((component as any).activeDate().hasSame(initialDate.plus({ days: 1 }), 'day')).toBeTruthy();
+
+    // Simulate ArrowDown (next week)
+    const activeDayButtonNext = document.querySelector('.mr-datepicker-day[tabindex="0"]') as HTMLButtonElement;
+    const eventDown = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true });
+    activeDayButtonNext.dispatchEvent(eventDown);
+    fixture.detectChanges();
+
+    expect((component as any).activeDate().hasSame(initialDate.plus({ days: 8 }), 'day')).toBeTruthy();
+  });
+
+  it('should allow typing time in time picker', async () => {
+    component.registerOnChange(vi.fn());
+    const button = fixture.nativeElement.querySelector('.mr-datepicker-icon');
+    button.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const hourInput = document.querySelector('.mr-datepicker-time-select') as HTMLInputElement;
+    expect(hourInput).toBeTruthy();
+    expect(hourInput.tagName).toBe('INPUT');
+
+    hourInput.value = '15';
+    hourInput.dispatchEvent(new Event('input'));
+    hourInput.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(component.selectedDate?.hour).toBe(15);
+  });
+
+  it('should validate time typing', async () => {
+    const button = fixture.nativeElement.querySelector('.mr-datepicker-icon');
+    button.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const hourInput = document.querySelector('.mr-datepicker-time-select') as HTMLInputElement;
+    
+    // Try to enter non-numeric value
+    hourInput.value = 'ab';
+    hourInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    // Logic in onTimeInput strips non-numeric
+    expect(hourInput.value).toBe('');
+
+    // Try to enter value > 23
+    hourInput.value = '99';
+    hourInput.dispatchEvent(new Event('input'));
+    hourInput.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(component.selectedDate?.hour).toBe(23); // Clamped to max
+  });
+
+  it('should announce time changes', async () => {
+    const button = fixture.nativeElement.querySelector('.mr-datepicker-icon');
+    button.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const incrementButton = document.querySelector('[aria-label="Stunde um eins erhöhen"]') as HTMLButtonElement;
+    incrementButton.click();
+    fixture.detectChanges();
+
+    expect((component as any).timeAnnouncement()).toContain('Uhrzeit');
+    expect((component as any).timeAnnouncement()).toMatch(/Uhrzeit \d{2} Uhr/);
+  });
 });
