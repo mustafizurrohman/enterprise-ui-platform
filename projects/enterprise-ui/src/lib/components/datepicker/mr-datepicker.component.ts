@@ -38,6 +38,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   @Input() placeholder: string = 'Datum auswählen';
   @Input({ transform: booleanAttribute }) dateOnly = false;
   @Input({ transform: booleanAttribute }) showSeconds = false;
+  @Input() today: DateTime = DateTime.now();
   private readonly _disabled = signal(false);
 
   @Input({ transform: booleanAttribute })
@@ -530,7 +531,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
 
   isToday(date: DateTime | null): boolean {
     if (!date) return false;
-    return date.hasSame(DateTime.now(), 'day');
+    return date.hasSame(this.today, 'day');
   }
 
   protected isCurrentWeek(weekInfo: {
@@ -541,7 +542,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   protected isCurrentWeekday(weekday: number): boolean {
-    return DateTime.now().weekday === weekday;
+    return this.today.weekday === weekday;
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {

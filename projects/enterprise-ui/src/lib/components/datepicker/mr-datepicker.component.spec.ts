@@ -562,4 +562,54 @@ describe('MrDatepickerComponent', () => {
       expect(component.selectedDate?.second).toBe(45);
     });
   });
+
+  describe('today input', () => {
+    it('should use the provided today input for highlights', () => {
+      const specificToday = DateTime.fromISO('2026-07-20'); // A Monday (weekday 1)
+      fixture.componentRef.setInput('today', specificToday);
+      fixture.detectChanges();
+
+      // Check isCurrentWeekday (Monday is weekday 1)
+      expect((component as any).isCurrentWeekday(1)).toBeTruthy();
+      expect((component as any).isCurrentWeekday(2)).toBeFalsy();
+
+      // Check isToday
+      expect(component.isToday(specificToday)).toBeTruthy();
+      expect(component.isToday(specificToday.plus({ days: 1 }))).toBeFalsy();
+
+      // Check isCurrentWeek
+      component.writeValue('2026-07-20');
+      fixture.detectChanges();
+
+      const weekWithToday = component.grid.find(w => w.days.some(d => d?.hasSame(specificToday, 'day')));
+      expect(weekWithToday).toBeTruthy();
+      expect((component as any).isCurrentWeek(weekWithToday!)).toBeTruthy();
+
+      const otherWeek = component.grid.find(w => !w.days.some(d => d?.hasSame(specificToday, 'day')));
+      if (otherWeek) {
+        expect((component as any).isCurrentWeek(otherWeek)).toBeFalsy();
+      }
+    });
+
+    it('should reflect the provided today input in the template classes', async () => {
+      const specificToday = DateTime.fromISO('2026-07-20'); // Monday
+      fixture.componentRef.setInput('today', specificToday);
+      component.writeValue('2026-07-20');
+      (component as any).isOpen.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const weekdayHeaders = document.querySelectorAll('.mr-datepicker-day-name');
+      // Index 0 is KW, Index 1 is Monday
+      expect(weekdayHeaders[1].classList.contains('today')).toBeTruthy();
+      expect(weekdayHeaders[2].classList.contains('today')).toBeFalsy();
+
+      const todayButton = document.querySelector(`.mr-datepicker-day[data-date="2026-07-20"]`);
+      expect(todayButton?.classList.contains('today')).toBeTruthy();
+
+      const weekRow = todayButton?.closest('.mr-datepicker-week');
+      const kwCell = weekRow?.querySelector('.mr-datepicker-kw-value');
+      expect(kwCell?.classList.contains('today')).toBeTruthy();
+    });
+  });
 });
