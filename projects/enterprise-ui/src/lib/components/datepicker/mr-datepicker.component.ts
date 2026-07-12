@@ -288,6 +288,15 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     this.onChange(this.selectedDate.toISO());
   }
 
+  protected selectNow(): void {
+    this.selectedDate = DateTime.now();
+    if (this.dateOnly) {
+      this.selectedDate = this.selectedDate.startOf('day');
+    }
+    this.onChange(this.selectedDate.toISO());
+    this.closeCalendar();
+  }
+
   protected onManualInput(input: HTMLInputElement): void {
     const value = input.value;
     const parsedDate = DateTime.fromFormat(value, this.dateFormat);

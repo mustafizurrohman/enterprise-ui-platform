@@ -191,6 +191,33 @@ describe('MrDatepickerComponent', () => {
     expect(onChangeSpy).toHaveBeenCalledWith(today.toISO());
     expect((component as any).isOpen()).toBeTruthy();
   });
+  
+  it('should select now and close the calendar when Jetzt is clicked', async () => {
+    const onChangeSpy = vi.fn();
+    component.registerOnChange(onChangeSpy);
+    const button = fixture.nativeElement.querySelector('.mr-datepicker-icon');
+    button.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const jetztButton = document.querySelector('.mr-datepicker-now') as HTMLButtonElement;
+    expect(jetztButton).toBeTruthy();
+    expect(jetztButton.textContent?.trim()).toBe('Jetzt');
+
+    const before = DateTime.now();
+    jetztButton.click();
+    fixture.detectChanges();
+    const after = DateTime.now();
+
+    expect(component.selectedDate).toBeTruthy();
+    const selectedDate = component.selectedDate!;
+    // Should be between before and after
+    expect(selectedDate.toMillis()).toBeGreaterThanOrEqual(before.toMillis() - 1000); // Tolerance for slight delays
+    expect(selectedDate.toMillis()).toBeLessThanOrEqual(after.toMillis() + 1000);
+    
+    expect(onChangeSpy).toHaveBeenCalled();
+    expect((component as any).isOpen()).toBeFalsy();
+  });
 
   it('should update time', () => {
     const onChangeSpy = vi.fn();

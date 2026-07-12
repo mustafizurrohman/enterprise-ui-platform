@@ -440,25 +440,43 @@
             {{ timeAnnouncement() }}
           </div>
 
-          <button
-            type="button"
-            class="mr-datepicker-confirm"
-            aria-label="Auswahl übernehmen und Kalender schließen"
-            (click)="closeCalendar()"
-          >
-            OK
-          </button>
+          <div class="mr-datepicker-actions">
+            <button
+              type="button"
+              class="mr-datepicker-now"
+              (click)="selectNow()"
+            >
+              Jetzt
+            </button>
+            <button
+              type="button"
+              class="mr-datepicker-confirm"
+              aria-label="Auswahl übernehmen und Kalender schließen"
+              (click)="closeCalendar()"
+            >
+              OK
+            </button>
+          </div>
         </fieldset>
       } @else {
         <div class="mr-datepicker-time-picker">
-          <button
-            type="button"
-            class="mr-datepicker-confirm mr-datepicker-confirm--without-time"
-            aria-label="Auswahl übernehmen und Kalender schließen"
-            (click)="closeCalendar()"
-          >
-            OK
-          </button>
+          <div class="mr-datepicker-actions mr-datepicker-actions--without-time">
+            <button
+              type="button"
+              class="mr-datepicker-now"
+              (click)="selectNow()"
+            >
+              Jetzt
+            </button>
+            <button
+              type="button"
+              class="mr-datepicker-confirm"
+              aria-label="Auswahl übernehmen und Kalender schließen"
+              (click)="closeCalendar()"
+            >
+              OK
+            </button>
+          </div>
         </div>
       }
     </div>
