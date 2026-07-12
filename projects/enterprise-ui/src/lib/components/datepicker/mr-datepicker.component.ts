@@ -109,6 +109,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   daysOfWeek = Info.weekdays('short', { locale: 'de' }).map((short, i) => ({
     short,
     long: Info.weekdays('long', { locale: 'de' })[i],
+    weekday: i + 1,
   }));
   protected monthAbbreviation = '';
   grid: { weekNumber: number; days: (DateTime | null)[] }[] = [];
@@ -496,6 +497,17 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   isToday(date: DateTime | null): boolean {
     if (!date) return false;
     return date.hasSame(DateTime.now(), 'day');
+  }
+
+  protected isCurrentWeek(weekInfo: {
+    weekNumber: number;
+    days: (DateTime | null)[];
+  }): boolean {
+    return weekInfo.days.some((day) => this.isToday(day));
+  }
+
+  protected isCurrentWeekday(weekday: number): boolean {
+    return DateTime.now().weekday === weekday;
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {

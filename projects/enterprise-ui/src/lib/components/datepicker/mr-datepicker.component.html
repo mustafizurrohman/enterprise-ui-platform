@@ -181,6 +181,7 @@
               class="mr-datepicker-day-name"
               role="columnheader"
               [attr.aria-label]="day.long"
+              [class.today]="isCurrentWeekday(day.weekday)"
             >
               <abbr [title]="day.long">
                 <strong>{{ day.short }}</strong>
@@ -195,6 +196,7 @@
               class="mr-datepicker-kw-value"
               role="gridcell"
               aria-hidden="true"
+              [class.today]="isCurrentWeek(weekInfo)"
             >
               <strong>{{ weekInfo.weekNumber }}</strong>
             </div>
@@ -222,6 +224,10 @@
                   >
                     {{ calendarDate.day }}
                   </button>
+                } @else if (weekIndex === 0 && cellIndex === 0) {
+                  <div class="mr-datepicker-month-abbreviation" aria-hidden="true">
+                    {{ monthAbbreviation }}
+                  </div>
                 }
               </div>
             }

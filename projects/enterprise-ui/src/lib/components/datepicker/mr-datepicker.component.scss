@@ -150,6 +150,11 @@ $divider: rgba(0, 0, 0, 0.12);
       justify-content: center;
       height: 40px;
       margin: 1px;
+
+      &.today {
+        color: $primary;
+        font-weight: 700;
+      }
     }
 
     .mr-datepicker-kw {
@@ -165,6 +170,11 @@ $divider: rgba(0, 0, 0, 0.12);
       display: flex;
       align-items: center;
       justify-content: center;
+
+      &.today {
+        color: $primary;
+        font-weight: 700;
+      }
     }
 
     .mr-datepicker-day {
