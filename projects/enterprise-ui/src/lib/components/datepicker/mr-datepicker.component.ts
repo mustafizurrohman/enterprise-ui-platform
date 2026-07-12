@@ -37,6 +37,16 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   @Input() label: string = 'Datum auswählen';
   @Input() placeholder: string = 'Datum auswählen';
   @Input({ transform: booleanAttribute }) dateOnly = false;
+  private readonly _disabled = signal(false);
+
+  @Input({ transform: booleanAttribute })
+  set disabled(value: boolean) {
+    this._disabled.set(value);
+  }
+
+  get disabled(): boolean {
+    return this._disabled();
+  }
 
   protected readonly inputId = `${this.componentId}-input`;
   protected readonly inputHintId = `${this.componentId}-hint`;
@@ -122,6 +132,9 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   protected openCalendar(): void {
+    if (this.disabled) {
+      return;
+    }
     this.isOpen.set(true);
     if (this.selectedDate) {
       this.viewDate = this.selectedDate;
@@ -166,6 +179,9 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   protected toggleCalendar(): void {
+    if (this.disabled) {
+      return;
+    }
     this.isOpen.update(isOpen => !isOpen);
     if (this.isOpen() && this.selectedDate) {
       this.viewDate = this.selectedDate;
@@ -443,6 +459,10 @@ export class MrDatepickerComponent implements ControlValueAccessor {
 
   registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this._disabled.set(isDisabled);
   }
 
   private generateGrid(): void {

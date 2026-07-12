@@ -446,4 +446,56 @@ describe('MrDatepickerComponent', () => {
     expect((component as any).timeAnnouncement()).toContain('Uhrzeit');
     expect((component as any).timeAnnouncement()).toMatch(/Uhrzeit \d{2} Uhr/);
   });
+
+  describe('disabled', () => {
+    it('should disable the input and icon button when disabled is true', () => {
+      fixture.componentRef.setInput('disabled', true);
+      fixture.detectChanges();
+
+      const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+      const button = fixture.nativeElement.querySelector('.mr-datepicker-icon') as HTMLButtonElement;
+
+      expect(input.disabled).toBeTruthy();
+      expect(button.disabled).toBeTruthy();
+    });
+
+    it('should not open calendar when disabled is true', () => {
+      fixture.componentRef.setInput('disabled', true);
+      fixture.detectChanges();
+
+      const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+      input.click();
+      fixture.detectChanges();
+      expect((component as any).isOpen()).toBeFalsy();
+
+      const button = fixture.nativeElement.querySelector('.mr-datepicker-icon') as HTMLButtonElement;
+      button.click();
+      fixture.detectChanges();
+      expect((component as any).isOpen()).toBeFalsy();
+    });
+
+    it('should update disabled state via setDisabledState', async () => {
+      component.setDisabledState(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+      expect(input.disabled).toBeTruthy();
+
+      component.setDisabledState(false);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(input.disabled).toBeFalsy();
+    });
+
+    it('should still display the provided value when disabled', () => {
+      fixture.componentRef.setInput('disabled', true);
+      const testDate = '2026-07-12T14:30:45';
+      component.writeValue(testDate);
+      fixture.detectChanges();
+
+      const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+      expect(input.value).toBe(DateTime.fromISO(testDate).toFormat((component as any).dateFormat));
+    });
+  });
 });
