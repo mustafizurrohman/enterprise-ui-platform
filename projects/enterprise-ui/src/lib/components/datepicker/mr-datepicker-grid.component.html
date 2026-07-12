@@ -1,0 +1,103 @@
+<div
+  class="mr-datepicker-grid"
+  role="grid"
+  aria-readonly="true"
+  [attr.aria-labelledby]="monthHeadingId()"
+  [attr.aria-rowcount]="weeks().length + 1"
+  aria-colcount="8"
+  [attr.data-testid]="testIdFor('calendar-grid')"
+>
+  <div role="row" aria-rowindex="1" class="mr-datepicker-weekday-row">
+    <div
+      class="mr-datepicker-day-name mr-datepicker-kw"
+      role="columnheader"
+      aria-colindex="1"
+      aria-label="Kalenderwoche"
+      [attr.data-testid]="testIdFor('weekday-calendar-week')"
+    >
+      <abbr title="Kalenderwoche"><strong>KW</strong></abbr>
+    </div>
+
+    @for (day of daysOfWeek(); track day.weekday; let dayIndex = $index) {
+      <div
+        class="mr-datepicker-day-name"
+        role="columnheader"
+        [attr.aria-colindex]="dayIndex + 2"
+        [attr.aria-label]="day.long"
+        [class.today]="isCurrentWeekday(day.weekday)"
+        [attr.data-testid]="testIdFor('weekday-' + day.weekday)"
+      >
+        <abbr [title]="day.long">
+          <strong>{{ day.short }}</strong>
+        </abbr>
+      </div>
+    }
+  </div>
+
+  @for (weekInfo of weeks(); track $index; let weekIndex = $index) {
+    <div
+      role="row"
+      class="mr-datepicker-week"
+      [attr.aria-rowindex]="weekIndex + 2"
+      [attr.data-testid]="testIdFor('week-' + weekIndex)"
+    >
+      <div
+        class="mr-datepicker-kw-value"
+        role="rowheader"
+        aria-colindex="1"
+        [attr.aria-label]="'Kalenderwoche ' + weekInfo.weekNumber"
+        [class.today]="isCurrentWeek(weekInfo)"
+        [attr.data-testid]="testIdFor('week-number-' + weekIndex)"
+      >
+        <strong>{{ weekInfo.weekNumber }}</strong>
+      </div>
+
+      @for (date of weekInfo.days; track $index; let cellIndex = $index) {
+        <div
+          class="mr-datepicker-gridcell"
+          [attr.role]="date ? 'presentation' : 'gridcell'"
+          [attr.aria-colindex]="date ? null : cellIndex + 2"
+          [attr.aria-label]="
+            !date && weekIndex === 0 && cellIndex === 0
+              ? monthAbbreviation()
+              : null
+          "
+          [attr.aria-disabled]="date ? null : 'true'"
+          [attr.data-testid]="testIdFor('cell-' + weekIndex + '-' + cellIndex)"
+        >
+          @if (date; as calendarDate) {
+            <button
+              #calendarDay
+              type="button"
+              role="gridcell"
+              class="mr-datepicker-day"
+              aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End PageUp PageDown Shift+PageUp Shift+PageDown Enter Space Escape"
+              [class.selected]="isSelected(calendarDate)"
+              [class.today]="isToday(calendarDate)"
+              [attr.aria-colindex]="cellIndex + 2"
+              [attr.data-date]="dateIso(calendarDate)"
+              [attr.data-testid]="testIdFor('day-' + dateIso(calendarDate))"
+              [attr.tabindex]="isActiveDate(calendarDate) ? 0 : -1"
+              [attr.aria-label]="getAccessibleDateLabel(calendarDate)"
+              [attr.aria-selected]="isSelected(calendarDate) ? 'true' : null"
+              [attr.aria-current]="isToday(calendarDate) ? 'date' : null"
+              (click)="selectDate(calendarDate)"
+              (focus)="focusDateCell(calendarDate)"
+              (keydown)="handleDateKeydown($event, calendarDate)"
+            >
+              {{ calendarDate.day }}
+            </button>
+          } @else if (weekIndex === 0 && cellIndex === 0) {
+            <div
+              class="mr-datepicker-month-abbreviation"
+              aria-hidden="true"
+              [attr.data-testid]="testIdFor('month-abbreviation')"
+            >
+              {{ monthAbbreviation() }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

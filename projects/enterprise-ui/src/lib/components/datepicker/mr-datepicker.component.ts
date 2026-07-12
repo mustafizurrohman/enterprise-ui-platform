@@ -12,7 +12,6 @@ import {
   signal,
   untracked,
   viewChild,
-  viewChildren,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import {
@@ -33,6 +32,7 @@ import {
 import { MatIconModule } from "@angular/material/icon";
 import { CdkTrapFocus } from "@angular/cdk/a11y";
 import { DateTime, Info } from "luxon";
+import { MrDatepickerGridComponent } from "./mr-datepicker-grid.component";
 import { MrTimeWheelComponent, type TimeUnit } from "./mr-time-wheel.component";
 
 @Component({
@@ -45,6 +45,7 @@ import { MrTimeWheelComponent, type TimeUnit } from "./mr-time-wheel.component";
     CdkOverlayOrigin,
     CdkTrapFocus,
     MatIconModule,
+    MrDatepickerGridComponent,
     MrTimeWheelComponent,
   ],
   templateUrl: "./mr-datepicker.component.html",
@@ -126,8 +127,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
 
   private readonly dateInput =
     viewChild<ElementRef<HTMLInputElement>>("dateInput");
-  private readonly calendarDayButtons =
-    viewChildren<ElementRef<HTMLButtonElement>>("calendarDay");
+  private readonly calendarGrid = viewChild(MrDatepickerGridComponent);
 
   protected readonly overlayPositions: ConnectedPosition[] = [
     {
@@ -162,7 +162,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
 
   daysOfWeek = Info.weekdays("short", { locale: "de" }).map((short, i) => ({
     short,
-    long: Info.weekdays("long", { locale: "de" })[i],
+    long: Info.weekdays("long", { locale: "de" })[i] ?? short,
     weekday: i + 1,
   }));
 
@@ -292,13 +292,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   private focusActiveDate(): void {
-    const isoDate = this.activeDate().toISODate();
-
-    const activeButton = this.calendarDayButtons().find(
-      ({ nativeElement }) => nativeElement.dataset["date"] === isoDate,
-    );
-
-    activeButton?.nativeElement.focus();
+    this.calendarGrid()?.focusDate(this.activeDate());
   }
 
   protected closeCalendar(): void {

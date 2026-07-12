@@ -2,6 +2,7 @@
   class="mr-datepicker-time-wheel"
   role="group"
   [attr.aria-labelledby]="labelId()"
+  [attr.data-testid]="testIdFor('wheel')"
 >
   <button
     type="button"
@@ -11,11 +12,20 @@
     [attr.data-testid]="testIdFor('increment')"
     (click)="increment()"
   >
-    <span aria-hidden="true">⌃</span>
+    <mat-icon
+      aria-hidden="true"
+      [attr.data-testid]="testIdFor('increment-icon')"
+    >
+      keyboard_arrow_up
+    </mat-icon>
   </button>
 
-  <div class="mr-datepicker-time-value">
-    <span class="mr-datepicker-time-preview" aria-hidden="true">
+  <div class="mr-datepicker-time-value" [attr.data-testid]="testIdFor('value')">
+    <span
+      class="mr-datepicker-time-preview"
+      aria-hidden="true"
+      [attr.data-testid]="testIdFor('next-value')"
+    >
       {{ nextValue() }}
     </span>
 
@@ -23,8 +33,12 @@
       #timeInput
       type="text"
       inputmode="numeric"
+      pattern="[0-9]*"
+      maxlength="2"
       role="spinbutton"
       autocomplete="off"
+      spellcheck="false"
+      aria-keyshortcuts="ArrowUp ArrowDown PageUp PageDown Home End"
       [id]="controlId()"
       class="mr-datepicker-time-select"
       [attr.aria-labelledby]="labelId()"
@@ -41,7 +55,11 @@
       (change)="commit(timeInput.value)"
     />
 
-    <span class="mr-datepicker-time-preview" aria-hidden="true">
+    <span
+      class="mr-datepicker-time-preview"
+      aria-hidden="true"
+      [attr.data-testid]="testIdFor('previous-value')"
+    >
       {{ previousValue() }}
     </span>
   </div>
@@ -54,10 +72,19 @@
     [attr.data-testid]="testIdFor('decrement')"
     (click)="decrement()"
   >
-    <span aria-hidden="true">⌄</span>
+    <mat-icon
+      aria-hidden="true"
+      [attr.data-testid]="testIdFor('decrement-icon')"
+    >
+      keyboard_arrow_down
+    </mat-icon>
   </button>
 
-  <span [id]="labelId()" class="mr-datepicker-time-label">
+  <span
+    [id]="labelId()"
+    class="mr-datepicker-time-label"
+    [attr.data-testid]="testIdFor('label')"
+  >
     {{ configuration().label }}
   </span>
 </div>

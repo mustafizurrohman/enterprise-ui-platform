@@ -104,6 +104,19 @@ $divider: rgba(0, 0, 0, 0.12);
         color: $foreground;
       }
 
+      &:disabled,
+      &--disabled,
+      &:disabled:hover,
+      &--disabled:hover {
+        color: #9e9e9e !important;
+        cursor: default;
+        opacity: 1;
+
+        mat-icon {
+          color: #9e9e9e !important;
+        }
+      }
+
       &:focus-visible {
         border-radius: 4px;
         outline: 2px solid $primary;
@@ -177,93 +190,6 @@ $divider: rgba(0, 0, 0, 0.12);
         width: 20px;
         height: 20px;
         font-size: 20px;
-      }
-    }
-  }
-
-  .mr-datepicker-grid {
-    .mr-datepicker-weekday-row,
-    .mr-datepicker-week {
-      display: grid;
-      grid-template-columns: 32px repeat(7, minmax(0, 1fr));
-    }
-
-    .mr-datepicker-kw,
-    .mr-datepicker-kw-value {
-      color: $foreground-disabled;
-      font-size: 11px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 40px;
-      margin: 1px;
-
-      &.today {
-        color: $primary;
-        font-weight: 700;
-      }
-    }
-
-    .mr-datepicker-kw {
-      font-weight: 500;
-    }
-
-    .mr-datepicker-day-name,
-    .mr-datepicker-month-abbreviation {
-      color: $foreground-secondary;
-      font-size: 12px;
-      font-weight: 500;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      &.today {
-        color: $primary;
-        font-weight: 700;
-      }
-    }
-
-    .mr-datepicker-day {
-      background: none;
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      margin: 1px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 13px;
-      color: $foreground;
-      transition:
-        background-color 0.2s,
-        color 0.2s;
-      position: relative;
-
-      &:hover:not(.empty):not(.selected) {
-        background-color: $hover-background;
-      }
-
-      &.today:not(.selected) {
-        color: $primary;
-        font-weight: 700;
-        border: 1px solid $divider;
-      }
-
-      &.selected {
-        background-color: $primary !important;
-        color: $primary-contrast !important;
-      }
-
-      &:focus-visible {
-        outline: 2px solid $primary;
-        outline-offset: 2px;
-      }
-
-      &.empty {
-        cursor: default;
       }
     }
   }
@@ -343,13 +269,8 @@ $divider: rgba(0, 0, 0, 0.12);
   .mr-datepicker-input:focus-within,
   .mr-datepicker-icon:focus-visible,
   .mr-datepicker-navigation:focus-visible,
-  .mr-datepicker-day:focus-visible,
   .mr-datepicker-now:focus-visible,
   .mr-datepicker-confirm:focus-visible {
     outline: 2px solid CanvasText;
-  }
-
-  .mr-datepicker-day.selected {
-    border: 2px solid CanvasText;
   }
 }

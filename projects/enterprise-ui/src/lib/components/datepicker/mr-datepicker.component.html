@@ -41,6 +41,7 @@
       #calendarToggle
       type="button"
       class="mr-datepicker-icon"
+      [class.mr-datepicker-icon--disabled]="computedDisabled()"
       [disabled]="computedDisabled()"
       [attr.aria-label]="
         isOpen()
@@ -157,103 +158,20 @@
         </div>
       </div>
 
-      <div
-        class="mr-datepicker-grid"
-        role="grid"
-        aria-readonly="true"
-        [attr.aria-labelledby]="monthHeadingId"
-        [attr.data-testid]="testIdFor('calendar-grid')"
-      >
-        <div role="row" class="mr-datepicker-weekday-row">
-          <div
-            class="mr-datepicker-day-name mr-datepicker-kw"
-            role="columnheader"
-            aria-label="Kalenderwoche"
-          >
-            <abbr title="Kalenderwoche"><strong>KW</strong></abbr>
-          </div>
-          @for (day of daysOfWeek; track day.short) {
-            <div
-              class="mr-datepicker-day-name"
-              role="columnheader"
-              [attr.aria-label]="day.long"
-              [class.today]="isCurrentWeekday(day.weekday)"
-              [attr.data-testid]="testIdFor('weekday-' + day.weekday)"
-            >
-              <abbr [title]="day.long">
-                <strong>{{ day.short }}</strong>
-              </abbr>
-            </div>
-          }
-        </div>
-
-        @for (weekInfo of grid(); track $index; let weekIndex = $index) {
-          <div
-            role="row"
-            class="mr-datepicker-week"
-            [attr.data-testid]="testIdFor('week-' + weekIndex)"
-          >
-            <div
-              class="mr-datepicker-kw-value"
-              role="rowheader"
-              [attr.aria-label]="'Kalenderwoche ' + weekInfo.weekNumber"
-              [class.today]="isCurrentWeek(weekInfo)"
-              [attr.data-testid]="testIdFor('week-number-' + weekIndex)"
-            >
-              <strong>{{ weekInfo.weekNumber }}</strong>
-            </div>
-            @for (date of weekInfo.days; track $index; let cellIndex = $index) {
-              <div
-                class="mr-datepicker-gridcell"
-                [attr.role]="date ? 'presentation' : 'gridcell'"
-                [attr.aria-label]="
-                  !date && weekIndex === 0 && cellIndex === 0
-                    ? monthAbbreviation()
-                    : null
-                "
-                [attr.aria-disabled]="date ? null : 'true'"
-                [attr.data-testid]="
-                  testIdFor('cell-' + weekIndex + '-' + cellIndex)
-                "
-              >
-                @if (date; as calendarDate) {
-                  <button
-                    #calendarDay
-                    type="button"
-                    role="gridcell"
-                    class="mr-datepicker-day"
-                    [class.selected]="isSelected(calendarDate)"
-                    [class.today]="isToday(calendarDate)"
-                    [attr.data-date]="calendarDate.toISODate()"
-                    [attr.data-testid]="
-                      testIdFor('day-' + calendarDate.toISODate())
-                    "
-                    [attr.tabindex]="isActiveDate(calendarDate) ? 0 : -1"
-                    [attr.aria-label]="getAccessibleDateLabel(calendarDate)"
-                    [attr.aria-selected]="
-                      isSelected(calendarDate) ? 'true' : null
-                    "
-                    [attr.aria-current]="isToday(calendarDate) ? 'date' : null"
-                    (click)="selectDate(calendarDate)"
-                    (focus)="setActiveDate(calendarDate)"
-                    (keydown)="handleCalendarKeydown($event, calendarDate)"
-                  >
-                    {{ calendarDate.day }}
-                  </button>
-                } @else if (weekIndex === 0 && cellIndex === 0) {
-                  <div
-                    class="mr-datepicker-month-abbreviation"
-                    aria-hidden="true"
-                    [attr.data-testid]="testIdFor('month-abbreviation')"
-                  >
-                    {{ monthAbbreviation() }}
-                  </div>
-                }
-              </div>
-            }
-          </div>
-        }
-      </div>
+      <mr-datepicker-grid
+        [daysOfWeek]="daysOfWeek"
+        [weeks]="grid()"
+        [monthAbbreviation]="monthAbbreviation()"
+        [selectedDate]="selectedDate()"
+        [activeDate]="activeDate()"
+        [today]="today()"
+        [viewDate]="viewDate()"
+        [monthHeadingId]="monthHeadingId"
+        [testIdPrefix]="testIdPrefix()"
+        (dateSelected)="selectDate($event)"
+        (dateFocused)="setActiveDate($event)"
+        (dateKeydown)="handleCalendarKeydown($event.event, $event.date)"
+      />
 
       <div
         class="mr-visually-hidden"

@@ -97,4 +97,39 @@ describe("MrTimeWheelComponent", () => {
     expect(previews[0].textContent.trim()).toBe("11");
     expect(previews[1].textContent.trim()).toBe("09");
   });
+
+  it("should render centered Material icons with stable test ids", () => {
+    const wheel = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-wheel"]',
+    ) as HTMLElement;
+    const incrementIcon = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-increment-icon"]',
+    ) as HTMLElement;
+    const decrementIcon = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-decrement-icon"]',
+    ) as HTMLElement;
+
+    expect(wheel.getAttribute("role")).toBe("group");
+    expect(wheel.getAttribute("aria-labelledby")).toBe("hour-label");
+    expect(incrementIcon.tagName).toBe("MAT-ICON");
+    expect(incrementIcon.textContent?.trim()).toBe("keyboard_arrow_up");
+    expect(incrementIcon.getAttribute("aria-hidden")).toBe("true");
+    expect(decrementIcon.tagName).toBe("MAT-ICON");
+    expect(decrementIcon.textContent?.trim()).toBe("keyboard_arrow_down");
+    expect(decrementIcon.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("should expose numeric input constraints and keyboard shortcuts", () => {
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-input"]',
+    ) as HTMLInputElement;
+
+    expect(input.inputMode).toBe("numeric");
+    expect(input.maxLength).toBe(2);
+    expect(input.pattern).toBe("[0-9]*");
+    expect(input.spellcheck).toBeFalsy();
+    expect(input.getAttribute("aria-keyshortcuts")).toBe(
+      "ArrowUp ArrowDown PageUp PageDown Home End",
+    );
+  });
 });

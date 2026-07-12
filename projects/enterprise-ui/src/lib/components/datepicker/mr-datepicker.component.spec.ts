@@ -64,6 +64,7 @@ describe("MrDatepickerComponent", () => {
       expect(
         document.querySelector('[data-testid="datepicker-calendar-grid"]'),
       ).toBeTruthy();
+      expect(document.querySelector("mr-datepicker-grid")).toBeTruthy();
       expect(
         document.querySelector('[data-testid^="datepicker-day-"]'),
       ).toBeTruthy();
@@ -844,6 +845,10 @@ describe("MrDatepickerComponent", () => {
 
       expect(input.disabled).toBeTruthy();
       expect(button.disabled).toBeTruthy();
+      expect(
+        button.classList.contains("mr-datepicker-icon--disabled"),
+      ).toBeTruthy();
+      expect(button.querySelector("mat-icon")).toBeTruthy();
     });
 
     it("should not open calendar when disabled is true", () => {

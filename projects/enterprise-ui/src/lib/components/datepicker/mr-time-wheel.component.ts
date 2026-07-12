@@ -1,4 +1,5 @@
 import { Component, computed, input, output } from "@angular/core";
+import { MatIconModule } from "@angular/material/icon";
 
 export type TimeUnit = "hour" | "minute" | "second";
 
@@ -33,6 +34,7 @@ const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
 @Component({
   selector: "mr-time-wheel",
   standalone: true,
+  imports: [MatIconModule],
   templateUrl: "./mr-time-wheel.component.html",
   styleUrl: "./mr-time-wheel.component.scss",
 })
