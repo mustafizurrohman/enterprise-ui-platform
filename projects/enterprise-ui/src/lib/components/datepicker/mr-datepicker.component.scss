@@ -86,7 +86,7 @@ $divider: rgba(0, 0, 0, 0.12);
   border-radius: 4px;
   box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
   padding: 8px;
-  width: 296px;
+  width: 342px;
   user-select: none;
   font-family: Roboto, "Helvetica Neue", sans-serif;
 
@@ -138,7 +138,22 @@ $divider: rgba(0, 0, 0, 0.12);
     .mr-datepicker-weekday-row,
     .mr-datepicker-week {
       display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
+      grid-template-columns: 32px repeat(7, minmax(0, 1fr));
+    }
+
+    .mr-datepicker-kw,
+    .mr-datepicker-kw-value {
+      color: $foreground-disabled;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+      margin: 1px;
+    }
+
+    .mr-datepicker-kw {
+      font-weight: 500;
     }
 
     .mr-datepicker-day-name,

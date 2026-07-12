@@ -119,7 +119,7 @@
           aria-live="polite"
           aria-atomic="true"
         >
-          {{ viewDate.toFormat('LLLL yyyy') }}
+          {{ viewDate.setLocale('de').toFormat('LLLL yyyy') }}
         </div>
 
         <div
@@ -169,6 +169,13 @@
         [attr.aria-labelledby]="monthHeadingId"
       >
         <div role="row" class="mr-datepicker-weekday-row">
+          <div
+            class="mr-datepicker-day-name mr-datepicker-kw"
+            role="columnheader"
+            aria-label="Kalenderwoche"
+          >
+            <abbr title="Kalenderwoche"><strong>KW</strong></abbr>
+          </div>
           @for (day of daysOfWeek; track day.short) {
             <div
               class="mr-datepicker-day-name"
@@ -176,29 +183,29 @@
               [attr.aria-label]="day.long"
             >
               <abbr [title]="day.long">
-                {{ day.short }}
+                <strong>{{ day.short }}</strong>
               </abbr>
             </div>
           }
         </div>
 
-        @for (week of grid; track $index; let weekIndex = $index) {
+        @for (weekInfo of grid; track $index; let weekIndex = $index) {
           <div role="row" class="mr-datepicker-week">
-            @for (date of week; track $index; let cellIndex = $index) {
+            <div
+              class="mr-datepicker-kw-value"
+              role="gridcell"
+              aria-hidden="true"
+            >
+              <strong>{{ weekInfo.weekNumber }}</strong>
+            </div>
+            @for (date of weekInfo.days; track $index; let cellIndex = $index) {
               <div
                 role="gridcell"
                 class="mr-datepicker-gridcell"
                 [attr.aria-label]="weekIndex === 0 && cellIndex === 0 ? monthAbbreviation : null"
                 [attr.aria-selected]="date ? isSelected(date) : null"
               >
-                @if (weekIndex === 0 && cellIndex === 0) {
-                  <span
-                    class="mr-datepicker-month-abbreviation"
-                    aria-hidden="true"
-                  >
-                    {{ monthAbbreviation }}
-                  </span>
-                } @else if (date; as calendarDate) {
+                @if (date; as calendarDate) {
                   <button
                     #calendarDay
                     type="button"

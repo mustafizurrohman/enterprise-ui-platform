@@ -97,27 +97,36 @@ describe('MrDatepickerComponent', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect((component as any).monthAbbreviation).toBe('JUL');
-      expect(component.grid[0].map(date => date?.day ?? null)).toEqual([
-        null,
+      expect((component as any).monthAbbreviation).toBe(
+        DateTime.fromISO('2026-07-01')
+          .setLocale('de')
+          .toFormat('LLL')
+          .toUpperCase()
+      );
+      expect(component.grid[0].days.map((date) => date?.day ?? null)).toEqual([
         null,
         null,
         1,
         2,
         3,
-        4
+        4,
+        5,
       ]);
 
       const weekdayCells = document.querySelectorAll(
         '.mr-datepicker-weekday-row .mr-datepicker-day-name'
       );
       const weekRows = document.querySelectorAll('.mr-datepicker-week');
-      const firstRowCells = weekRows[0].querySelectorAll('.mr-datepicker-gridcell');
+      const firstRowCells = weekRows[0].querySelectorAll(
+        '.mr-datepicker-kw-value, .mr-datepicker-gridcell'
+      );
 
-      expect(weekdayCells).toHaveLength(7);
-      expect(firstRowCells).toHaveLength(7);
-      expect(firstRowCells[0].textContent?.trim()).toBe('JUL');
-      expect(firstRowCells[1].textContent?.trim()).toBe('');
+      expect(weekdayCells).toHaveLength(8);
+      expect(firstRowCells).toHaveLength(8);
+      expect(firstRowCells[0].textContent?.trim()).toBe('27'); // KW for July 1, 2026
+      expect(firstRowCells[1].textContent?.trim()).toBe(
+        (component as any).monthAbbreviation
+      );
       expect(firstRowCells[2].textContent?.trim()).toBe('');
       expect(firstRowCells[3].textContent?.trim()).toBe('1');
 
@@ -130,31 +139,30 @@ describe('MrDatepickerComponent', () => {
     });
 
     const monthStartCases: Array<[string, number, number]> = [
-      ['2026-06-15T00:00:00', 1, 0], // Monday
-      ['2026-09-15T00:00:00', 2, 0], // Tuesday
-      ['2026-08-15T00:00:00', 6, 0], // Saturday
-      ['2026-11-15T00:00:00', 0, 1]  // Sunday
+      ['2026-06-15T00:00:00', 0, 1], // Monday
+      ['2026-09-15T00:00:00', 1, 0], // Tuesday
+      ['2026-08-15T00:00:00', 5, 0], // Saturday
+      ['2026-11-15T00:00:00', 6, 0], // Sunday
     ];
 
     it.each(monthStartCases)(
-      'should place day 1 in the correct Sunday-first column for %s',
+      'should place day 1 in the correct Monday-first column for %s',
       (value, expectedColumn, expectedRow) => {
         component.writeValue(value);
 
-        const row = component.grid[expectedRow];
+        const row = component.grid[expectedRow].days;
 
         expect(row[expectedColumn]?.day).toBe(1);
-        expect(component.grid.every(week => week.length === 7)).toBeTruthy();
+        expect(
+          component.grid.every((week) => week.days.length === 7)
+        ).toBeTruthy();
       }
     );
 
-    it('should expose weekday headings in Sunday-first order', () => {
-      const mondayFirstWeekdays = Info.weekdays('long');
-
-      expect(component.daysOfWeek.map(day => day.long)).toEqual([
-        mondayFirstWeekdays[6],
-        ...mondayFirstWeekdays.slice(0, 6)
-      ]);
+    it('should expose weekday headings in Monday-first order', () => {
+      expect(component.daysOfWeek.map((day) => day.long)).toEqual(
+        Info.weekdays('long', { locale: 'de' })
+      );
     });
   });
 

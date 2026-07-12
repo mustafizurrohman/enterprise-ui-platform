@@ -35,7 +35,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   private readonly componentId = `mr-datepicker-${MrDatepickerComponent.nextId++}`;
 
   @Input() label: string = 'Datum auswählen';
-  @Input() placeholder: string = 'Select date';
+  @Input() placeholder: string = 'Datum auswählen';
   @Input({ transform: booleanAttribute }) dateOnly = false;
 
   protected readonly inputId = `${this.componentId}-input`;
@@ -106,17 +106,12 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     }
   ];
 
-  daysOfWeek = [
-    { short: Info.weekdays('short')[6], long: Info.weekdays('long')[6] }, // Sun
-    { short: Info.weekdays('short')[0], long: Info.weekdays('long')[0] }, // Mon
-    { short: Info.weekdays('short')[1], long: Info.weekdays('long')[1] }, // Tue
-    { short: Info.weekdays('short')[2], long: Info.weekdays('long')[2] }, // Wed
-    { short: Info.weekdays('short')[3], long: Info.weekdays('long')[3] }, // Thu
-    { short: Info.weekdays('short')[4], long: Info.weekdays('long')[4] }, // Fri
-    { short: Info.weekdays('short')[5], long: Info.weekdays('long')[5] }, // Sat
-  ];
+  daysOfWeek = Info.weekdays('short', { locale: 'de' }).map((short, i) => ({
+    short,
+    long: Info.weekdays('long', { locale: 'de' })[i],
+  }));
   protected monthAbbreviation = '';
-  grid: (DateTime | null)[][] = [];
+  grid: { weekNumber: number; days: (DateTime | null)[] }[] = [];
 
   onChange: (value: string | null) => void = () => {};
   onTouched: () => void = () => {};
@@ -443,16 +438,21 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   private generateGrid(): void {
     const startOfMonth = this.viewDate.startOf('month');
     const daysInMonth = startOfMonth.daysInMonth ?? 0;
-    const sundayBasedFirstDayIndex = startOfMonth.weekday % 7;
+    const firstDayWeekday = startOfMonth.weekday;
 
-    this.monthAbbreviation = startOfMonth.toFormat('LLL').toUpperCase();
+    this.monthAbbreviation = startOfMonth
+      .setLocale('de')
+      .toFormat('LLL')
+      .toUpperCase();
+
+    // Monday-based index: 0 = Mon, 6 = Sun
+    const mondayBasedFirstDayIndex = firstDayWeekday - 1;
 
     // The first cell is always reserved for the month abbreviation.
-    // A month beginning on Sunday therefore starts in the first column
+    // A month beginning on Monday therefore starts in the first column
     // of the following row; all other months keep day 1 in its weekday column.
-    const leadingCellCount = sundayBasedFirstDayIndex === 0
-      ? 7
-      : sundayBasedFirstDayIndex;
+    const leadingCellCount =
+      mondayBasedFirstDayIndex === 0 ? 7 : mondayBasedFirstDayIndex;
 
     const cells: (DateTime | null)[] = Array.from(
       { length: leadingCellCount },
@@ -467,10 +467,16 @@ export class MrDatepickerComponent implements ControlValueAccessor {
       cells.push(null);
     }
 
-    this.grid = Array.from(
-      { length: cells.length / 7 },
-      (_, rowIndex) => cells.slice(rowIndex * 7, rowIndex * 7 + 7)
-    );
+    this.grid = [];
+    for (let i = 0; i < cells.length; i += 7) {
+      const weekDays = cells.slice(i, i + 7);
+      const firstDate = weekDays.find((d) => d !== null);
+      const weekNumber = firstDate
+        ? firstDate.weekNumber
+        : startOfMonth.minus({ weeks: 1 }).weekNumber;
+
+      this.grid.push({ weekNumber, days: weekDays });
+    }
   }
 
   isSelected(date: DateTime | null): boolean {
