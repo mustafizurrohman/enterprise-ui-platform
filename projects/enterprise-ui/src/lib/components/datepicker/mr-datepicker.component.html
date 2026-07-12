@@ -43,6 +43,20 @@
       (change)="onManualInput(dateInput)"
     />
 
+    @if (currentDate) {
+      <button
+        type="button"
+        class="mr-datepicker-icon mr-datepicker-clear"
+        [class.mr-datepicker-icon--disabled]="disabled"
+        [disabled]="disabled"
+        aria-label="Ausgewähltes Datum löschen"
+        [attr.data-testid]="testIdFor('clear')"
+        (click)="clearValue($event, dateInput)"
+      >
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    }
+
     <button
       #calendarToggle
       type="button"

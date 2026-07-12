@@ -502,6 +502,24 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     this.closeCalendar();
   }
 
+  protected clearValue(
+    event: MouseEvent,
+    input: HTMLInputElement,
+  ): void {
+    event.stopPropagation();
+
+    this.selectedDate.set(null);
+    this.value.set(null);
+    this.viewDate.set(DateTime.now());
+    this.dateAnnouncement.set("Datum gelöscht.");
+    this.timeAnnouncement.set("");
+    this.onChange(null);
+    this.onTouched();
+
+    input.value = "";
+    requestAnimationFrame(() => input.focus());
+  }
+
   protected onManualInput(input: HTMLInputElement): void {
     const value = input.value;
     const parsedDate = DateTime.fromFormat(value, this.dateFormat());
