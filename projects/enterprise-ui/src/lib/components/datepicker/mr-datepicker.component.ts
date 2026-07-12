@@ -1,4 +1,5 @@
 import {
+  booleanAttribute,
   Component,
   ElementRef,
   forwardRef,
@@ -35,6 +36,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
 
   @Input() label: string = 'Datum auswählen';
   @Input() placeholder: string = 'Select date';
+  @Input({ transform: booleanAttribute }) dateOnly = false;
 
   protected readonly inputId = `${this.componentId}-input`;
   protected readonly inputHintId = `${this.componentId}-hint`;
@@ -50,8 +52,13 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   protected readonly minuteLabelId = `${this.componentId}-minute-label`;
   protected readonly secondLabelId = `${this.componentId}-second-label`;
 
-  protected readonly dateFormat = "dd.MM.yyyy HH:mm:ss 'Uhr'";
-  protected readonly dateFormatDescription = 'TT.MM.JJJJ HH:MM:SS Uhr';
+  protected get dateFormat(): string {
+    return this.dateOnly ? 'dd.MM.yyyy' : "dd.MM.yyyy HH:mm:ss 'Uhr'";
+  }
+
+  protected get dateFormatDescription(): string {
+    return this.dateOnly ? 'TT.MM.JJJJ' : 'TT.MM.JJJJ HH:MM:SS Uhr';
+  }
 
   protected readonly hours = Array.from({ length: 24 }, (_, index) => index);
   protected readonly minutesAndSeconds = Array.from(
@@ -271,7 +278,9 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   protected selectDate(date: DateTime): void {
-    if (this.selectedDate) {
+    if (this.dateOnly) {
+      this.selectedDate = date.startOf('day');
+    } else if (this.selectedDate) {
       this.selectedDate = date.set({
         hour: this.selectedDate.hour,
         minute: this.selectedDate.minute,
@@ -280,6 +289,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     } else {
       this.selectedDate = date;
     }
+
     this.onChange(this.selectedDate.toISO());
   }
 
@@ -320,13 +330,13 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   protected onTimeInput(unit: TimeUnit, event: Event): void {
     const input = event.target as HTMLInputElement;
     let value = input.value.replace(/[^0-9]/g, '');
-    
+
     if (value.length > 2) {
       value = value.slice(-2);
     }
-    
+
     input.value = value;
-    
+
     if (value.length > 0) {
       this.updateTime(unit, value);
     }
@@ -406,6 +416,10 @@ export class MrDatepickerComponent implements ControlValueAccessor {
         this.selectedDate = DateTime.fromSQL(value); // Fallback for some formats
       }
       if (this.selectedDate.isValid) {
+        if (this.dateOnly) {
+          this.selectedDate = this.selectedDate.startOf('day');
+        }
+
         this.viewDate = this.selectedDate;
       } else {
         this.selectedDate = null;

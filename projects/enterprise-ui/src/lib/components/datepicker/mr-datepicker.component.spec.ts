@@ -27,6 +27,47 @@ describe('MrDatepickerComponent', () => {
     expect(calendar).toBeNull();
   });
 
+  describe('dateOnly', () => {
+    it('should transform an attribute-style value to true', () => {
+      fixture.componentRef.setInput('dateOnly', '');
+      fixture.detectChanges();
+
+      expect(component.dateOnly).toBeTruthy();
+    });
+
+    it('should hide time selection and use the date-only format', async () => {
+      fixture.componentRef.setInput('dateOnly', true);
+      component.writeValue('2026-07-12T14:30:45');
+      fixture.detectChanges();
+
+      const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+      expect(input.value).toBe('12.07.2026');
+      expect(component.selectedDate?.hour).toBe(0);
+      expect(component.selectedDate?.minute).toBe(0);
+      expect(component.selectedDate?.second).toBe(0);
+
+      fixture.nativeElement.querySelector('.mr-datepicker-icon').click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.querySelector('.mr-datepicker-time-wheels')).toBeNull();
+      expect(document.querySelector('.mr-datepicker-time-select')).toBeNull();
+      expect(document.querySelector('.mr-datepicker-confirm')).toBeTruthy();
+    });
+
+    it('should emit the selected date at the start of the day', () => {
+      fixture.componentRef.setInput('dateOnly', true);
+      const onChangeSpy = vi.fn();
+      component.registerOnChange(onChangeSpy);
+
+      const selectedDate = DateTime.fromISO('2026-07-12T18:30:45');
+      (component as any).selectDate(selectedDate);
+
+      expect(component.selectedDate?.toISO()).toBe(selectedDate.startOf('day').toISO());
+      expect(onChangeSpy).toHaveBeenCalledWith(selectedDate.startOf('day').toISO());
+    });
+  });
+
   it('should toggle calendar when input is clicked', () => {
     const input = fixture.nativeElement.querySelector('input');
     input.click();
@@ -295,11 +336,11 @@ describe('MrDatepickerComponent', () => {
     await fixture.whenStable();
 
     const initialDate = (component as any).activeDate();
-    
+
     // Simulate ArrowRight on the active day button
     const activeDayButton = document.querySelector('.mr-datepicker-day[tabindex="0"]') as HTMLButtonElement;
     expect(activeDayButton).toBeTruthy();
-    
+
     const event = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true });
     activeDayButton.dispatchEvent(event);
     fixture.detectChanges();
@@ -341,7 +382,7 @@ describe('MrDatepickerComponent', () => {
     await fixture.whenStable();
 
     const hourInput = document.querySelector('.mr-datepicker-time-select') as HTMLInputElement;
-    
+
     // Try to enter non-numeric value
     hourInput.value = 'ab';
     hourInput.dispatchEvent(new Event('input'));

@@ -339,6 +339,10 @@ $divider: rgba(0, 0, 0, 0.12);
       filter 150ms ease,
       transform 100ms ease;
 
+    &.mr-datepicker-confirm--without-time {
+      margin-top: 0;
+    }
+
     &:hover {
       filter: brightness(0.95);
     }
