@@ -146,11 +146,10 @@
                 #hourSelect
                 class="mr-datepicker-time-select"
                 aria-label="Stunden"
-                [value]="selectedDate?.hour ?? 0"
                 (change)="updateTime('hour', hourSelect.value)"
               >
                 @for (hour of hours; track hour) {
-                  <option [value]="hour">
+                  <option [value]="hour" [selected]="hour === (selectedDate?.hour ?? 0)">
                     {{ formatTimeValue(hour) }}
                   </option>
                 }
@@ -194,11 +193,10 @@
                 #minuteSelect
                 class="mr-datepicker-time-select"
                 aria-label="Minuten"
-                [value]="selectedDate?.minute ?? 0"
                 (change)="updateTime('minute', minuteSelect.value)"
               >
                 @for (minute of minutesAndSeconds; track minute) {
-                  <option [value]="minute">
+                  <option [value]="minute" [selected]="minute === (selectedDate?.minute ?? 0)">
                     {{ formatTimeValue(minute) }}
                   </option>
                 }
@@ -242,11 +240,10 @@
                 #secondSelect
                 class="mr-datepicker-time-select"
                 aria-label="Sekunden"
-                [value]="selectedDate?.second ?? 0"
                 (change)="updateTime('second', secondSelect.value)"
               >
                 @for (second of minutesAndSeconds; track second) {
-                  <option [value]="second">
+                  <option [value]="second" [selected]="second === (selectedDate?.second ?? 0)">
                     {{ formatTimeValue(second) }}
                   </option>
                 }
