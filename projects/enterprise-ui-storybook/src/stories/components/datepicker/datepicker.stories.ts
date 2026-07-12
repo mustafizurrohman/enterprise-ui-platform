@@ -39,5 +39,6 @@ export const DateTime: Story = {
 export const DateOnly: Story = {
   args: {
     dateOnly: true,
+    disabled: false,
   },
 };
