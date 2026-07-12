@@ -2,14 +2,28 @@ import {
   booleanAttribute,
   Component,
   computed,
+  effect,
   ElementRef,
   forwardRef,
+  inject,
+  Injector,
   input,
+  model,
   signal,
+  untracked,
   viewChildren
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
+import {
+  AbstractControl,
+  ControlValueAccessor,
+  FormsModule,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  NgControl,
+  ValidationErrors,
+  Validator
+} from '@angular/forms';
 import { ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
 import { A11yModule } from '@angular/cdk/a11y';
 import { DateTime, Info } from 'luxon';
@@ -28,13 +42,19 @@ type TimeUnit = 'hour' | 'minute' | 'second';
       useExisting: forwardRef(() => MrDatepickerComponent),
       multi: true,
     },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => MrDatepickerComponent),
+      multi: true,
+    },
   ],
 })
-export class MrDatepickerComponent implements ControlValueAccessor {
+export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   private static nextId = 0;
   private readonly componentId = `mr-datepicker-${MrDatepickerComponent.nextId++}`;
 
   readonly label = input<string>('Datum auswählen');
+  readonly value = model<string | null>(null);
   readonly dateOnly = input(false, { transform: booleanAttribute });
   readonly showSeconds = input(false, { transform: booleanAttribute });
   readonly today = input<DateTime>(DateTime.now());
@@ -163,7 +183,26 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   onChange: (value: string | null) => void = () => {};
   onTouched: () => void = () => {};
 
-  constructor() {}
+  private readonly injector = inject(Injector);
+  private _ngControl: NgControl | null = null;
+
+  protected get ngControl(): NgControl | null {
+    if (!this._ngControl) {
+      this._ngControl = this.injector.get(NgControl, null, { optional: true, self: true });
+    }
+    return this._ngControl;
+  }
+
+  constructor() {
+    effect(() => {
+      const v = this.value();
+      untracked(() => {
+        if (v !== this.selectedDate()?.toISO()) {
+          this.writeValue(v);
+        }
+      });
+    });
+  }
 
   protected openCalendar(): void {
     if (this.disabled()) {
@@ -205,6 +244,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
 
   protected closeCalendar(): void {
     this.isOpen.set(false);
+    this.onTouched();
   }
 
   protected toggleCalendar(): void {
@@ -322,8 +362,10 @@ export class MrDatepickerComponent implements ControlValueAccessor {
       newSelectedDate = this.showSeconds() ? date : date.set({ second: 0 });
     }
 
+    const iso = newSelectedDate.toISO();
     this.selectedDate.set(newSelectedDate);
-    this.onChange(newSelectedDate.toISO());
+    this.value.set(iso);
+    this.onChange(iso);
   }
 
   protected selectNow(): void {
@@ -333,8 +375,10 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     } else if (!this.showSeconds()) {
       now = now.set({ second: 0, millisecond: 0 });
     }
+    const iso = now.toISO();
     this.selectedDate.set(now);
-    this.onChange(now.toISO());
+    this.value.set(iso);
+    this.onChange(iso);
     this.closeCalendar();
   }
 
@@ -343,9 +387,11 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     const parsedDate = DateTime.fromFormat(value, this.dateFormat());
 
     if (parsedDate.isValid) {
+      const iso = parsedDate.toISO();
       this.selectedDate.set(parsedDate);
       this.viewDate.set(parsedDate);
-      this.onChange(parsedDate.toISO());
+      this.value.set(iso);
+      this.onChange(iso);
     } else {
       input.value = this.selectedDate() ? this.selectedDate()!.toFormat(this.dateFormat()) : '';
     }
@@ -367,8 +413,10 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     const newDate = currentDate.set({
       [unit]: normalizedValue,
     });
+    const iso = newDate.toISO();
     this.selectedDate.set(newDate);
-    this.onChange(newDate.toISO());
+    this.value.set(iso);
+    this.onChange(iso);
     this.announceTime();
   }
 
@@ -452,6 +500,9 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   writeValue(value: string | null): void {
+    if (this.value() !== value) {
+      this.value.set(value);
+    }
     if (value) {
       let date = DateTime.fromISO(value);
       if (!date.isValid) {
@@ -486,6 +537,18 @@ export class MrDatepickerComponent implements ControlValueAccessor {
 
   setDisabledState(isDisabled: boolean): void {
     this._disabledForm.set(isDisabled);
+  }
+
+  validate(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) {
+      return null;
+    }
+    let date = DateTime.fromISO(value);
+    if (!date.isValid) {
+      date = DateTime.fromSQL(value);
+    }
+    return date.isValid ? null : { invalidDate: true };
   }
 
   isSelected(date: DateTime | null): boolean {
@@ -528,7 +591,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   protected hasInputError(): boolean {
-    return false; // Implement validation logic if needed
+    return !!this.ngControl?.invalid && (!!this.ngControl?.touched || !!this.ngControl?.dirty);
   }
 
   protected readonly inputDescriptionIds = computed(() =>

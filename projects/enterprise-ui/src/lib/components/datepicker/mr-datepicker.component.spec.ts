@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MrDatepickerComponent } from './mr-datepicker.component';
 import { DateTime, Info } from 'luxon';
+import { Component, signal } from '@angular/core';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 describe('MrDatepickerComponent', () => {
   let component: MrDatepickerComponent;
@@ -626,5 +628,100 @@ describe('MrDatepickerComponent', () => {
       // Index 1 is Monday. It should NOT have 'today' class because we are in June.
       expect(weekdayHeaders[1].classList.contains('today')).toBeFalsy();
     });
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [MrDatepickerComponent, ReactiveFormsModule, FormsModule],
+  template: `
+    <mr-datepicker id="reactive" [formControl]="control" />
+    <mr-datepicker id="template" [(ngModel)]="templateValue" />
+    <mr-datepicker id="signal" [(value)]="signalValue" />
+  `
+})
+class TestHostComponent {
+  control = new FormControl<string | null>(null);
+  templateValue: string | null = null;
+  signalValue = signal<string | null>(null);
+}
+
+describe('MrDatepickerComponent Forms Compatibility', () => {
+  let fixture: ComponentFixture<TestHostComponent>;
+  let host: TestHostComponent;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [TestHostComponent]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(TestHostComponent);
+    host = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should work with Reactive Forms', async () => {
+    const testDate = '2026-07-12T10:00:00.000Z';
+    host.control.setValue(testDate);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const input = fixture.nativeElement.querySelector('#reactive input') as HTMLInputElement;
+    expect(input.value).toContain('12.07.2026');
+  });
+
+  it('should work with Template-driven Forms', async () => {
+    const testDate = '2026-07-13T10:00:00.000Z';
+    host.templateValue = testDate;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('#template input') as HTMLInputElement;
+    expect(input.value).toContain('13.07.2026');
+  });
+
+  it('should work with Signal-based (model) binding', async () => {
+    const testDate = '2026-07-14T10:00:00.000Z';
+    host.signalValue.set(testDate);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const input = fixture.nativeElement.querySelector('#signal input') as HTMLInputElement;
+    expect(input.value).toContain('14.07.2026');
+  });
+
+  it('should validate invalid dates', async () => {
+    host.control.setValue('invalid-date');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(host.control.invalid).toBeTruthy();
+    expect(host.control.errors?.['invalidDate']).toBeTruthy();
+  });
+
+  it('should call onTouched on blur', async () => {
+    const input = fixture.nativeElement.querySelector('#reactive input') as HTMLInputElement;
+
+    expect(host.control.touched).toBeFalsy();
+    input.dispatchEvent(new Event('blur'));
+    fixture.detectChanges();
+    expect(host.control.touched).toBeTruthy();
+  });
+
+  it('should propagate changes from internal signal to value model', async () => {
+    const datepickerElement = fixture.nativeElement.querySelector('#signal');
+
+    const button = datepickerElement.querySelector('.mr-datepicker-icon') as HTMLButtonElement;
+    button.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dayButton = document.querySelector('.mr-datepicker-day[data-date="2026-07-14"]') as HTMLButtonElement;
+    expect(dayButton).toBeTruthy();
+    dayButton.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(host.signalValue()).toContain('2026-07-14');
   });
 });
