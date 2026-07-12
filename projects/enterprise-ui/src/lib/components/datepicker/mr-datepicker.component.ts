@@ -4,6 +4,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
 import { DateTime, Info } from 'luxon';
 
+type TimeUnit = 'hour' | 'minute' | 'second';
+
 @Component({
   selector: 'mr-datepicker',
   standalone: true,
@@ -20,6 +22,12 @@ import { DateTime, Info } from 'luxon';
 })
 export class MrDatepickerComponent implements ControlValueAccessor {
   @Input() placeholder: string = 'Select date';
+
+  protected readonly hours = Array.from({ length: 24 }, (_, index) => index);
+  protected readonly minutesAndSeconds = Array.from(
+    { length: 60 },
+    (_, index) => index
+  );
 
   selectedDate: DateTime | null = null;
   viewDate: DateTime = DateTime.now();
@@ -121,12 +129,65 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     this.onChange(this.selectedDate.toISO());
   }
 
-  protected updateTime(type: 'hour' | 'minute' | 'second', value: number): void {
-    if (!this.selectedDate) {
-      this.selectedDate = DateTime.now().startOf('day');
+  protected updateTime(unit: TimeUnit, rawValue: string | number): void {
+    const value = Number(rawValue);
+
+    if (!Number.isInteger(value)) {
+      return;
     }
-    this.selectedDate = this.selectedDate.set({ [type]: value });
+
+    const maximum = unit === 'hour' ? 23 : 59;
+    const normalizedValue = Math.min(Math.max(value, 0), maximum);
+
+    const currentDate = this.selectedDate ?? DateTime.local().startOf('day');
+
+    this.selectedDate = currentDate.set({
+      [unit]: normalizedValue
+    });
     this.onChange(this.selectedDate.toISO());
+  }
+
+  protected incrementTime(unit: TimeUnit): void {
+    this.changeTime(unit, 1);
+  }
+
+  protected decrementTime(unit: TimeUnit): void {
+    this.changeTime(unit, -1);
+  }
+
+  protected previousTimeValue(unit: TimeUnit): string {
+    return this.formatTimeValue(
+      this.normalizeTimeValue(unit, this.getTimeValue(unit) - 1)
+    );
+  }
+
+  protected nextTimeValue(unit: TimeUnit): string {
+    return this.formatTimeValue(
+      this.normalizeTimeValue(unit, this.getTimeValue(unit) + 1)
+    );
+  }
+
+  protected formatTimeValue(value: number): string {
+    return String(value).padStart(2, '0');
+  }
+
+  private changeTime(unit: TimeUnit, difference: number): void {
+    const nextValue = this.normalizeTimeValue(
+      unit,
+      this.getTimeValue(unit) + difference
+    );
+
+    this.updateTime(unit, nextValue);
+  }
+
+  private getTimeValue(unit: TimeUnit): number {
+    return this.selectedDate?.[unit] ?? 0;
+  }
+
+  private normalizeTimeValue(unit: TimeUnit, value: number): number {
+    const range = unit === 'hour' ? 24 : 60;
+
+    return ((value % range) + range) % range;
   }
 
   writeValue(value: string | null): void {

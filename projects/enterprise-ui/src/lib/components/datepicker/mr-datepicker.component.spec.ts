@@ -92,6 +92,38 @@ describe('MrDatepickerComponent', () => {
     expect(onChangeSpy).toHaveBeenLastCalledWith(component.selectedDate?.toISO());
   });
 
+  it('should increment and decrement time', () => {
+    const today = DateTime.now().startOf('day').set({ hour: 10, minute: 30, second: 30 });
+    (component as any).selectedDate = today;
+
+    (component as any).incrementTime('hour');
+    expect(component.selectedDate?.hour).toBe(11);
+
+    (component as any).decrementTime('hour');
+    expect(component.selectedDate?.hour).toBe(10);
+
+    // Test wrap around
+    (component as any).updateTime('hour', 23);
+    (component as any).incrementTime('hour');
+    expect(component.selectedDate?.hour).toBe(0);
+
+    (component as any).decrementTime('hour');
+    expect(component.selectedDate?.hour).toBe(23);
+  });
+
+  it('should return correct previous and next time values', () => {
+    (component as any).selectedDate = DateTime.now().startOf('day').set({ hour: 10 });
+
+    expect((component as any).previousTimeValue('hour')).toBe('09');
+    expect((component as any).nextTimeValue('hour')).toBe('11');
+
+    (component as any).updateTime('hour', 0);
+    expect((component as any).previousTimeValue('hour')).toBe('23');
+
+    (component as any).updateTime('hour', 23);
+    expect((component as any).nextTimeValue('hour')).toBe('00');
+  });
+
   it('should update state when writeValue is called', () => {
     const testDate = '2023-12-25';
     component.writeValue(testDate);

@@ -121,38 +121,151 @@
       </div>
 
       <div class="mr-datepicker-time-picker">
-        <div class="mr-datepicker-time-inputs">
-          <div class="mr-datepicker-time-field">
-            <input
-              type="number"
-              min="0"
-              max="23"
-              [value]="selectedDate?.hour ?? 0"
-              (input)="updateTime('hour', $any($event.target).value)"
-              aria-label="Stunden"
-            />
+        <div
+          class="mr-datepicker-time-wheels"
+          role="group"
+          aria-label="Uhrzeit auswählen"
+        >
+          <div class="mr-datepicker-time-wheel">
+            <button
+              type="button"
+              class="mr-datepicker-time-button"
+              aria-label="Stunde erhöhen"
+              (click)="incrementTime('hour')"
+            >
+              <span aria-hidden="true">⌃</span>
+            </button>
+
+            <div class="mr-datepicker-time-value">
+              <span class="mr-datepicker-time-preview" aria-hidden="true">
+                {{ previousTimeValue('hour') }}
+              </span>
+
+              <select
+                #hourSelect
+                class="mr-datepicker-time-select"
+                aria-label="Stunden"
+                [value]="selectedDate?.hour ?? 0"
+                (change)="updateTime('hour', hourSelect.value)"
+              >
+                @for (hour of hours; track hour) {
+                  <option [value]="hour">
+                    {{ formatTimeValue(hour) }}
+                  </option>
+                }
+              </select>
+
+              <span class="mr-datepicker-time-preview" aria-hidden="true">
+                {{ nextTimeValue('hour') }}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              class="mr-datepicker-time-button"
+              aria-label="Stunde verringern"
+              (click)="decrementTime('hour')"
+            >
+              <span aria-hidden="true">⌄</span>
+            </button>
+
+            <span class="mr-datepicker-time-label">Std.</span>
           </div>
-          <span class="mr-datepicker-time-separator">:</span>
-          <div class="mr-datepicker-time-field">
-            <input
-              type="number"
-              min="0"
-              max="59"
-              [value]="selectedDate?.minute ?? 0"
-              (input)="updateTime('minute', $any($event.target).value)"
-              aria-label="Minuten"
-            />
+
+          <span class="mr-datepicker-time-separator" aria-hidden="true">:</span>
+
+          <div class="mr-datepicker-time-wheel">
+            <button
+              type="button"
+              class="mr-datepicker-time-button"
+              aria-label="Minute erhöhen"
+              (click)="incrementTime('minute')"
+            >
+              <span aria-hidden="true">⌃</span>
+            </button>
+
+            <div class="mr-datepicker-time-value">
+              <span class="mr-datepicker-time-preview" aria-hidden="true">
+                {{ previousTimeValue('minute') }}
+              </span>
+
+              <select
+                #minuteSelect
+                class="mr-datepicker-time-select"
+                aria-label="Minuten"
+                [value]="selectedDate?.minute ?? 0"
+                (change)="updateTime('minute', minuteSelect.value)"
+              >
+                @for (minute of minutesAndSeconds; track minute) {
+                  <option [value]="minute">
+                    {{ formatTimeValue(minute) }}
+                  </option>
+                }
+              </select>
+
+              <span class="mr-datepicker-time-preview" aria-hidden="true">
+                {{ nextTimeValue('minute') }}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              class="mr-datepicker-time-button"
+              aria-label="Minute verringern"
+              (click)="decrementTime('minute')"
+            >
+              <span aria-hidden="true">⌄</span>
+            </button>
+
+            <span class="mr-datepicker-time-label">Min.</span>
           </div>
-          <span class="mr-datepicker-time-separator">:</span>
-          <div class="mr-datepicker-time-field">
-            <input
-              type="number"
-              min="0"
-              max="59"
-              [value]="selectedDate?.second ?? 0"
-              (input)="updateTime('second', $any($event.target).value)"
-              aria-label="Sekunden"
-            />
+
+          <span class="mr-datepicker-time-separator" aria-hidden="true">:</span>
+
+          <div class="mr-datepicker-time-wheel">
+            <button
+              type="button"
+              class="mr-datepicker-time-button"
+              aria-label="Sekunde erhöhen"
+              (click)="incrementTime('second')"
+            >
+              <span aria-hidden="true">⌃</span>
+            </button>
+
+            <div class="mr-datepicker-time-value">
+              <span class="mr-datepicker-time-preview" aria-hidden="true">
+                {{ previousTimeValue('second') }}
+              </span>
+
+              <select
+                #secondSelect
+                class="mr-datepicker-time-select"
+                aria-label="Sekunden"
+                [value]="selectedDate?.second ?? 0"
+                (change)="updateTime('second', secondSelect.value)"
+              >
+                @for (second of minutesAndSeconds; track second) {
+                  <option [value]="second">
+                    {{ formatTimeValue(second) }}
+                  </option>
+                }
+              </select>
+
+              <span class="mr-datepicker-time-preview" aria-hidden="true">
+                {{ nextTimeValue('second') }}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              class="mr-datepicker-time-button"
+              aria-label="Sekunde verringern"
+              (click)="decrementTime('second')"
+            >
+              <span aria-hidden="true">⌄</span>
+            </button>
+
+            <span class="mr-datepicker-time-label">Sek.</span>
           </div>
         </div>
         <button
