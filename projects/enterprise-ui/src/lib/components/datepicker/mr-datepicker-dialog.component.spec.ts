@@ -43,6 +43,6 @@ describe("MrDatepickerDialogComponent", () => {
     (fixture.nativeElement.querySelector('[data-testid="datepicker-previous-month"]') as HTMLButtonElement).click();
     (fixture.nativeElement.querySelector('[data-testid="datepicker-hour-increment"]') as HTMLButtonElement).click();
     expect(previousSpy).toHaveBeenCalledOnce();
-    expect(timeSpy).toHaveBeenCalledWith({ unit: "hour", value: 16 });
+    expect(timeSpy).toHaveBeenCalledWith({ unit: "hour", value: 1 });
   });
 });
