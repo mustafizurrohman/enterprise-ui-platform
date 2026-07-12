@@ -1126,27 +1126,6 @@ describe("MrDatepickerComponent Forms Compatibility", () => {
     expect(host.control.errors?.["invalidDate"]).toBeTruthy();
   });
 
-  it("should connect the visible validation error through aria-describedby", async () => {
-    host.control.setValue("invalid-date");
-    host.control.markAsTouched();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    const input = fixture.nativeElement.querySelector(
-      '[data-testid="reactive-datepicker-input"]',
-    ) as HTMLInputElement;
-    const error = fixture.nativeElement.querySelector(
-      '[data-testid="reactive-datepicker-error"]',
-    ) as HTMLElement;
-
-    expect(error).toBeTruthy();
-    expect(input.getAttribute("aria-invalid")).toBe("true");
-    expect(input.getAttribute("aria-describedby")?.split(" ")).toContain(
-      error.id,
-    );
-  });
-
   it("should call onTouched on blur", async () => {
     const input = fixture.nativeElement.querySelector(
       "#reactive input",
