@@ -64,6 +64,7 @@ describe("MrDatepickerComponent", () => {
       expect(
         document.querySelector('[data-testid="datepicker-calendar-grid"]'),
       ).toBeTruthy();
+      expect(document.querySelector("mr-datepicker-dialog")).toBeTruthy();
       expect(document.querySelector("mr-datepicker-grid")).toBeTruthy();
       expect(
         document.querySelector('[data-testid^="datepicker-day-"]'),

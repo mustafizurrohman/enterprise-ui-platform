@@ -46,6 +46,7 @@ describe("MrDatepickerGridComponent", () => {
 
     fixture = TestBed.createComponent(MrDatepickerGridComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput("gridId", "calendar-grid");
     fixture.componentRef.setInput(
       "daysOfWeek",
       Info.weekdays("short", { locale: "de" }).map((short, index) => ({
@@ -73,6 +74,7 @@ describe("MrDatepickerGridComponent", () => {
       '[data-testid="datepicker-day-2026-07-15"]',
     ) as HTMLButtonElement;
 
+    expect(grid.id).toBe("calendar-grid");
     expect(grid.getAttribute("role")).toBe("grid");
     expect(grid.getAttribute("aria-labelledby")).toBe("month-heading");
     expect(grid.getAttribute("aria-rowcount")).toBe("3");
@@ -130,4 +132,20 @@ describe("MrDatepickerGridComponent", () => {
       ),
     );
   });
+  it("should render weekday names and calendar weeks in bold", () => {
+    const weekday = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-weekday-1"] strong',
+    ) as HTMLElement;
+    const calendarWeekHeading = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-weekday-calendar-week"] strong',
+    ) as HTMLElement;
+    const weekNumber = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-week-number-0"] strong',
+    ) as HTMLElement;
+
+    expect(weekday).toBeTruthy();
+    expect(calendarWeekHeading.textContent?.trim()).toBe("KW");
+    expect(weekNumber.textContent?.trim()).toBe("27");
+  });
+
 });

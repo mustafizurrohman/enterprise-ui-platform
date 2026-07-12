@@ -30,10 +30,9 @@ import {
   type ConnectedPosition,
 } from "@angular/cdk/overlay";
 import { MatIconModule } from "@angular/material/icon";
-import { CdkTrapFocus } from "@angular/cdk/a11y";
 import { DateTime, Info } from "luxon";
-import { MrDatepickerGridComponent } from "./mr-datepicker-grid.component";
-import { MrTimeWheelComponent, type TimeUnit } from "./mr-time-wheel.component";
+import { MrDatepickerDialogComponent } from "./mr-datepicker-dialog.component";
+import type { TimeUnit } from "./mr-time-wheel.component";
 
 @Component({
   selector: "mr-datepicker",
@@ -43,10 +42,8 @@ import { MrTimeWheelComponent, type TimeUnit } from "./mr-time-wheel.component";
     FormsModule,
     CdkConnectedOverlay,
     CdkOverlayOrigin,
-    CdkTrapFocus,
     MatIconModule,
-    MrDatepickerGridComponent,
-    MrTimeWheelComponent,
+    MrDatepickerDialogComponent,
   ],
   templateUrl: "./mr-datepicker.component.html",
   styleUrl: "./mr-datepicker.component.scss",
@@ -145,7 +142,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
 
   private readonly dateInput =
     viewChild<ElementRef<HTMLInputElement>>("dateInput");
-  private readonly calendarGrid = viewChild(MrDatepickerGridComponent);
+  private readonly calendarDialog = viewChild(MrDatepickerDialogComponent);
 
   protected readonly overlayPositions: ConnectedPosition[] = [
     {
@@ -310,7 +307,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   private focusActiveDate(): void {
-    this.calendarGrid()?.focusDate(this.activeDate());
+    this.calendarDialog()?.focusDate(this.activeDate());
   }
 
   protected closeCalendar(): void {

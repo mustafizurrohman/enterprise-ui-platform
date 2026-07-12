@@ -30,6 +30,7 @@ export type MrDatepickerGridKeydown = {
   styleUrl: "./mr-datepicker-grid.component.scss",
 })
 export class MrDatepickerGridComponent {
+  readonly gridId = input.required<string>();
   readonly daysOfWeek = input.required<readonly MrDatepickerWeekday[]>();
   readonly weeks = input.required<readonly MrDatepickerWeek[]>();
   readonly monthAbbreviation = input.required<string>();

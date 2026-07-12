@@ -33,15 +33,16 @@ $divider: rgba(0, 0, 0, 0.12);
     }
   }
 
-  .mr-datepicker-kw {
-    font-weight: 500;
+  .mr-datepicker-kw,
+  .mr-datepicker-kw-value {
+    font-weight: 700;
   }
 
   .mr-datepicker-day-name,
   .mr-datepicker-month-abbreviation {
     color: $foreground-secondary;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 700;
     height: 40px;
     display: flex;
     align-items: center;

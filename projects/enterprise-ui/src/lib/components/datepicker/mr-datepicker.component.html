@@ -97,194 +97,40 @@
     (attach)="onOverlayAttached()"
     (detach)="onOverlayDetached()"
   >
-    <div
-      cdkTrapFocus
-      [cdkTrapFocusAutoCapture]="true"
-      [id]="dialogId"
-      class="mr-datepicker-calendar"
-      role="dialog"
-      aria-modal="true"
-      [attr.aria-labelledby]="dialogTitleId"
-      [attr.aria-describedby]="dialogDescriptionId"
-      [attr.data-testid]="testIdFor('dialog')"
-    >
-      <h2 [id]="dialogTitleId" class="mr-visually-hidden">
-        {{ dialogTitle() }}
-      </h2>
-
-      <p [id]="dialogDescriptionId" class="mr-visually-hidden">
-        Verwenden Sie die Pfeiltasten zur Navigation zwischen den Tagen. Pos1
-        und Ende springen zum Wochenanfang beziehungsweise Wochenende. Bild auf
-        und Bild ab wechseln den Monat; mit Umschalttaste wechseln Sie das Jahr.
-        Enter oder Leertaste wählen den fokussierten Tag aus. Escape schließt
-        den Kalender.
-      </p>
-
-      <div class="mr-datepicker-header">
-        <div
-          [id]="monthHeadingId"
-          class="mr-datepicker-month-year"
-          aria-live="polite"
-          aria-atomic="true"
-          [attr.data-testid]="testIdFor('month-heading')"
-        >
-          {{ formattedMonth() }}
-        </div>
-
-        <div
-          class="mr-datepicker-navigation-wrapper"
-          role="group"
-          aria-label="Monat wechseln"
-        >
-          <button
-            type="button"
-            class="mr-datepicker-navigation"
-            aria-label="Vorherigen Monat anzeigen"
-            [attr.data-testid]="testIdFor('previous-month')"
-            (click)="prevMonth()"
-          >
-            <mat-icon aria-hidden="true">chevron_left</mat-icon>
-          </button>
-
-          <button
-            type="button"
-            class="mr-datepicker-navigation"
-            aria-label="Nächsten Monat anzeigen"
-            [attr.data-testid]="testIdFor('next-month')"
-            (click)="nextMonth()"
-          >
-            <mat-icon aria-hidden="true">chevron_right</mat-icon>
-          </button>
-        </div>
-      </div>
-
-      <mr-datepicker-grid
-        [daysOfWeek]="daysOfWeek"
-        [weeks]="grid()"
-        [monthAbbreviation]="monthAbbreviation()"
-        [selectedDate]="currentDate"
-        [activeDate]="activeDate()"
-        [today]="today()"
-        [viewDate]="viewDate()"
-        [monthHeadingId]="monthHeadingId"
-        [testIdPrefix]="testIdPrefix()"
-        (dateSelected)="selectDate($event)"
-        (dateFocused)="setActiveDate($event)"
-        (dateKeydown)="handleCalendarKeydown($event.event, $event.date)"
-      />
-
-      <div
-        class="mr-visually-hidden"
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        [attr.data-testid]="testIdFor('date-status')"
-      >
-        {{ dateAnnouncement() }}
-      </div>
-
-      @if (!isDateOnly) {
-        <fieldset
-          class="mr-datepicker-time-picker"
-          [attr.data-testid]="testIdFor('time-picker')"
-        >
-          <legend class="mr-visually-hidden">Uhrzeit auswählen</legend>
-
-          <div
-            class="mr-datepicker-time-wheels"
-            role="group"
-            aria-label="Zeit-Einsteller"
-            [attr.data-testid]="testIdFor('time-wheels')"
-          >
-            <mr-time-wheel
-              unit="hour"
-              [value]="currentDate?.hour ?? 0"
-              [controlId]="hourSelectId"
-              [labelId]="hourLabelId"
-              [testIdPrefix]="testIdPrefix()"
-              (valueChange)="updateTime('hour', $event)"
-            />
-
-            <span class="mr-datepicker-time-separator" aria-hidden="true"
-              >:</span
-            >
-
-            <mr-time-wheel
-              unit="minute"
-              [value]="currentDate?.minute ?? 0"
-              [controlId]="minuteSelectId"
-              [labelId]="minuteLabelId"
-              [testIdPrefix]="testIdPrefix()"
-              (valueChange)="updateTime('minute', $event)"
-            />
-
-            @if (showSeconds()) {
-              <span class="mr-datepicker-time-separator" aria-hidden="true"
-                >:</span
-              >
-
-              <mr-time-wheel
-                unit="second"
-                [value]="currentDate?.second ?? 0"
-                [controlId]="secondSelectId"
-                [labelId]="secondLabelId"
-                [testIdPrefix]="testIdPrefix()"
-                (valueChange)="updateTime('second', $event)"
-              />
-            }
-          </div>
-
-          <div
-            class="mr-visually-hidden"
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-            [attr.data-testid]="testIdFor('time-status')"
-          >
-            {{ timeAnnouncement() }}
-          </div>
-
-          <ng-container
-            [ngTemplateOutlet]="actions"
-            [ngTemplateOutletContext]="{ withoutTime: false }"
-          />
-        </fieldset>
-      } @else {
-        <div
-          class="mr-datepicker-time-picker"
-          [attr.data-testid]="testIdFor('date-only-actions')"
-        >
-          <ng-container
-            [ngTemplateOutlet]="actions"
-            [ngTemplateOutletContext]="{ withoutTime: true }"
-          />
-        </div>
-      }
-    </div>
+    <mr-datepicker-dialog
+      [dialogId]="dialogId"
+      [dialogTitleId]="dialogTitleId"
+      [dialogDescriptionId]="dialogDescriptionId"
+      [monthHeadingId]="monthHeadingId"
+      [hourSelectId]="hourSelectId"
+      [minuteSelectId]="minuteSelectId"
+      [secondSelectId]="secondSelectId"
+      [hourLabelId]="hourLabelId"
+      [minuteLabelId]="minuteLabelId"
+      [secondLabelId]="secondLabelId"
+      [dialogTitle]="dialogTitle()"
+      [formattedMonth]="formattedMonth()"
+      [daysOfWeek]="daysOfWeek"
+      [weeks]="grid()"
+      [monthAbbreviation]="monthAbbreviation()"
+      [selectedDate]="currentDate"
+      [activeDate]="activeDate()"
+      [today]="today()"
+      [viewDate]="viewDate()"
+      [testIdPrefix]="testIdPrefix()"
+      [dateOnly]="isDateOnly"
+      [showSeconds]="showSeconds()"
+      [dateAnnouncement]="dateAnnouncement()"
+      [timeAnnouncement]="timeAnnouncement()"
+      (previousMonth)="prevMonth()"
+      (nextMonth)="nextMonth()"
+      (dateSelected)="selectDate($event)"
+      (dateFocused)="setActiveDate($event)"
+      (dateKeydown)="handleCalendarKeydown($event.event, $event.date)"
+      (timeChanged)="updateTime($event.unit, $event.value)"
+      (nowSelected)="selectNow()"
+      (confirmed)="closeCalendar()"
+    />
   </ng-template>
 
-  <ng-template #actions let-withoutTime="withoutTime">
-    <div
-      class="mr-datepicker-actions"
-      [class.mr-datepicker-actions--without-time]="withoutTime"
-    >
-      <button
-        type="button"
-        class="mr-datepicker-now"
-        [attr.data-testid]="testIdFor('now')"
-        (click)="selectNow()"
-      >
-        Jetzt
-      </button>
-      <button
-        type="button"
-        class="mr-datepicker-confirm"
-        aria-label="Auswahl übernehmen und Kalender schließen"
-        [attr.data-testid]="testIdFor('confirm')"
-        (click)="closeCalendar()"
-      >
-        OK
-      </button>
-    </div>
-  </ng-template>
 </div>
