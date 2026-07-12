@@ -1,14 +1,16 @@
 import { Meta, Canvas, Controls } from '@storybook/addon-docs/blocks';
-import * as DatepickerStories from './datepicker.stories';
+import * as DateTimeStories from './date-time/date-time.stories';
+import * as DateOnlyStories from './date-only/date-only.stories';
+import * as ReactiveFormStories from './reactive-form/reactive-form.stories';
 
-<Meta of={DatepickerStories} />
+<Meta of={DateTimeStories} />
 
 # Datepicker
 
 The `MrDatepickerComponent` is a robust and accessible date/time selection component designed for enterprise applications. It provides a consistent user interface for selecting dates and times, with support for localization and keyboard navigation.
 
-<Canvas of={DatepickerStories.DateTime} />
-<Controls of={DatepickerStories.DateTime} />
+<Canvas of={DateTimeStories.DateTime} />
+<Controls of={DateTimeStories.DateTime} />
 
 ## Features
 
@@ -16,5 +18,13 @@ The `MrDatepickerComponent` is a robust and accessible date/time selection compo
 - **Angular Forms Integration**: Full support for Template-driven and Reactive Forms.
 - **Accessibility**: ARIA labels and full keyboard navigation support.
 - **Customizable**: Control labels, display formats, and disabled states.
+
+## Date Only
+
+<Canvas of={DateOnlyStories.DateOnly} />
+
+## Reactive Form
+
+<Canvas of={ReactiveFormStories.ReactiveForm} />
 
 

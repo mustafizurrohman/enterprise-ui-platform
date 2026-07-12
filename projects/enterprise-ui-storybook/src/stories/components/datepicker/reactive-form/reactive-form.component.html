@@ -1,0 +1,12 @@
+<form [formGroup]="form">
+  <datepicker
+    formControlName="date"
+    [label]="label"
+    [dateOnly]="dateOnly"
+    [disabled]="disabled"
+    [showSeconds]="showSeconds"
+  ></datepicker>
+</form>
+<div style="margin-top: 20px;">
+  <p>Current Form Value: {{ form.get('date')?.value || 'null' }}</p>
+</div>
