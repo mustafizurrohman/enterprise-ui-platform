@@ -1,7 +1,13 @@
+@let disabled = computedDisabled();
+@let open = isOpen();
+@let isDateOnly = dateOnly();
+@let invalid = hasInputError();
+@let currentDate = selectedDate();
+
 <div class="mr-datepicker" [attr.data-testid]="testIdFor()">
   <label
     class="mr-datepicker-label"
-    [class.mr-datepicker-label--disabled]="computedDisabled()"
+    [class.mr-datepicker-label--disabled]="disabled"
     [for]="inputId"
     [attr.data-testid]="testIdFor('label')"
   >
@@ -12,7 +18,7 @@
     #calendarOrigin="cdkOverlayOrigin"
     cdkOverlayOrigin
     class="mr-datepicker-input"
-    [class.mr-datepicker-input--disabled]="computedDisabled()"
+    [class.mr-datepicker-input--disabled]="disabled"
     [attr.data-testid]="testIdFor('input-wrapper')"
   >
     <input
@@ -23,14 +29,14 @@
       aria-autocomplete="none"
       aria-haspopup="dialog"
       aria-keyshortcuts="Enter ArrowDown Alt+ArrowDown"
-      [attr.aria-expanded]="isOpen()"
-      [attr.aria-controls]="isOpen() ? dialogId : null"
+      [attr.aria-expanded]="open"
+      [attr.aria-controls]="open ? dialogId : null"
       [attr.aria-describedby]="inputDescriptionIds()"
-      [attr.aria-invalid]="hasInputError() ? 'true' : 'false'"
+      [attr.aria-invalid]="invalid"
       [attr.data-testid]="testIdFor('input')"
-      [value]="selectedDate() ? selectedDate()!.toFormat(dateFormat()) : ''"
+      [value]="currentDate?.toFormat(dateFormat()) ?? ''"
       [placeholder]="dateFormatDescription()"
-      [disabled]="computedDisabled()"
+      [disabled]="disabled"
       (click)="openCalendar(dateInput)"
       (keydown)="handleInputKeydown($event, dateInput)"
       (blur)="onTouched()"
@@ -41,18 +47,12 @@
       #calendarToggle
       type="button"
       class="mr-datepicker-icon"
-      [class.mr-datepicker-icon--disabled]="computedDisabled()"
-      [disabled]="computedDisabled()"
-      [attr.aria-label]="
-        isOpen()
-          ? 'Kalender schließen'
-          : dateOnly()
-            ? 'Kalender zur Auswahl eines Datums öffnen'
-            : 'Kalender zur Auswahl von Datum und Uhrzeit öffnen'
-      "
+      [class.mr-datepicker-icon--disabled]="disabled"
+      [disabled]="disabled"
+      [attr.aria-label]="calendarToggleLabel()"
       aria-haspopup="dialog"
-      [attr.aria-controls]="isOpen() ? dialogId : null"
-      [attr.aria-expanded]="isOpen()"
+      [attr.aria-controls]="open ? dialogId : null"
+      [attr.aria-expanded]="open"
       [attr.data-testid]="testIdFor('toggle')"
       (click)="toggleCalendar(calendarToggle)"
     >
@@ -69,7 +69,7 @@
     Enter oder Pfeil nach unten drücken.
   </div>
 
-  @if (hasInputError()) {
+  @if (invalid) {
     <div
       [id]="inputErrorId"
       class="mr-datepicker-error"
@@ -84,11 +84,11 @@
   <ng-template
     cdkConnectedOverlay
     [cdkConnectedOverlayOrigin]="calendarOrigin"
-    [cdkConnectedOverlayOpen]="isOpen()"
+    [cdkConnectedOverlayOpen]="open"
     [cdkConnectedOverlayPositions]="overlayPositions"
     [cdkConnectedOverlayHasBackdrop]="true"
-    [cdkConnectedOverlayBackdropClass]="'cdk-overlay-transparent-backdrop'"
-    [cdkConnectedOverlayPanelClass]="'mr-datepicker-overlay-pane'"
+    cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+    cdkConnectedOverlayPanelClass="mr-datepicker-overlay-pane"
     [cdkConnectedOverlayFlexibleDimensions]="false"
     [cdkConnectedOverlayPush]="true"
     [cdkConnectedOverlayViewportMargin]="8"
@@ -109,7 +109,7 @@
       [attr.data-testid]="testIdFor('dialog')"
     >
       <h2 [id]="dialogTitleId" class="mr-visually-hidden">
-        {{ dateOnly() ? "Datum auswählen" : "Datum und Uhrzeit auswählen" }}
+        {{ dialogTitle() }}
       </h2>
 
       <p [id]="dialogDescriptionId" class="mr-visually-hidden">
@@ -128,7 +128,7 @@
           aria-atomic="true"
           [attr.data-testid]="testIdFor('month-heading')"
         >
-          {{ viewDate().setLocale("de").toFormat("LLLL yyyy") }}
+          {{ formattedMonth() }}
         </div>
 
         <div
@@ -162,7 +162,7 @@
         [daysOfWeek]="daysOfWeek"
         [weeks]="grid()"
         [monthAbbreviation]="monthAbbreviation()"
-        [selectedDate]="selectedDate()"
+        [selectedDate]="currentDate"
         [activeDate]="activeDate()"
         [today]="today()"
         [viewDate]="viewDate()"
@@ -183,7 +183,7 @@
         {{ dateAnnouncement() }}
       </div>
 
-      @if (!dateOnly()) {
+      @if (!isDateOnly) {
         <fieldset
           class="mr-datepicker-time-picker"
           [attr.data-testid]="testIdFor('time-picker')"
@@ -197,8 +197,8 @@
             [attr.data-testid]="testIdFor('time-wheels')"
           >
             <mr-time-wheel
-              [unit]="'hour'"
-              [value]="selectedDate()?.hour ?? 0"
+              unit="hour"
+              [value]="currentDate?.hour ?? 0"
               [controlId]="hourSelectId"
               [labelId]="hourLabelId"
               [testIdPrefix]="testIdPrefix()"
@@ -210,8 +210,8 @@
             >
 
             <mr-time-wheel
-              [unit]="'minute'"
-              [value]="selectedDate()?.minute ?? 0"
+              unit="minute"
+              [value]="currentDate?.minute ?? 0"
               [controlId]="minuteSelectId"
               [labelId]="minuteLabelId"
               [testIdPrefix]="testIdPrefix()"
@@ -224,8 +224,8 @@
               >
 
               <mr-time-wheel
-                [unit]="'second'"
-                [value]="selectedDate()?.second ?? 0"
+                unit="second"
+                [value]="currentDate?.second ?? 0"
                 [controlId]="secondSelectId"
                 [labelId]="secondLabelId"
                 [testIdPrefix]="testIdPrefix()"
@@ -244,54 +244,47 @@
             {{ timeAnnouncement() }}
           </div>
 
-          <div class="mr-datepicker-actions">
-            <button
-              type="button"
-              class="mr-datepicker-now"
-              [attr.data-testid]="testIdFor('now')"
-              (click)="selectNow()"
-            >
-              Jetzt
-            </button>
-            <button
-              type="button"
-              class="mr-datepicker-confirm"
-              aria-label="Auswahl übernehmen und Kalender schließen"
-              [attr.data-testid]="testIdFor('confirm')"
-              (click)="closeCalendar()"
-            >
-              OK
-            </button>
-          </div>
+          <ng-container
+            [ngTemplateOutlet]="actions"
+            [ngTemplateOutletContext]="{ withoutTime: false }"
+          />
         </fieldset>
       } @else {
         <div
           class="mr-datepicker-time-picker"
           [attr.data-testid]="testIdFor('date-only-actions')"
         >
-          <div
-            class="mr-datepicker-actions mr-datepicker-actions--without-time"
-          >
-            <button
-              type="button"
-              class="mr-datepicker-now"
-              [attr.data-testid]="testIdFor('now')"
-              (click)="selectNow()"
-            >
-              Jetzt
-            </button>
-            <button
-              type="button"
-              class="mr-datepicker-confirm"
-              aria-label="Auswahl übernehmen und Kalender schließen"
-              [attr.data-testid]="testIdFor('confirm')"
-              (click)="closeCalendar()"
-            >
-              OK
-            </button>
-          </div>
+          <ng-container
+            [ngTemplateOutlet]="actions"
+            [ngTemplateOutletContext]="{ withoutTime: true }"
+          />
         </div>
       }
+    </div>
+  </ng-template>
+
+  <ng-template #actions let-withoutTime="withoutTime">
+    <div
+      class="mr-datepicker-actions"
+      [class.mr-datepicker-actions--without-time]="withoutTime"
+    >
+      <button
+        type="button"
+        class="mr-datepicker-now"
+        [attr.data-testid]="testIdFor('now')"
+        (click)="selectNow()"
+      >
+        Jetzt
+      </button>
+      <button
+        type="button"
+        class="mr-datepicker-confirm"
+        aria-label="Auswahl übernehmen und Kalender schließen"
+        [attr.data-testid]="testIdFor('confirm')"
+        (click)="closeCalendar()"
+      >
+        OK
+      </button>
     </div>
   </ng-template>
 </div>

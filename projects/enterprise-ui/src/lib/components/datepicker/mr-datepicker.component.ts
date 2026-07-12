@@ -116,6 +116,24 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
       : "TT.MM.JJJJ HH:mm Uhr";
   });
 
+  protected readonly calendarToggleLabel = computed(() => {
+    if (this.isOpen()) {
+      return "Kalender schließen";
+    }
+
+    return this.dateOnly()
+      ? "Kalender zur Auswahl eines Datums öffnen"
+      : "Kalender zur Auswahl von Datum und Uhrzeit öffnen";
+  });
+
+  protected readonly dialogTitle = computed(() =>
+    this.dateOnly() ? "Datum auswählen" : "Datum und Uhrzeit auswählen",
+  );
+
+  protected readonly formattedMonth = computed(() =>
+    this.viewDate().setLocale("de").toFormat("LLLL yyyy"),
+  );
+
   readonly selectedDate = signal<DateTime | null>(null);
   readonly viewDate = signal<DateTime>(DateTime.now());
   protected readonly isOpen = signal(false);
