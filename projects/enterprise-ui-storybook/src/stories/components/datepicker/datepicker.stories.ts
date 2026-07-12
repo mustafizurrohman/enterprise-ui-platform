@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { MrDatepickerComponent } from '@mr/enterprise-ui';
+import { MrDatepickerComponent } from '../../../../../enterprise-ui/src/lib/components/datepicker/mr-datepicker.component';
 
 const meta: Meta<MrDatepickerComponent> = {
   title: 'Components/Datepicker',
@@ -9,15 +9,11 @@ const meta: Meta<MrDatepickerComponent> = {
       control: 'text',
       description: 'The label for the datepicker input',
     },
-    placeholder: {
-      control: 'text',
-      description: 'The placeholder for the datepicker input',
-    },
     dateOnly: {
       control: 'boolean',
       description: 'Whether to show only the date or also the time',
     },
-    disabled: {
+    disabledInput: {
       control: 'boolean',
       description: 'Whether the datepicker is disabled',
     },
@@ -34,9 +30,8 @@ type Story = StoryObj<MrDatepickerComponent>;
 export const DateTime: Story = {
   args: {
     label: 'Datum auswählen',
-    placeholder: 'Select date',
     dateOnly: false,
-    disabled: false,
+    disabledInput: false,
     showSeconds: false,
   },
 };
