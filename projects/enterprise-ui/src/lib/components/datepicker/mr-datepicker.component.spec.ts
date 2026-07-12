@@ -99,7 +99,11 @@ describe("MrDatepickerComponent", () => {
       expect(component.selectedDate()?.minute).toBe(0);
       expect(component.selectedDate()?.second).toBe(0);
 
-      fixture.nativeElement.querySelector(".mr-datepicker-icon").click();
+      (
+        fixture.nativeElement.querySelector(
+          '[data-testid$="toggle"]',
+        ) as HTMLButtonElement
+      ).click();
       fixture.detectChanges();
       await fixture.whenStable();
 
@@ -120,7 +124,7 @@ describe("MrDatepickerComponent", () => {
         selectedDate.startOf("day").toISO(),
       );
       expect(onChangeSpy).toHaveBeenCalledWith(
-        selectedDate.startOf("day").toISO(),
+        selectedDate.startOf("day").toJSDate(),
       );
     });
   });
@@ -269,7 +273,7 @@ describe("MrDatepickerComponent", () => {
     (component as any).selectDate(today);
 
     expect(component.selectedDate()?.hasSame(today, "day")).toBeTruthy();
-    expect(onChangeSpy).toHaveBeenCalledWith(today.toISO());
+    expect(onChangeSpy).toHaveBeenCalledWith(today.toJSDate());
     expect((component as any).isOpen()).toBeTruthy();
   });
 
@@ -322,7 +326,7 @@ describe("MrDatepickerComponent", () => {
     expect(component.selectedDate()?.minute).toBe(30);
     expect(component.selectedDate()?.second).toBe(45);
     expect(onChangeSpy).toHaveBeenLastCalledWith(
-      component.selectedDate()?.toISO(),
+      component.selectedDate()?.toJSDate(),
     );
   });
 
@@ -703,8 +707,9 @@ describe("MrDatepickerComponent", () => {
 
         expect(component.selectedDate()?.toISODate()).toBe("2026-07-20");
         expect(onChangeSpy).toHaveBeenCalledWith(
-          expect.stringContaining("2026-07-20"),
+          expect.any(Date),
         );
+        expect((onChangeSpy.mock.calls[0][0] as Date).toISOString()).toContain("2026-07-20");
         expect(
           document.querySelector('[data-testid="datepicker-date-status"]')
             ?.textContent,
@@ -1068,9 +1073,9 @@ describe("MrDatepickerComponent", () => {
   `,
 })
 class TestHostComponent {
-  control = new FormControl<string | null>(null);
-  templateValue: string | null = null;
-  signalValue = signal<string | null>(null);
+  control = new FormControl<Date | string | null>(null);
+  templateValue: Date | string | null = null;
+  signalValue = signal<Date | string | null>(null);
 }
 
 describe("MrDatepickerComponent Forms Compatibility", () => {
@@ -1161,6 +1166,7 @@ describe("MrDatepickerComponent Forms Compatibility", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(host.signalValue()).toContain("2026-07-14");
+    expect(host.signalValue() instanceof Date).toBeTruthy();
+    expect(DateTime.fromJSDate(host.signalValue() as Date).toISODate()).toBe("2026-07-14");
   });
 });

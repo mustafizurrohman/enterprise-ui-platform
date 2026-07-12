@@ -66,7 +66,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   private lastFocusedTrigger: HTMLElement | null = null;
 
   readonly label = input<string>("Datum auswählen");
-  readonly value = model<string | null>(null);
+  readonly value = model<Date | string | null>(null);
   readonly dateOnly = input(false, { transform: booleanAttribute });
   readonly showSeconds = input(false, { transform: booleanAttribute });
   readonly today = input<DateTime>(DateTime.now());
@@ -229,7 +229,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     return gridResult;
   });
 
-  onChange: (value: string | null) => void = () => {};
+  onChange: (value: Date | null) => void = () => {};
   onTouched: () => void = () => {};
 
   private readonly injector = inject(Injector);
@@ -249,7 +249,16 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     effect(() => {
       const v = this.value();
       untracked(() => {
-        if (v !== this.selectedDate()?.toISO()) {
+        const currentIso = this.selectedDate()?.toISO();
+        let newIso: string | null = null;
+
+        if (v instanceof Date) {
+          newIso = DateTime.fromJSDate(v).toISO();
+        } else if (typeof v === "string") {
+          newIso = DateTime.fromISO(v).toISO();
+        }
+
+        if (newIso !== currentIso) {
           this.writeValue(v);
         }
       });
@@ -479,10 +488,10 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
       newSelectedDate = this.showSeconds() ? date : date.set({ second: 0 });
     }
 
-    const iso = newSelectedDate.toISO();
+    const jsDate = newSelectedDate.toJSDate();
     this.selectedDate.set(newSelectedDate);
-    this.value.set(iso);
-    this.onChange(iso);
+    this.value.set(jsDate);
+    this.onChange(jsDate);
     this.dateAnnouncement.set(
       `${this.getAccessibleDateLabel(newSelectedDate)}.`,
     );
@@ -495,10 +504,10 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     } else if (!this.showSeconds()) {
       now = now.set({ second: 0, millisecond: 0 });
     }
-    const iso = now.toISO();
+    const jsDate = now.toJSDate();
     this.selectedDate.set(now);
-    this.value.set(iso);
-    this.onChange(iso);
+    this.value.set(jsDate);
+    this.onChange(jsDate);
     this.closeCalendar();
   }
 
@@ -525,11 +534,11 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     const parsedDate = DateTime.fromFormat(value, this.dateFormat());
 
     if (parsedDate.isValid) {
-      const iso = parsedDate.toISO();
+      const jsDate = parsedDate.toJSDate();
       this.selectedDate.set(parsedDate);
       this.viewDate.set(parsedDate);
-      this.value.set(iso);
-      this.onChange(iso);
+      this.value.set(jsDate);
+      this.onChange(jsDate);
     } else {
       input.value = this.selectedDate()
         ? this.selectedDate()!.toFormat(this.dateFormat())
@@ -553,10 +562,10 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     const newDate = currentDate.set({
       [unit]: normalizedValue,
     });
-    const iso = newDate.toISO();
+    const jsDate = newDate.toJSDate();
     this.selectedDate.set(newDate);
-    this.value.set(iso);
-    this.onChange(iso);
+    this.value.set(jsDate);
+    this.onChange(jsDate);
     this.announceTime();
   }
 
@@ -577,14 +586,19 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     this.timeAnnouncement.set(announcement);
   }
 
-  writeValue(value: string | null): void {
+  writeValue(value: Date | string | null): void {
     if (this.value() !== value) {
       this.value.set(value);
     }
     if (value) {
-      let date = DateTime.fromISO(value);
-      if (!date.isValid) {
-        date = DateTime.fromSQL(value); // Fallback for some formats
+      let date: DateTime;
+      if (value instanceof Date) {
+        date = DateTime.fromJSDate(value);
+      } else {
+        date = DateTime.fromISO(value);
+        if (!date.isValid) {
+          date = DateTime.fromSQL(value); // Fallback for some formats
+        }
       }
       if (date.isValid) {
         if (this.dateOnly()) {
@@ -605,7 +619,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     }
   }
 
-  registerOnChange(fn: (value: string | null) => void): void {
+  registerOnChange(fn: (value: Date | null) => void): void {
     this.onChange = fn;
   }
 
@@ -622,9 +636,14 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     if (!value) {
       return null;
     }
-    let date = DateTime.fromISO(value);
-    if (!date.isValid) {
-      date = DateTime.fromSQL(value);
+    let date: DateTime;
+    if (value instanceof Date) {
+      date = DateTime.fromJSDate(value);
+    } else {
+      date = DateTime.fromISO(value);
+      if (!date.isValid) {
+        date = DateTime.fromSQL(value);
+      }
     }
     return date.isValid ? null : { invalidDate: true };
   }
