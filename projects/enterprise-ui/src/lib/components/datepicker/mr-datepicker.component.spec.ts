@@ -32,7 +32,7 @@ describe('MrDatepickerComponent', () => {
       fixture.componentRef.setInput('dateOnly', '');
       fixture.detectChanges();
 
-      expect(component.dateOnly).toBeTruthy();
+      expect(component.dateOnly()).toBeTruthy();
     });
 
     it('should hide time selection and use the date-only format', async () => {
@@ -42,9 +42,9 @@ describe('MrDatepickerComponent', () => {
 
       const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
       expect(input.value).toBe('12.07.2026');
-      expect(component.selectedDate?.hour).toBe(0);
-      expect(component.selectedDate?.minute).toBe(0);
-      expect(component.selectedDate?.second).toBe(0);
+      expect(component.selectedDate()?.hour).toBe(0);
+      expect(component.selectedDate()?.minute).toBe(0);
+      expect(component.selectedDate()?.second).toBe(0);
 
       fixture.nativeElement.querySelector('.mr-datepicker-icon').click();
       fixture.detectChanges();
@@ -63,7 +63,7 @@ describe('MrDatepickerComponent', () => {
       const selectedDate = DateTime.fromISO('2026-07-12T18:30:45');
       (component as any).selectDate(selectedDate);
 
-      expect(component.selectedDate?.toISO()).toBe(selectedDate.startOf('day').toISO());
+      expect(component.selectedDate()?.toISO()).toBe(selectedDate.startOf('day').toISO());
       expect(onChangeSpy).toHaveBeenCalledWith(selectedDate.startOf('day').toISO());
     });
   });
@@ -97,13 +97,13 @@ describe('MrDatepickerComponent', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect((component as any).monthAbbreviation).toBe(
+      expect((component as any).monthAbbreviation()).toBe(
         DateTime.fromISO('2026-07-01')
           .setLocale('de')
           .toFormat('LLL')
           .toUpperCase()
       );
-      expect(component.grid[0].days.map((date) => date?.day ?? null)).toEqual([
+      expect(component.grid()[0].days.map((date) => date?.day ?? null)).toEqual([
         null,
         null,
         1,
@@ -125,7 +125,7 @@ describe('MrDatepickerComponent', () => {
       expect(firstRowCells).toHaveLength(8);
       expect(firstRowCells[0].textContent?.trim()).toBe('27'); // KW for July 1, 2026
       expect(firstRowCells[1].textContent?.trim()).toBe(
-        (component as any).monthAbbreviation
+        (component as any).monthAbbreviation()
       );
       expect(firstRowCells[2].textContent?.trim()).toBe('');
       expect(firstRowCells[3].textContent?.trim()).toBe('1');
@@ -150,11 +150,11 @@ describe('MrDatepickerComponent', () => {
       (value, expectedColumn, expectedRow) => {
         component.writeValue(value);
 
-        const row = component.grid[expectedRow].days;
+        const row = component.grid()[expectedRow].days;
 
         expect(row[expectedColumn]?.day).toBe(1);
         expect(
-          component.grid.every((week) => week.days.length === 7)
+          component.grid().every((week) => week.days.length === 7)
         ).toBeTruthy();
       }
     );
@@ -170,13 +170,13 @@ describe('MrDatepickerComponent', () => {
     (component as any).isOpen.set(true);
     fixture.detectChanges();
 
-    const initialMonth = component.viewDate.month;
+    const initialMonth = component.viewDate().month;
 
     component.prevMonth();
-    expect(component.viewDate.month).toBe(initialMonth === 1 ? 12 : initialMonth - 1);
+    expect(component.viewDate().month).toBe(initialMonth === 1 ? 12 : initialMonth - 1);
 
     component.nextMonth();
-    expect(component.viewDate.month).toBe(initialMonth);
+    expect(component.viewDate().month).toBe(initialMonth);
   });
 
   it('should select a date and NOT close the calendar', () => {
@@ -187,7 +187,7 @@ describe('MrDatepickerComponent', () => {
     const today = DateTime.now().startOf('day');
     (component as any).selectDate(today);
 
-    expect(component.selectedDate?.hasSame(today, 'day')).toBeTruthy();
+    expect(component.selectedDate()?.hasSame(today, 'day')).toBeTruthy();
     expect(onChangeSpy).toHaveBeenCalledWith(today.toISO());
     expect((component as any).isOpen()).toBeTruthy();
   });
@@ -210,8 +210,8 @@ describe('MrDatepickerComponent', () => {
     fixture.detectChanges();
     const after = DateTime.now();
 
-    expect(component.selectedDate).toBeTruthy();
-    const selectedDate = component.selectedDate!;
+    expect(component.selectedDate()).toBeTruthy();
+    const selectedDate = component.selectedDate()!;
     // Should be between before and after
     expect(selectedDate.toMillis()).toBeGreaterThanOrEqual(before.toMillis() - 1000); // Tolerance for slight delays
     expect(selectedDate.toMillis()).toBeLessThanOrEqual(after.toMillis() + 1000);
@@ -231,33 +231,33 @@ describe('MrDatepickerComponent', () => {
     (component as any).updateTime('minute', 30);
     (component as any).updateTime('second', 45);
 
-    expect(component.selectedDate?.hour).toBe(14);
-    expect(component.selectedDate?.minute).toBe(30);
-    expect(component.selectedDate?.second).toBe(45);
-    expect(onChangeSpy).toHaveBeenLastCalledWith(component.selectedDate?.toISO());
+    expect(component.selectedDate()?.hour).toBe(14);
+    expect(component.selectedDate()?.minute).toBe(30);
+    expect(component.selectedDate()?.second).toBe(45);
+    expect(onChangeSpy).toHaveBeenLastCalledWith(component.selectedDate()?.toISO());
   });
 
   it('should increment and decrement time', () => {
     const today = DateTime.now().startOf('day').set({ hour: 10, minute: 30, second: 30 });
-    (component as any).selectedDate = today;
+    (component as any).selectedDate.set(today);
 
     (component as any).incrementTime('hour');
-    expect(component.selectedDate?.hour).toBe(11);
+    expect(component.selectedDate()?.hour).toBe(11);
 
     (component as any).decrementTime('hour');
-    expect(component.selectedDate?.hour).toBe(10);
+    expect(component.selectedDate()?.hour).toBe(10);
 
     // Test wrap around
     (component as any).updateTime('hour', 23);
     (component as any).incrementTime('hour');
-    expect(component.selectedDate?.hour).toBe(0);
+    expect(component.selectedDate()?.hour).toBe(0);
 
     (component as any).decrementTime('hour');
-    expect(component.selectedDate?.hour).toBe(23);
+    expect(component.selectedDate()?.hour).toBe(23);
   });
 
   it('should return correct previous and next time values', () => {
-    (component as any).selectedDate = DateTime.now().startOf('day').set({ hour: 10 });
+    (component as any).selectedDate.set(DateTime.now().startOf('day').set({ hour: 10 }));
 
     expect((component as any).previousTimeValue('hour')).toBe('09');
     expect((component as any).nextTimeValue('hour')).toBe('11');
@@ -274,8 +274,8 @@ describe('MrDatepickerComponent', () => {
     component.writeValue(testDate);
     fixture.detectChanges();
 
-    expect(component.selectedDate?.toISO()).toBe(DateTime.fromISO(testDate).toISO());
-    expect(component.viewDate.hasSame(DateTime.fromISO(testDate), 'month')).toBeTruthy();
+    expect(component.selectedDate()?.toISO()).toBe(DateTime.fromISO(testDate).toISO());
+    expect(component.viewDate().hasSame(DateTime.fromISO(testDate), 'month')).toBeTruthy();
   });
 
   describe('Manual Input', () => {
@@ -289,11 +289,11 @@ describe('MrDatepickerComponent', () => {
       input.dispatchEvent(new Event('change'));
       fixture.detectChanges();
 
-      const expectedDate = DateTime.fromFormat(testDateStr, (component as any).dateFormat);
-      expect(component.selectedDate?.toISODate()).toBe(expectedDate.toISODate());
-      expect(component.selectedDate?.hour).toBe(18);
-      expect(component.selectedDate?.minute).toBe(0);
-      expect(component.selectedDate?.second).toBe(0);
+      const expectedDate = DateTime.fromFormat(testDateStr, (component as any).dateFormat());
+      expect(component.selectedDate()?.toISODate()).toBe(expectedDate.toISODate());
+      expect(component.selectedDate()?.hour).toBe(18);
+      expect(component.selectedDate()?.minute).toBe(0);
+      expect(component.selectedDate()?.second).toBe(0);
     });
 
     it('should reject invalid date input and revert to previous value', () => {
@@ -306,7 +306,7 @@ describe('MrDatepickerComponent', () => {
       input.dispatchEvent(new Event('change'));
       fixture.detectChanges();
 
-      expect(component.selectedDate?.year).toBe(2024);
+      expect(component.selectedDate()?.year).toBe(2024);
 
       // Enter invalid date
       input.value = 'invalid date';
@@ -314,7 +314,7 @@ describe('MrDatepickerComponent', () => {
       fixture.detectChanges();
 
       // Should still be the initial date
-      expect(component.selectedDate?.year).toBe(2024);
+      expect(component.selectedDate()?.year).toBe(2024);
       // Input should be reverted
       expect(input.value).toBe(initialDateStr);
     });
@@ -332,8 +332,8 @@ describe('MrDatepickerComponent', () => {
       fixture.detectChanges();
 
       expect((component as any).isOpen()).toBeTruthy();
-      const expectedDate = DateTime.fromFormat(testDateStr, (component as any).dateFormat);
-      expect(component.selectedDate?.toISODate()).toBe(expectedDate.toISODate());
+      const expectedDate = DateTime.fromFormat(testDateStr, (component as any).dateFormat());
+      expect(component.selectedDate()?.toISODate()).toBe(expectedDate.toISODate());
     });
   });
 
@@ -342,7 +342,7 @@ describe('MrDatepickerComponent', () => {
     const input = fixture.nativeElement.querySelector('input');
     const button = fixture.nativeElement.querySelector('.mr-datepicker-icon');
 
-    expect(label.textContent).toContain(component.label);
+    expect(label.textContent).toContain(component.label());
     expect(label.getAttribute('for')).toBe(input.id);
     expect(input.getAttribute('aria-haspopup')).toBe('dialog');
     expect(button.getAttribute('aria-label')).toContain('Kalender');
@@ -411,7 +411,7 @@ describe('MrDatepickerComponent', () => {
     hourInput.dispatchEvent(new Event('change'));
     fixture.detectChanges();
 
-    expect(component.selectedDate?.hour).toBe(15);
+    expect(component.selectedDate()?.hour).toBe(15);
   });
 
   it('should validate time typing', async () => {
@@ -434,7 +434,7 @@ describe('MrDatepickerComponent', () => {
     hourInput.dispatchEvent(new Event('input'));
     hourInput.dispatchEvent(new Event('change'));
     fixture.detectChanges();
-    expect(component.selectedDate?.hour).toBe(23); // Clamped to max
+    expect(component.selectedDate()?.hour).toBe(23); // Clamped to max
   });
 
   it('should announce time changes', async () => {
@@ -499,13 +499,13 @@ describe('MrDatepickerComponent', () => {
       fixture.detectChanges();
 
       const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
-      expect(input.value).toBe(DateTime.fromISO(testDate).toFormat((component as any).dateFormat));
+      expect(input.value).toBe(DateTime.fromISO(testDate).toFormat((component as any).dateFormat()));
     });
   });
 
   describe('showSeconds', () => {
     it('should be false by default', () => {
-      expect(component.showSeconds).toBeFalsy();
+      expect(component.showSeconds()).toBeFalsy();
     });
 
     it('should hide seconds wheel by default', async () => {
@@ -532,17 +532,17 @@ describe('MrDatepickerComponent', () => {
     });
 
     it('should adjust dateFormat when showSeconds is toggled', () => {
-      expect((component as any).dateFormat).not.toContain(':ss');
-      
+      expect((component as any).dateFormat()).not.toContain(':ss');
+
       fixture.componentRef.setInput('showSeconds', true);
       fixture.detectChanges();
-      expect((component as any).dateFormat).toContain(':ss');
+      expect((component as any).dateFormat()).toContain(':ss');
     });
 
     it('should adjust announceTime when showSeconds is true', () => {
       const testDate = DateTime.fromISO('2026-07-12T14:30:45');
-      component.selectedDate = testDate;
-      
+      (component as any).selectedDate.set(testDate);
+
       (component as any).announceTime();
       expect((component as any).timeAnnouncement()).not.toContain('Sekunden');
 
@@ -555,11 +555,11 @@ describe('MrDatepickerComponent', () => {
     it('should strip seconds in writeValue when showSeconds is false', () => {
       const testDate = '2026-07-12T14:30:45';
       component.writeValue(testDate);
-      expect(component.selectedDate?.second).toBe(0);
+      expect(component.selectedDate()?.second).toBe(0);
 
       fixture.componentRef.setInput('showSeconds', true);
       component.writeValue(testDate);
-      expect(component.selectedDate?.second).toBe(45);
+      expect(component.selectedDate()?.second).toBe(45);
     });
   });
 
@@ -581,11 +581,11 @@ describe('MrDatepickerComponent', () => {
       component.writeValue('2026-07-20');
       fixture.detectChanges();
 
-      const weekWithToday = component.grid.find(w => w.days.some(d => d?.hasSame(specificToday, 'day')));
+      const weekWithToday = component.grid().find(w => w.days.some(d => d?.hasSame(specificToday, 'day')));
       expect(weekWithToday).toBeTruthy();
       expect((component as any).isCurrentWeek(weekWithToday!)).toBeTruthy();
 
-      const otherWeek = component.grid.find(w => !w.days.some(d => d?.hasSame(specificToday, 'day')));
+      const otherWeek = component.grid().find(w => !w.days.some(d => d?.hasSame(specificToday, 'day')));
       if (otherWeek) {
         expect((component as any).isCurrentWeek(otherWeek)).toBeFalsy();
       }

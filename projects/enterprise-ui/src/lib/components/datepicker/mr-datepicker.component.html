@@ -1,17 +1,17 @@
 <div class="mr-datepicker">
   <label
     class="mr-datepicker-label"
-    [class.mr-datepicker-label--disabled]="disabled"
+    [class.mr-datepicker-label--disabled]="disabled()"
     [for]="inputId"
   >
-    {{ label }}
+    {{ label() }}
   </label>
 
   <div
     #calendarOrigin="cdkOverlayOrigin"
     cdkOverlayOrigin
     class="mr-datepicker-input"
-    [class.mr-datepicker-input--disabled]="disabled"
+    [class.mr-datepicker-input--disabled]="disabled()"
   >
     <input
       #dateInput
@@ -20,11 +20,11 @@
       aria-haspopup="dialog"
       [attr.aria-expanded]="isOpen()"
       [attr.aria-controls]="isOpen() ? dialogId : null"
-      [attr.aria-describedby]="inputDescriptionIds"
+      [attr.aria-describedby]="inputDescriptionIds()"
       [attr.aria-invalid]="hasInputError() ? 'true' : null"
-      [value]="selectedDate ? selectedDate.toFormat(dateFormat) : ''"
-      [placeholder]="placeholder"
-      [disabled]="disabled"
+      [value]="selectedDate() ? selectedDate()!.toFormat(dateFormat()) : ''"
+      [placeholder]="placeholder()"
+      [disabled]="disabled()"
       (click)="openCalendar()"
       (keydown.enter)="openCalendar()"
       (keydown.arrowdown)="openCalendar()"
@@ -34,8 +34,8 @@
     <button
       type="button"
       class="mr-datepicker-icon"
-      [disabled]="disabled"
-      [attr.aria-label]="dateOnly
+      [disabled]="disabled()"
+      [attr.aria-label]="dateOnly()
         ? 'Kalender zur Auswahl eines Datums öffnen'
         : 'Kalender zur Auswahl von Datum und Uhrzeit öffnen'"
       aria-haspopup="dialog"
@@ -59,7 +59,7 @@
     [id]="inputHintId"
     class="mr-visually-hidden"
   >
-    Erwartetes Format: {{ dateFormatDescription }}.
+    Erwartetes Format: {{ dateFormatDescription() }}.
     Zum Öffnen des Kalenders Enter oder Pfeil nach unten drücken.
   </div>
 
@@ -70,7 +70,7 @@
       role="alert"
     >
       Bitte geben Sie ein gültiges Datum im Format
-      {{ dateFormatDescription }} ein.
+      {{ dateFormatDescription() }} ein.
     </div>
   }
 
@@ -104,7 +104,7 @@
         [id]="dialogTitleId"
         class="mr-visually-hidden"
       >
-        {{ dateOnly ? 'Datum auswählen' : 'Datum und Uhrzeit auswählen' }}
+        {{ dateOnly() ? 'Datum auswählen' : 'Datum und Uhrzeit auswählen' }}
       </h2>
 
       <p
@@ -123,7 +123,7 @@
           aria-live="polite"
           aria-atomic="true"
         >
-          {{ viewDate.setLocale('de').toFormat('LLLL yyyy') }}
+          {{ viewDate().setLocale('de').toFormat('LLLL yyyy') }}
         </div>
 
         <div
@@ -194,7 +194,7 @@
           }
         </div>
 
-        @for (weekInfo of grid; track $index; let weekIndex = $index) {
+        @for (weekInfo of grid(); track $index; let weekIndex = $index) {
           <div role="row" class="mr-datepicker-week">
             <div
               class="mr-datepicker-kw-value"
@@ -208,7 +208,7 @@
               <div
                 role="gridcell"
                 class="mr-datepicker-gridcell"
-                [attr.aria-label]="weekIndex === 0 && cellIndex === 0 ? monthAbbreviation : null"
+                [attr.aria-label]="weekIndex === 0 && cellIndex === 0 ? monthAbbreviation() : null"
                 [attr.aria-selected]="date ? isSelected(date) : null"
               >
                 @if (date; as calendarDate) {
@@ -230,7 +230,7 @@
                   </button>
                 } @else if (weekIndex === 0 && cellIndex === 0) {
                   <div class="mr-datepicker-month-abbreviation" aria-hidden="true">
-                    {{ monthAbbreviation }}
+                    {{ monthAbbreviation() }}
                   </div>
                 }
               </div>
@@ -239,7 +239,7 @@
         }
       </div>
 
-      @if (!dateOnly) {
+      @if (!dateOnly()) {
         <fieldset class="mr-datepicker-time-picker">
           <legend class="mr-visually-hidden">
             Uhrzeit auswählen
@@ -280,9 +280,9 @@
                   [attr.aria-labelledby]="hourLabelId"
                   [attr.aria-valuemin]="0"
                   [attr.aria-valuemax]="23"
-                  [attr.aria-valuenow]="selectedDate?.hour ?? 0"
-                  [attr.aria-valuetext]="formatTimeValue(selectedDate?.hour ?? 0)"
-                  [value]="formatTimeValue(selectedDate?.hour ?? 0)"
+                  [attr.aria-valuenow]="selectedDate()?.hour ?? 0"
+                  [attr.aria-valuetext]="formatTimeValue(selectedDate()?.hour ?? 0)"
+                  [value]="formatTimeValue(selectedDate()?.hour ?? 0)"
                   (input)="onTimeInput('hour', $event)"
                   (keydown)="onTimeKeyDown('hour', $event)"
                   (change)="updateTime('hour', hourInput.value)"
@@ -344,9 +344,9 @@
                   [attr.aria-labelledby]="minuteLabelId"
                   [attr.aria-valuemin]="0"
                   [attr.aria-valuemax]="59"
-                  [attr.aria-valuenow]="selectedDate?.minute ?? 0"
-                  [attr.aria-valuetext]="formatTimeValue(selectedDate?.minute ?? 0) + ' Minuten'"
-                  [value]="formatTimeValue(selectedDate?.minute ?? 0)"
+                  [attr.aria-valuenow]="selectedDate()?.minute ?? 0"
+                  [attr.aria-valuetext]="formatTimeValue(selectedDate()?.minute ?? 0) + ' Minuten'"
+                  [value]="formatTimeValue(selectedDate()?.minute ?? 0)"
                   (input)="onTimeInput('minute', $event)"
                   (keydown)="onTimeKeyDown('minute', $event)"
                   (change)="updateTime('minute', minuteInput.value)"
@@ -376,7 +376,7 @@
               </span>
             </div>
 
-            @if (showSeconds) {
+            @if (showSeconds()) {
               <span class="mr-datepicker-time-separator" aria-hidden="true">:</span>
 
               <div
@@ -409,9 +409,9 @@
                     [attr.aria-labelledby]="secondLabelId"
                     [attr.aria-valuemin]="0"
                     [attr.aria-valuemax]="59"
-                    [attr.aria-valuenow]="selectedDate?.second ?? 0"
-                    [attr.aria-valuetext]="formatTimeValue(selectedDate?.second ?? 0) + ' Sekunden'"
-                    [value]="formatTimeValue(selectedDate?.second ?? 0)"
+                    [attr.aria-valuenow]="selectedDate()?.second ?? 0"
+                    [attr.aria-valuetext]="formatTimeValue(selectedDate()?.second ?? 0) + ' Sekunden'"
+                    [value]="formatTimeValue(selectedDate()?.second ?? 0)"
                     (input)="onTimeInput('second', $event)"
                     (keydown)="onTimeKeyDown('second', $event)"
                     (change)="updateTime('second', secondInput.value)"

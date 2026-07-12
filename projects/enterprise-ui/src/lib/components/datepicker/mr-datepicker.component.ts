@@ -1,12 +1,12 @@
 import {
   booleanAttribute,
   Component,
+  computed,
   ElementRef,
   forwardRef,
-  Input,
-  QueryList,
+  input,
   signal,
-  ViewChildren
+  viewChildren
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -34,21 +34,15 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   private static nextId = 0;
   private readonly componentId = `mr-datepicker-${MrDatepickerComponent.nextId++}`;
 
-  @Input() label: string = 'Datum auswählen';
-  @Input() placeholder: string = 'Datum auswählen';
-  @Input({ transform: booleanAttribute }) dateOnly = false;
-  @Input({ transform: booleanAttribute }) showSeconds = false;
-  @Input() today: DateTime = DateTime.now();
-  private readonly _disabled = signal(false);
+  readonly label = input<string>('Datum auswählen');
+  readonly placeholder = input<string>('Datum auswählen');
+  readonly dateOnly = input(false, { transform: booleanAttribute });
+  readonly showSeconds = input(false, { transform: booleanAttribute });
+  readonly today = input<DateTime>(DateTime.now());
 
-  @Input({ transform: booleanAttribute })
-  set disabled(value: boolean) {
-    this._disabled.set(value);
-  }
-
-  get disabled(): boolean {
-    return this._disabled();
-  }
+  readonly disabledInput = input(false, { transform: booleanAttribute, alias: 'disabled' });
+  private readonly _disabledForm = signal(false);
+  protected readonly disabled = computed(() => this.disabledInput() || this._disabledForm());
 
   protected readonly inputId = `${this.componentId}-input`;
   protected readonly inputHintId = `${this.componentId}-hint`;
@@ -64,19 +58,19 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   protected readonly minuteLabelId = `${this.componentId}-minute-label`;
   protected readonly secondLabelId = `${this.componentId}-second-label`;
 
-  protected get dateFormat(): string {
-    if (this.dateOnly) {
+  protected readonly dateFormat = computed(() => {
+    if (this.dateOnly()) {
       return 'dd.MM.yyyy';
     }
-    return this.showSeconds ? "dd.MM.yyyy HH:mm:ss 'Uhr'" : "dd.MM.yyyy HH:mm 'Uhr'";
-  }
+    return this.showSeconds() ? "dd.MM.yyyy HH:mm:ss 'Uhr'" : "dd.MM.yyyy HH:mm 'Uhr'";
+  });
 
-  protected get dateFormatDescription(): string {
-    if (this.dateOnly) {
+  protected readonly dateFormatDescription = computed(() => {
+    if (this.dateOnly()) {
       return 'TT.MM.JJJJ';
     }
-    return this.showSeconds ? 'TT.MM.JJJJ HH:MM:SS Uhr' : 'TT.MM.JJJJ HH:MM Uhr';
-  }
+    return this.showSeconds() ? 'TT.MM.JJJJ HH:MM:SS Uhr' : 'TT.MM.JJJJ HH:MM Uhr';
+  });
 
   protected readonly hours = Array.from({ length: 24 }, (_, index) => index);
   protected readonly minutesAndSeconds = Array.from(
@@ -84,14 +78,13 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     (_, index) => index
   );
 
-  selectedDate: DateTime | null = null;
-  viewDate: DateTime = DateTime.now();
+  readonly selectedDate = signal<DateTime | null>(null);
+  readonly viewDate = signal<DateTime>(DateTime.now());
   protected readonly isOpen = signal(false);
   protected readonly activeDate = signal(DateTime.local().startOf('day'));
   protected readonly timeAnnouncement = signal('');
 
-  @ViewChildren('calendarDay', { read: ElementRef })
-  private calendarDayButtons!: QueryList<ElementRef<HTMLButtonElement>>;
+  private readonly calendarDayButtons = viewChildren<ElementRef<HTMLButtonElement>>('calendarDay');
 
   protected readonly overlayPositions: ConnectedPosition[] = [
     {
@@ -129,37 +122,75 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     long: Info.weekdays('long', { locale: 'de' })[i],
     weekday: i + 1,
   }));
-  protected monthAbbreviation = '';
-  grid: { weekNumber: number; days: (DateTime | null)[] }[] = [];
+
+  protected readonly monthAbbreviation = computed(() =>
+    this.viewDate().startOf('month').setLocale('de').toFormat('LLL').toUpperCase()
+  );
+
+  readonly grid = computed(() => {
+    const startOfMonth = this.viewDate().startOf('month');
+    const daysInMonth = startOfMonth.daysInMonth ?? 0;
+    const firstDayWeekday = startOfMonth.weekday;
+
+    // Monday-based index: 0 = Mon, 6 = Sun
+    const mondayBasedFirstDayIndex = firstDayWeekday - 1;
+
+    // The first cell is always reserved for the month abbreviation.
+    // A month beginning on Monday therefore starts in the first column
+    // of the following row; all other months keep day 1 in its weekday column.
+    const leadingCellCount =
+      mondayBasedFirstDayIndex === 0 ? 7 : mondayBasedFirstDayIndex;
+
+    const cells: (DateTime | null)[] = Array.from(
+      { length: leadingCellCount },
+      () => null
+    );
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      cells.push(startOfMonth.set({ day }));
+    }
+
+    while (cells.length % 7 !== 0) {
+      cells.push(null);
+    }
+
+    const gridResult: { weekNumber: number; days: (DateTime | null)[] }[] = [];
+    for (let i = 0; i < cells.length; i += 7) {
+      const weekDays = cells.slice(i, i + 7);
+      const firstDate = weekDays.find((d) => d !== null);
+      const weekNumber = firstDate
+        ? firstDate.weekNumber
+        : startOfMonth.minus({ weeks: 1 }).weekNumber;
+
+      gridResult.push({ weekNumber, days: weekDays });
+    }
+    return gridResult;
+  });
 
   onChange: (value: string | null) => void = () => {};
   onTouched: () => void = () => {};
 
-  constructor() {
-    this.generateGrid();
-  }
+  constructor() {}
 
   protected openCalendar(): void {
-    if (this.disabled) {
+    if (this.disabled()) {
       return;
     }
     this.isOpen.set(true);
-    if (this.selectedDate) {
-      this.viewDate = this.selectedDate;
-      this.generateGrid();
+    if (this.selectedDate()) {
+      this.viewDate.set(this.selectedDate()!);
     }
   }
 
   protected onOverlayAttached(): void {
     const initialDate =
-      this.selectedDate?.startOf('day') ??
+      this.selectedDate()?.startOf('day') ??
       DateTime.local().startOf('day');
 
     this.activeDate.set(initialDate as any);
 
-    if (!this.viewDate.hasSame(initialDate as any, 'month')) {
-      this.viewDate = (initialDate as any).startOf('month');
-      this.generateGrid();
+    if (!this.viewDate().hasSame(initialDate as any, 'month')) {
+      this.viewDate.set((initialDate as any).startOf('month'));
     }
 
     requestAnimationFrame(() => {
@@ -174,7 +205,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   private focusActiveDate(): void {
     const isoDate = this.activeDate().toISODate();
 
-    const activeButton = this.calendarDayButtons.find(
+    const activeButton = this.calendarDayButtons().find(
       ({ nativeElement }) =>
         nativeElement.dataset['date'] === isoDate
     );
@@ -187,13 +218,12 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   protected toggleCalendar(): void {
-    if (this.disabled) {
+    if (this.disabled()) {
       return;
     }
     this.isOpen.update(isOpen => !isOpen);
-    if (this.isOpen() && this.selectedDate) {
-      this.viewDate = this.selectedDate;
-      this.generateGrid();
+    if (this.isOpen() && this.selectedDate()) {
+      this.viewDate.set(this.selectedDate()!);
     }
   }
 
@@ -269,9 +299,8 @@ export class MrDatepickerComponent implements ControlValueAccessor {
 
     this.activeDate.set(normalizedDate as any);
 
-    if (!this.viewDate.hasSame(normalizedDate as any, 'month')) {
-      this.viewDate = (normalizedDate as any).startOf('month');
-      this.generateGrid();
+    if (!this.viewDate().hasSame(normalizedDate as any, 'month')) {
+      this.viewDate.set((normalizedDate as any).startOf('month'));
     }
 
     requestAnimationFrame(() => {
@@ -288,53 +317,54 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   prevMonth(): void {
-    this.viewDate = this.viewDate.minus({ months: 1 });
-    this.generateGrid();
+    this.viewDate.update(d => d.minus({ months: 1 }));
   }
 
   nextMonth(): void {
-    this.viewDate = this.viewDate.plus({ months: 1 });
-    this.generateGrid();
+    this.viewDate.update(d => d.plus({ months: 1 }));
   }
 
   protected selectDate(date: DateTime): void {
-    if (this.dateOnly) {
-      this.selectedDate = date.startOf('day');
-    } else if (this.selectedDate) {
-      this.selectedDate = date.set({
-        hour: this.selectedDate.hour,
-        minute: this.selectedDate.minute,
-        second: this.showSeconds ? this.selectedDate.second : 0
+    let newSelectedDate: DateTime;
+    if (this.dateOnly()) {
+      newSelectedDate = date.startOf('day');
+    } else if (this.selectedDate()) {
+      const current = this.selectedDate()!;
+      newSelectedDate = date.set({
+        hour: current.hour,
+        minute: current.minute,
+        second: this.showSeconds() ? current.second : 0
       });
     } else {
-      this.selectedDate = this.showSeconds ? date : date.set({ second: 0 });
+      newSelectedDate = this.showSeconds() ? date : date.set({ second: 0 });
     }
 
-    this.onChange(this.selectedDate.toISO());
+    this.selectedDate.set(newSelectedDate);
+    this.onChange(newSelectedDate.toISO());
   }
 
   protected selectNow(): void {
-    this.selectedDate = DateTime.now();
-    if (this.dateOnly) {
-      this.selectedDate = this.selectedDate.startOf('day');
-    } else if (!this.showSeconds) {
-      this.selectedDate = this.selectedDate.set({ second: 0, millisecond: 0 });
+    let now = DateTime.now();
+    if (this.dateOnly()) {
+      now = now.startOf('day');
+    } else if (!this.showSeconds()) {
+      now = now.set({ second: 0, millisecond: 0 });
     }
-    this.onChange(this.selectedDate.toISO());
+    this.selectedDate.set(now);
+    this.onChange(now.toISO());
     this.closeCalendar();
   }
 
   protected onManualInput(input: HTMLInputElement): void {
     const value = input.value;
-    const parsedDate = DateTime.fromFormat(value, this.dateFormat);
+    const parsedDate = DateTime.fromFormat(value, this.dateFormat());
 
     if (parsedDate.isValid) {
-      this.selectedDate = parsedDate;
-      this.viewDate = parsedDate;
-      this.generateGrid();
-      this.onChange(this.selectedDate.toISO());
+      this.selectedDate.set(parsedDate);
+      this.viewDate.set(parsedDate);
+      this.onChange(parsedDate.toISO());
     } else {
-      input.value = this.selectedDate ? this.selectedDate.toFormat(this.dateFormat) : '';
+      input.value = this.selectedDate() ? this.selectedDate()!.toFormat(this.dateFormat()) : '';
     }
     this.onTouched();
   }
@@ -349,12 +379,13 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     const maximum = unit === 'hour' ? 23 : 59;
     const normalizedValue = Math.min(Math.max(value, 0), maximum);
 
-    const currentDate = this.selectedDate ?? DateTime.local().startOf('day');
+    const currentDate = this.selectedDate() ?? DateTime.local().startOf('day');
 
-    this.selectedDate = currentDate.set({
+    const newDate = currentDate.set({
       [unit]: normalizedValue
     });
-    this.onChange(this.selectedDate.toISO());
+    this.selectedDate.set(newDate);
+    this.onChange(newDate.toISO());
     this.announceTime();
   }
 
@@ -384,7 +415,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   private announceTime(): void {
-    const date = this.selectedDate;
+    const date = this.selectedDate();
 
     if (!date) {
       return;
@@ -393,7 +424,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     let announcement = `Uhrzeit ${this.formatTimeValue(date.hour)} Uhr, ` +
       `${this.formatTimeValue(date.minute)} Minuten`;
 
-    if (this.showSeconds) {
+    if (this.showSeconds()) {
       announcement += ` und ${this.formatTimeValue(date.second)} Sekunden`;
     }
 
@@ -434,7 +465,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   private getTimeValue(unit: TimeUnit): number {
-    return this.selectedDate?.[unit] ?? 0;
+    return this.selectedDate()?.[unit] ?? 0;
   }
 
   private normalizeTimeValue(unit: TimeUnit, value: number): number {
@@ -445,27 +476,27 @@ export class MrDatepickerComponent implements ControlValueAccessor {
 
   writeValue(value: string | null): void {
     if (value) {
-      this.selectedDate = DateTime.fromISO(value);
-      if (!this.selectedDate.isValid) {
-        this.selectedDate = DateTime.fromSQL(value); // Fallback for some formats
+      let date = DateTime.fromISO(value);
+      if (!date.isValid) {
+        date = DateTime.fromSQL(value); // Fallback for some formats
       }
-      if (this.selectedDate.isValid) {
-        if (this.dateOnly) {
-          this.selectedDate = this.selectedDate.startOf('day');
-        } else if (!this.showSeconds) {
-          this.selectedDate = this.selectedDate.set({ second: 0, millisecond: 0 });
+      if (date.isValid) {
+        if (this.dateOnly()) {
+          date = date.startOf('day');
+        } else if (!this.showSeconds()) {
+          date = date.set({ second: 0, millisecond: 0 });
         }
 
-        this.viewDate = this.selectedDate;
+        this.selectedDate.set(date);
+        this.viewDate.set(date);
       } else {
-        this.selectedDate = null;
-        this.viewDate = DateTime.now();
+        this.selectedDate.set(null);
+        this.viewDate.set(DateTime.now());
       }
     } else {
-      this.selectedDate = null;
-      this.viewDate = DateTime.now();
+      this.selectedDate.set(null);
+      this.viewDate.set(DateTime.now());
     }
-    this.generateGrid();
   }
 
   registerOnChange(fn: (value: string | null) => void): void {
@@ -477,61 +508,17 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   setDisabledState(isDisabled: boolean): void {
-    this._disabled.set(isDisabled);
-  }
-
-  private generateGrid(): void {
-    const startOfMonth = this.viewDate.startOf('month');
-    const daysInMonth = startOfMonth.daysInMonth ?? 0;
-    const firstDayWeekday = startOfMonth.weekday;
-
-    this.monthAbbreviation = startOfMonth
-      .setLocale('de')
-      .toFormat('LLL')
-      .toUpperCase();
-
-    // Monday-based index: 0 = Mon, 6 = Sun
-    const mondayBasedFirstDayIndex = firstDayWeekday - 1;
-
-    // The first cell is always reserved for the month abbreviation.
-    // A month beginning on Monday therefore starts in the first column
-    // of the following row; all other months keep day 1 in its weekday column.
-    const leadingCellCount =
-      mondayBasedFirstDayIndex === 0 ? 7 : mondayBasedFirstDayIndex;
-
-    const cells: (DateTime | null)[] = Array.from(
-      { length: leadingCellCount },
-      () => null
-    );
-
-    for (let day = 1; day <= daysInMonth; day++) {
-      cells.push(startOfMonth.set({ day }));
-    }
-
-    while (cells.length % 7 !== 0) {
-      cells.push(null);
-    }
-
-    this.grid = [];
-    for (let i = 0; i < cells.length; i += 7) {
-      const weekDays = cells.slice(i, i + 7);
-      const firstDate = weekDays.find((d) => d !== null);
-      const weekNumber = firstDate
-        ? firstDate.weekNumber
-        : startOfMonth.minus({ weeks: 1 }).weekNumber;
-
-      this.grid.push({ weekNumber, days: weekDays });
-    }
+    this._disabledForm.set(isDisabled);
   }
 
   isSelected(date: DateTime | null): boolean {
-    if (!date || !this.selectedDate) return false;
-    return date.hasSame(this.selectedDate, 'day');
+    if (!date || !this.selectedDate()) return false;
+    return date.hasSame(this.selectedDate()!, 'day');
   }
 
   isToday(date: DateTime | null): boolean {
     if (!date) return false;
-    return date.hasSame(this.today, 'day');
+    return date.hasSame(this.today(), 'day');
   }
 
   protected isCurrentWeek(weekInfo: {
@@ -542,7 +529,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   protected isCurrentWeekday(weekday: number): boolean {
-    return this.today.weekday === weekday;
+    return this.today().weekday === weekday;
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {
@@ -574,9 +561,9 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     return false; // Implement validation logic if needed
   }
 
-  protected get inputDescriptionIds(): string {
-    return this.hasInputError()
+  protected readonly inputDescriptionIds = computed(() =>
+    this.hasInputError()
       ? `${this.inputHintId} ${this.inputErrorId}`
-      : this.inputHintId;
-  }
+      : this.inputHintId
+  );
 }
