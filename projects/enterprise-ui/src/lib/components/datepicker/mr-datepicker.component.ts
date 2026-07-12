@@ -11,9 +11,10 @@ import {
   model,
   signal,
   untracked,
-  viewChildren
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
+  viewChild,
+  viewChildren,
+} from "@angular/core";
+import { CommonModule } from "@angular/common";
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -22,20 +23,30 @@ import {
   NG_VALUE_ACCESSOR,
   NgControl,
   ValidationErrors,
-  Validator
-} from '@angular/forms';
-import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
-import { CdkTrapFocus } from '@angular/cdk/a11y';
-import { DateTime, Info } from 'luxon';
+  Validator,
+} from "@angular/forms";
+import {
+  CdkConnectedOverlay,
+  CdkOverlayOrigin,
+  ConnectedPosition,
+} from "@angular/cdk/overlay";
+import { CdkTrapFocus } from "@angular/cdk/a11y";
+import { DateTime, Info } from "luxon";
 
-type TimeUnit = 'hour' | 'minute' | 'second';
+type TimeUnit = "hour" | "minute" | "second";
 
 @Component({
-  selector: 'mr-datepicker',
+  selector: "mr-datepicker",
   standalone: true,
-  imports: [CommonModule, FormsModule, CdkConnectedOverlay, CdkOverlayOrigin, CdkTrapFocus],
-  templateUrl: './mr-datepicker.component.html',
-  styleUrl: './mr-datepicker.component.scss',
+  imports: [
+    CommonModule,
+    FormsModule,
+    CdkConnectedOverlay,
+    CdkOverlayOrigin,
+    CdkTrapFocus,
+  ],
+  templateUrl: "./mr-datepicker.component.html",
+  styleUrl: "./mr-datepicker.component.scss",
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -52,16 +63,20 @@ type TimeUnit = 'hour' | 'minute' | 'second';
 export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   private static nextId = 0;
   private readonly componentId = `mr-datepicker-${MrDatepickerComponent.nextId++}`;
+  private lastFocusedTrigger: HTMLElement | null = null;
 
-  readonly label = input<string>('Datum auswählen');
+  readonly label = input<string>("Datum auswählen");
   readonly value = model<string | null>(null);
   readonly dateOnly = input(false, { transform: booleanAttribute });
   readonly showSeconds = input(false, { transform: booleanAttribute });
   readonly today = input<DateTime>(DateTime.now());
+  readonly testId = input<string | null>(null);
 
   readonly disabled = input(false, { transform: booleanAttribute });
   private readonly _disabledForm = signal(false);
-  protected readonly computedDisabled = computed(() => this.disabled() || this._disabledForm());
+  protected readonly computedDisabled = computed(
+    () => this.disabled() || this._disabledForm(),
+  );
 
   protected readonly inputId = `${this.componentId}-input`;
   protected readonly inputHintId = `${this.componentId}-hint`;
@@ -76,76 +91,93 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   protected readonly hourLabelId = `${this.componentId}-hour-label`;
   protected readonly minuteLabelId = `${this.componentId}-minute-label`;
   protected readonly secondLabelId = `${this.componentId}-second-label`;
+  protected readonly testIdPrefix = computed(
+    () => this.testId()?.trim() || this.componentId,
+  );
 
   protected readonly dateFormat = computed(() => {
     if (this.dateOnly()) {
-      return 'dd.MM.yyyy';
+      return "dd.MM.yyyy";
     }
-    return this.showSeconds() ? "dd.MM.yyyy HH:mm:ss 'Uhr'" : "dd.MM.yyyy HH:mm 'Uhr'";
+    return this.showSeconds()
+      ? "dd.MM.yyyy HH:mm:ss 'Uhr'"
+      : "dd.MM.yyyy HH:mm 'Uhr'";
   });
 
   protected readonly dateFormatDescription = computed(() => {
     if (this.dateOnly()) {
-      return 'TT.MM.JJJJ';
+      return "TT.MM.JJJJ";
     }
-    return this.showSeconds() ? 'TT.MM.JJJJ HH:mm:ss Uhr' : 'TT.MM.JJJJ HH:mm Uhr';
+    return this.showSeconds()
+      ? "TT.MM.JJJJ HH:mm:ss Uhr"
+      : "TT.MM.JJJJ HH:mm Uhr";
   });
 
-
   protected readonly hours = Array.from({ length: 24 }, (_, index) => index);
-  protected readonly minutesAndSeconds = Array.from({ length: 60 }, (_, index) => index);
+  protected readonly minutesAndSeconds = Array.from(
+    { length: 60 },
+    (_, index) => index,
+  );
 
   readonly selectedDate = signal<DateTime | null>(null);
   readonly viewDate = signal<DateTime>(DateTime.now());
   protected readonly isOpen = signal(false);
-  protected readonly activeDate = signal(DateTime.local().startOf('day'));
-  protected readonly timeAnnouncement = signal('');
+  protected readonly activeDate = signal(DateTime.local().startOf("day"));
+  protected readonly timeAnnouncement = signal("");
+  protected readonly dateAnnouncement = signal("");
 
-  private readonly calendarDayButtons = viewChildren<ElementRef<HTMLButtonElement>>('calendarDay');
+  private readonly dateInput =
+    viewChild<ElementRef<HTMLInputElement>>("dateInput");
+  private readonly calendarDayButtons =
+    viewChildren<ElementRef<HTMLButtonElement>>("calendarDay");
 
   protected readonly overlayPositions: ConnectedPosition[] = [
     {
-      originX: 'start',
-      originY: 'bottom',
-      overlayX: 'start',
-      overlayY: 'top',
+      originX: "start",
+      originY: "bottom",
+      overlayX: "start",
+      overlayY: "top",
       offsetY: 8,
     },
     {
-      originX: 'end',
-      originY: 'bottom',
-      overlayX: 'end',
-      overlayY: 'top',
+      originX: "end",
+      originY: "bottom",
+      overlayX: "end",
+      overlayY: "top",
       offsetY: 8,
     },
     {
-      originX: 'start',
-      originY: 'top',
-      overlayX: 'start',
-      overlayY: 'bottom',
+      originX: "start",
+      originY: "top",
+      overlayX: "start",
+      overlayY: "bottom",
       offsetY: -8,
     },
     {
-      originX: 'end',
-      originY: 'top',
-      overlayX: 'end',
-      overlayY: 'bottom',
+      originX: "end",
+      originY: "top",
+      overlayX: "end",
+      overlayY: "bottom",
       offsetY: -8,
     },
   ];
 
-  daysOfWeek = Info.weekdays('short', { locale: 'de' }).map((short, i) => ({
+  daysOfWeek = Info.weekdays("short", { locale: "de" }).map((short, i) => ({
     short,
-    long: Info.weekdays('long', { locale: 'de' })[i],
+    long: Info.weekdays("long", { locale: "de" })[i],
     weekday: i + 1,
   }));
 
   protected readonly monthAbbreviation = computed(() =>
-    this.viewDate().startOf('month').setLocale('de').toFormat('LLL').toUpperCase(),
+    this.viewDate()
+      .startOf("month")
+      .setLocale("de")
+      .toFormat("LLL")
+      .toUpperCase(),
   );
 
   readonly grid = computed(() => {
-    const startOfMonth = this.viewDate().startOf('month');
+    const startOfMonth = this.viewDate().startOf("month");
     const daysInMonth = startOfMonth.daysInMonth ?? 0;
     const firstDayWeekday = startOfMonth.weekday;
 
@@ -155,9 +187,13 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     // The first cell is always reserved for the month abbreviation.
     // A month beginning on Monday therefore starts in the first column
     // of the following row; all other months keep day 1 in its weekday column.
-    const leadingCellCount = mondayBasedFirstDayIndex === 0 ? 7 : mondayBasedFirstDayIndex;
+    const leadingCellCount =
+      mondayBasedFirstDayIndex === 0 ? 7 : mondayBasedFirstDayIndex;
 
-    const cells: (DateTime | null)[] = Array.from({ length: leadingCellCount }, () => null);
+    const cells: (DateTime | null)[] = Array.from(
+      { length: leadingCellCount },
+      () => null,
+    );
 
     for (let day = 1; day <= daysInMonth; day++) {
       cells.push(startOfMonth.set({ day }));
@@ -188,7 +224,10 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
 
   protected get ngControl(): NgControl | null {
     if (!this._ngControl) {
-      this._ngControl = this.injector.get(NgControl, null, { optional: true, self: true });
+      this._ngControl = this.injector.get(NgControl, null, {
+        optional: true,
+        self: true,
+      });
     }
     return this._ngControl;
   }
@@ -204,23 +243,43 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     });
   }
 
-  protected openCalendar(): void {
+  protected openCalendar(trigger?: HTMLElement): void {
     if (this.computedDisabled()) {
       return;
     }
+
+    this.lastFocusedTrigger = trigger ?? this.getCurrentTrigger();
     this.isOpen.set(true);
+
     if (this.selectedDate()) {
       this.viewDate.set(this.selectedDate()!);
     }
   }
 
+  protected handleInputKeydown(
+    event: KeyboardEvent,
+    input: HTMLInputElement,
+  ): void {
+    if (event.key === "Enter" || event.key === "ArrowDown") {
+      event.preventDefault();
+      this.openCalendar(input);
+      return;
+    }
+
+    if (event.key === "Escape" && this.isOpen()) {
+      event.preventDefault();
+      this.closeCalendar();
+    }
+  }
+
   protected onOverlayAttached(): void {
-    const initialDate = this.selectedDate()?.startOf('day') ?? DateTime.local().startOf('day');
+    const initialDate =
+      this.selectedDate()?.startOf("day") ?? DateTime.local().startOf("day");
 
-    this.activeDate.set(initialDate as any);
+    this.activeDate.set(initialDate);
 
-    if (!this.viewDate().hasSame(initialDate as any, 'month')) {
-      this.viewDate.set((initialDate as any).startOf('month'));
+    if (!this.viewDate().hasSame(initialDate, "month")) {
+      this.viewDate.set(initialDate.startOf("month"));
     }
 
     requestAnimationFrame(() => {
@@ -229,36 +288,49 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   protected onOverlayDetached(): void {
-    this.closeCalendar();
+    if (this.isOpen()) {
+      this.closeCalendar();
+    }
   }
 
   private focusActiveDate(): void {
     const isoDate = this.activeDate().toISODate();
 
     const activeButton = this.calendarDayButtons().find(
-      ({ nativeElement }) => nativeElement.dataset['date'] === isoDate,
+      ({ nativeElement }) => nativeElement.dataset["date"] === isoDate,
     );
 
     activeButton?.nativeElement.focus();
   }
 
   protected closeCalendar(): void {
+    const wasOpen = this.isOpen();
     this.isOpen.set(false);
     this.onTouched();
+
+    const trigger = this.lastFocusedTrigger;
+    this.lastFocusedTrigger = null;
+
+    if (wasOpen && trigger?.isConnected && !trigger.hasAttribute("disabled")) {
+      requestAnimationFrame(() => trigger.focus());
+    }
   }
 
-  protected toggleCalendar(): void {
+  protected toggleCalendar(trigger: HTMLElement): void {
     if (this.computedDisabled()) {
       return;
     }
-    this.isOpen.update((isOpen) => !isOpen);
-    if (this.isOpen() && this.selectedDate()) {
-      this.viewDate.set(this.selectedDate()!);
+
+    if (this.isOpen()) {
+      this.closeCalendar();
+      return;
     }
+
+    this.openCalendar(trigger);
   }
 
   protected handleOverlayKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Escape') {
+    if (event.key === "Escape") {
       event.preventDefault();
       this.closeCalendar();
     }
@@ -268,43 +340,53 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     let nextDate: DateTime | null = null;
 
     switch (event.key) {
-      case 'ArrowLeft':
+      case "ArrowLeft":
         nextDate = date.minus({ days: 1 });
         break;
 
-      case 'ArrowRight':
+      case "ArrowRight":
         nextDate = date.plus({ days: 1 });
         break;
 
-      case 'ArrowUp':
+      case "ArrowUp":
         nextDate = date.minus({ days: 7 });
         break;
 
-      case 'ArrowDown':
+      case "ArrowDown":
         nextDate = date.plus({ days: 7 });
         break;
 
-      case 'Home':
+      case "Home":
         nextDate = date.minus({
           days: date.weekday - 1,
         });
         break;
 
-      case 'End':
+      case "End":
         nextDate = date.plus({
           days: 7 - date.weekday,
         });
         break;
 
-      case 'PageUp':
-        nextDate = event.shiftKey ? date.minus({ years: 1 }) : date.minus({ months: 1 });
+      case "PageUp":
+        nextDate = event.shiftKey
+          ? this.moveDateByYears(date, -1)
+          : this.moveDateByMonths(date, -1);
         break;
 
-      case 'PageDown':
-        nextDate = event.shiftKey ? date.plus({ years: 1 }) : date.plus({ months: 1 });
+      case "PageDown":
+        nextDate = event.shiftKey
+          ? this.moveDateByYears(date, 1)
+          : this.moveDateByMonths(date, 1);
         break;
 
-      case 'Escape':
+      case "Enter":
+      case " ":
+        event.preventDefault();
+        this.selectDate(date);
+        return;
+
+      case "Escape":
         event.preventDefault();
         this.closeCalendar();
         return;
@@ -317,13 +399,28 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     this.moveFocusToDate(nextDate);
   }
 
+  private moveDateByMonths(date: DateTime, monthDifference: number): DateTime {
+    const targetMonth = date.startOf("month").plus({ months: monthDifference });
+    const targetDay = Math.min(date.day, targetMonth.daysInMonth ?? 1);
+
+    return targetMonth.set({ day: targetDay });
+  }
+
+  private moveDateByYears(date: DateTime, yearDifference: number): DateTime {
+    const targetYear = date.startOf("year").plus({ years: yearDifference });
+    const targetMonth = targetYear.set({ month: date.month }).startOf("month");
+    const targetDay = Math.min(date.day, targetMonth.daysInMonth ?? 1);
+
+    return targetMonth.set({ day: targetDay });
+  }
+
   private moveFocusToDate(date: DateTime): void {
-    const normalizedDate = date.startOf('day');
+    const normalizedDate = date.startOf("day");
 
-    this.activeDate.set(normalizedDate as any);
+    this.activeDate.set(normalizedDate);
 
-    if (!this.viewDate().hasSame(normalizedDate as any, 'month')) {
-      this.viewDate.set((normalizedDate as any).startOf('month'));
+    if (!this.viewDate().hasSame(normalizedDate, "month")) {
+      this.viewDate.set(normalizedDate.startOf("month"));
     }
 
     requestAnimationFrame(() => {
@@ -332,25 +429,38 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   protected isActiveDate(date: DateTime): boolean {
-    return this.activeDate().hasSame(date, 'day');
+    return this.activeDate().hasSame(date, "day");
   }
 
   protected setActiveDate(date: DateTime): void {
-    this.activeDate.set(date.startOf('day') as any);
+    this.activeDate.set(date.startOf("day"));
   }
 
   prevMonth(): void {
-    this.viewDate.update((d) => d.minus({ months: 1 }));
+    this.changeViewMonth(-1);
   }
 
   nextMonth(): void {
-    this.viewDate.update((d) => d.plus({ months: 1 }));
+    this.changeViewMonth(1);
+  }
+
+  private changeViewMonth(monthDifference: number): void {
+    const nextViewDate = this.viewDate()
+      .plus({ months: monthDifference })
+      .startOf("month");
+    const targetDay = Math.min(
+      this.activeDate().day,
+      nextViewDate.daysInMonth ?? 1,
+    );
+
+    this.viewDate.set(nextViewDate);
+    this.activeDate.set(nextViewDate.set({ day: targetDay }));
   }
 
   protected selectDate(date: DateTime): void {
     let newSelectedDate: DateTime;
     if (this.dateOnly()) {
-      newSelectedDate = date.startOf('day');
+      newSelectedDate = date.startOf("day");
     } else if (this.selectedDate()) {
       const current = this.selectedDate()!;
       newSelectedDate = date.set({
@@ -366,12 +476,15 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     this.selectedDate.set(newSelectedDate);
     this.value.set(iso);
     this.onChange(iso);
+    this.dateAnnouncement.set(
+      `${this.getAccessibleDateLabel(newSelectedDate)}.`,
+    );
   }
 
   protected selectNow(): void {
     let now = DateTime.now();
     if (this.dateOnly()) {
-      now = now.startOf('day');
+      now = now.startOf("day");
     } else if (!this.showSeconds()) {
       now = now.set({ second: 0, millisecond: 0 });
     }
@@ -393,7 +506,9 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
       this.value.set(iso);
       this.onChange(iso);
     } else {
-      input.value = this.selectedDate() ? this.selectedDate()!.toFormat(this.dateFormat()) : '';
+      input.value = this.selectedDate()
+        ? this.selectedDate()!.toFormat(this.dateFormat())
+        : "";
     }
     this.onTouched();
   }
@@ -405,10 +520,10 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
       return;
     }
 
-    const maximum = unit === 'hour' ? 23 : 59;
+    const maximum = unit === "hour" ? 23 : 59;
     const normalizedValue = Math.min(Math.max(value, 0), maximum);
 
-    const currentDate = this.selectedDate() ?? DateTime.local().startOf('day');
+    const currentDate = this.selectedDate() ?? DateTime.local().startOf("day");
 
     const newDate = currentDate.set({
       [unit]: normalizedValue,
@@ -422,7 +537,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
 
   protected onTimeInput(unit: TimeUnit, event: Event): void {
     const input = event.target as HTMLInputElement;
-    let value = input.value.replace(/[^0-9]/g, '');
+    let value = input.value.replace(/[^0-9]/g, "");
 
     if (value.length > 2) {
       value = value.slice(-2);
@@ -436,12 +551,38 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   protected onTimeKeyDown(unit: TimeUnit, event: KeyboardEvent): void {
-    if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      this.incrementTime(unit);
-    } else if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      this.decrementTime(unit);
+    const maximum = unit === "hour" ? 23 : 59;
+
+    switch (event.key) {
+      case "ArrowUp":
+        event.preventDefault();
+        this.incrementTime(unit);
+        break;
+
+      case "ArrowDown":
+        event.preventDefault();
+        this.decrementTime(unit);
+        break;
+
+      case "PageUp":
+        event.preventDefault();
+        this.changeTime(unit, 10);
+        break;
+
+      case "PageDown":
+        event.preventDefault();
+        this.changeTime(unit, -10);
+        break;
+
+      case "Home":
+        event.preventDefault();
+        this.updateTime(unit, 0);
+        break;
+
+      case "End":
+        event.preventDefault();
+        this.updateTime(unit, maximum);
+        break;
     }
   }
 
@@ -472,19 +613,26 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   protected previousTimeValue(unit: TimeUnit): string {
-    return this.formatTimeValue(this.normalizeTimeValue(unit, this.getTimeValue(unit) - 1));
+    return this.formatTimeValue(
+      this.normalizeTimeValue(unit, this.getTimeValue(unit) - 1),
+    );
   }
 
   protected nextTimeValue(unit: TimeUnit): string {
-    return this.formatTimeValue(this.normalizeTimeValue(unit, this.getTimeValue(unit) + 1));
+    return this.formatTimeValue(
+      this.normalizeTimeValue(unit, this.getTimeValue(unit) + 1),
+    );
   }
 
   protected formatTimeValue(value: number): string {
-    return String(value).padStart(2, '0');
+    return String(value).padStart(2, "0");
   }
 
   private changeTime(unit: TimeUnit, difference: number): void {
-    const nextValue = this.normalizeTimeValue(unit, this.getTimeValue(unit) + difference);
+    const nextValue = this.normalizeTimeValue(
+      unit,
+      this.getTimeValue(unit) + difference,
+    );
 
     this.updateTime(unit, nextValue);
   }
@@ -494,7 +642,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   private normalizeTimeValue(unit: TimeUnit, value: number): number {
-    const range = unit === 'hour' ? 24 : 60;
+    const range = unit === "hour" ? 24 : 60;
 
     return ((value % range) + range) % range;
   }
@@ -510,7 +658,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
       }
       if (date.isValid) {
         if (this.dateOnly()) {
-          date = date.startOf('day');
+          date = date.startOf("day");
         } else if (!this.showSeconds()) {
           date = date.set({ second: 0, millisecond: 0 });
         }
@@ -553,48 +701,76 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
 
   isSelected(date: DateTime | null): boolean {
     if (!date || !this.selectedDate()) return false;
-    return date.hasSame(this.selectedDate()!, 'day');
+    return date.hasSame(this.selectedDate()!, "day");
   }
 
   isToday(date: DateTime | null): boolean {
     if (!date) return false;
-    return date.hasSame(this.today(), 'day');
+    return date.hasSame(this.today(), "day");
   }
 
-  protected isCurrentWeek(weekInfo: { weekNumber: number; days: (DateTime | null)[] }): boolean {
+  protected isCurrentWeek(weekInfo: {
+    weekNumber: number;
+    days: (DateTime | null)[];
+  }): boolean {
     return weekInfo.days.some((day) => this.isToday(day));
   }
 
   protected isCurrentWeekday(weekday: number): boolean {
-    return this.today().weekday === weekday && this.today().hasSame(this.viewDate(), 'month');
+    return (
+      this.today().weekday === weekday &&
+      this.today().hasSame(this.viewDate(), "month")
+    );
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {
-    const formattedDate = date.setLocale('de').toLocaleString({
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+    const formattedDate = date.setLocale("de").toLocaleString({
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
 
     const states: string[] = [];
 
     if (this.isToday(date)) {
-      states.push('heute');
+      states.push("heute");
     }
 
     if (this.isSelected(date)) {
-      states.push('ausgewählt');
+      states.push("ausgewählt");
     }
 
-    return states.length > 0 ? `${formattedDate}, ${states.join(', ')}` : formattedDate;
+    return states.length > 0
+      ? `${formattedDate}, ${states.join(", ")}`
+      : formattedDate;
   }
 
   protected hasInputError(): boolean {
-    return !!this.ngControl?.invalid && (!!this.ngControl?.touched || !!this.ngControl?.dirty);
+    return (
+      !!this.ngControl?.invalid &&
+      (!!this.ngControl?.touched || !!this.ngControl?.dirty)
+    );
   }
 
-  protected readonly inputDescriptionIds = computed(() =>
-    this.hasInputError() ? `${this.inputHintId} ${this.inputErrorId}` : this.inputHintId,
-  );
+  protected inputDescriptionIds(): string {
+    return this.hasInputError()
+      ? `${this.inputHintId} ${this.inputErrorId}`
+      : this.inputHintId;
+  }
+
+  protected testIdFor(part?: string): string {
+    return part ? `${this.testIdPrefix()}-${part}` : this.testIdPrefix();
+  }
+
+  private getCurrentTrigger(): HTMLElement | null {
+    if (
+      typeof document !== "undefined" &&
+      document.activeElement instanceof HTMLElement
+    ) {
+      return document.activeElement;
+    }
+
+    return this.dateInput()?.nativeElement ?? null;
+  }
 }

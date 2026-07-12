@@ -1,4 +1,4 @@
-@use 'sass:color';
+@use "sass:color";
 
 $primary: #3f51b5;
 $primary-contrast: #fff;
@@ -104,6 +104,12 @@ $divider: rgba(0, 0, 0, 0.12);
         color: $foreground;
       }
 
+      &:focus-visible {
+        border-radius: 4px;
+        outline: 2px solid $primary;
+        outline-offset: 2px;
+      }
+
       svg {
         fill: currentColor;
       }
@@ -114,7 +120,10 @@ $divider: rgba(0, 0, 0, 0.12);
 .mr-datepicker-calendar {
   background: $background-card;
   border-radius: 4px;
-  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    0 4px 5px 0 rgba(0, 0, 0, 0.14),
+    0 1px 10px 0 rgba(0, 0, 0, 0.12);
   padding: 8px;
   width: 342px;
   user-select: none;
@@ -154,6 +163,11 @@ $divider: rgba(0, 0, 0, 0.12);
       &:hover {
         background-color: $hover-background;
         color: $foreground;
+      }
+
+      &:focus-visible {
+        outline: 2px solid $primary;
+        outline-offset: 2px;
       }
 
       svg {
@@ -220,7 +234,9 @@ $divider: rgba(0, 0, 0, 0.12);
       cursor: pointer;
       font-size: 13px;
       color: $foreground;
-      transition: background-color 0.2s, color 0.2s;
+      transition:
+        background-color 0.2s,
+        color 0.2s;
       position: relative;
 
       &:hover:not(.empty):not(.selected) {
@@ -236,6 +252,11 @@ $divider: rgba(0, 0, 0, 0.12);
       &.selected {
         background-color: $primary !important;
         color: $primary-contrast !important;
+      }
+
+      &:focus-visible {
+        outline: 2px solid $primary;
+        outline-offset: 2px;
       }
 
       &.empty {
@@ -315,7 +336,7 @@ $divider: rgba(0, 0, 0, 0.12);
       left: 0;
       border-radius: 12px;
       background: rgb(118 118 128 / 12%);
-      content: '';
+      content: "";
       pointer-events: none;
     }
 
@@ -329,7 +350,7 @@ $divider: rgba(0, 0, 0, 0.12);
         transparent 68%,
         rgb(250 250 252 / 95%)
       );
-      content: '';
+      content: "";
       pointer-events: none;
     }
   }
@@ -424,5 +445,22 @@ $divider: rgba(0, 0, 0, 0.12);
   .mr-datepicker-confirm {
     background: #007aff;
     color: #fff;
+  }
+}
+
+@media (forced-colors: active) {
+  .mr-datepicker-input:focus-within,
+  .mr-datepicker-icon:focus-visible,
+  .mr-datepicker-navigation:focus-visible,
+  .mr-datepicker-day:focus-visible,
+  .mr-datepicker-time-button:focus-visible,
+  .mr-datepicker-time-select:focus-visible,
+  .mr-datepicker-now:focus-visible,
+  .mr-datepicker-confirm:focus-visible {
+    outline: 2px solid CanvasText;
+  }
+
+  .mr-datepicker-day.selected {
+    border: 2px solid CanvasText;
   }
 }
