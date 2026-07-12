@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { Datepicker } from '../../../../../enterprise-ui/src/lib/components/datepicker/datepicker';
+import { MrDatepickerComponent } from '../../../../../enterprise-ui/src/lib/components/datepicker/mr-datepicker.component';
 
-const meta: Meta<Datepicker> = {
-  title: 'Components/Datepicker',
-  component: Datepicker,
+const meta: Meta<MrDatepickerComponent> = {
+  title: 'Components/MrDatepickerComponent',
+  component: MrDatepickerComponent,
 };
 
 export default meta;
-type Story = StoryObj<Datepicker>;
+type Story = StoryObj<MrDatepickerComponent>;
 
 export const Default: Story = {
   args: {},

@@ -1,0 +1,172 @@
+$primary: #3f51b5;
+$primary-contrast: #fff;
+$foreground: rgba(0, 0, 0, 0.87);
+$foreground-secondary: rgba(0, 0, 0, 0.54);
+$foreground-disabled: rgba(0, 0, 0, 0.38);
+$background-card: #fff;
+$hover-background: rgba(0, 0, 0, 0.04);
+$divider: rgba(0, 0, 0, 0.12);
+
+.mr-datepicker {
+  display: inline-block;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  width: 250px;
+
+  .mr-datepicker-input {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid $foreground-disabled;
+    padding: 4px 0;
+    transition: border-color 0.3s;
+    cursor: pointer;
+
+    &:hover {
+      border-bottom-color: $foreground;
+    }
+
+    &:focus-within {
+      border-bottom: 2px solid $primary;
+      padding-bottom: 3px;
+    }
+
+    input {
+      border: none;
+      outline: none;
+      font-size: 16px;
+      padding: 4px 0;
+      color: $foreground;
+      width: 100%;
+      background: transparent;
+      cursor: pointer;
+
+      &::placeholder {
+        color: $foreground-secondary;
+      }
+    }
+
+    .mr-datepicker-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: $foreground-secondary;
+      padding: 0 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.3s;
+
+      &:hover {
+        color: $foreground;
+      }
+
+      svg {
+        fill: currentColor;
+      }
+    }
+  }
+}
+
+.mr-datepicker-calendar {
+  background: $background-card;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  width: 296px;
+  user-select: none;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+
+  .mr-datepicker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 8px 16px 8px;
+
+    .mr-datepicker-month-year {
+      font-weight: 500;
+      font-size: 14px;
+      color: $foreground;
+      text-transform: capitalize;
+    }
+
+    .mr-datepicker-navigation-wrapper {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mr-datepicker-navigation {
+      background: none;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: $foreground-secondary;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: $hover-background;
+        color: $foreground;
+      }
+
+      svg {
+        fill: currentColor;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .mr-datepicker-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+
+    .mr-datepicker-day-name {
+      color: $foreground-secondary;
+      font-size: 12px;
+      font-weight: 500;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mr-datepicker-day {
+      background: none;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      color: $foreground;
+      transition: background-color 0.2s, color 0.2s;
+      position: relative;
+
+      &:hover:not(.empty):not(.selected) {
+        background-color: $hover-background;
+      }
+
+      &.today:not(.selected) {
+        color: $primary;
+        font-weight: 700;
+        border: 1px solid $divider;
+      }
+
+      &.selected {
+        background-color: $primary !important;
+        color: $primary-contrast !important;
+      }
+
+      &.empty {
+        cursor: default;
+      }
+    }
+  }
+}

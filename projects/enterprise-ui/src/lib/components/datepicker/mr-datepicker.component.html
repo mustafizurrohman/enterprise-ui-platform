@@ -1,0 +1,124 @@
+<div class="mr-datepicker">
+  <div
+    #calendarOrigin="cdkOverlayOrigin"
+    cdkOverlayOrigin
+    class="mr-datepicker-input"
+  >
+    <input
+      type="text"
+      role="combobox"
+      aria-haspopup="dialog"
+      [attr.aria-expanded]="isOpen()"
+      [attr.aria-controls]="isOpen() ? 'mr-datepicker-calendar' : null"
+      [value]="selectedDate ? selectedDate.toFormat('dd LLL yyyy') : ''"
+      [placeholder]="placeholder"
+      (click)="openCalendar()"
+      (keydown.enter)="openCalendar()"
+      (keydown.arrowdown)="openCalendar()"
+      readonly
+    />
+
+    <button
+      type="button"
+      class="mr-datepicker-icon"
+      aria-label="Kalender öffnen"
+      [attr.aria-expanded]="isOpen()"
+      (click)="toggleCalendar()"
+    >
+      <svg viewBox="0 0 24 24" width="24px" height="24px">
+        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+      </svg>
+    </button>
+  </div>
+
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="calendarOrigin"
+    [cdkConnectedOverlayOpen]="isOpen()"
+    [cdkConnectedOverlayPositions]="overlayPositions"
+    [cdkConnectedOverlayHasBackdrop]="true"
+    [cdkConnectedOverlayBackdropClass]="'cdk-overlay-transparent-backdrop'"
+    [cdkConnectedOverlayPanelClass]="'mr-datepicker-overlay-pane'"
+    [cdkConnectedOverlayFlexibleDimensions]="false"
+    [cdkConnectedOverlayPush]="true"
+    [cdkConnectedOverlayViewportMargin]="8"
+    (backdropClick)="closeCalendar()"
+    (overlayKeydown)="handleOverlayKeydown($event)"
+    (detach)="closeCalendar()"
+  >
+    <div
+      id="mr-datepicker-calendar"
+      class="mr-datepicker-calendar"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Datum auswählen"
+    >
+      <div class="mr-datepicker-header">
+        <div class="mr-datepicker-month-year" aria-live="polite">
+          {{ viewDate.toFormat('LLLL yyyy') }}
+        </div>
+
+        <div class="mr-datepicker-navigation-wrapper">
+          <button
+            type="button"
+            class="mr-datepicker-navigation"
+            aria-label="Vorheriger Monat"
+            (click)="prevMonth()"
+          >
+            <svg viewBox="0 0 24 24" width="24px" height="24px">
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            class="mr-datepicker-navigation"
+            aria-label="Nächster Monat"
+            (click)="nextMonth()"
+          >
+            <svg viewBox="0 0 24 24" width="24px" height="24px">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="mr-datepicker-grid" role="grid">
+        @for (day of daysOfWeek; track day) {
+          <div
+            class="mr-datepicker-day-name"
+            role="columnheader"
+          >
+            {{ day }}
+          </div>
+        }
+
+        @for (week of grid; track $index) {
+          @for (date of week; track $index) {
+            @if (date; as calendarDate) {
+              <button
+                type="button"
+                class="mr-datepicker-day"
+                role="gridcell"
+                [class.selected]="isSelected(calendarDate)"
+                [class.today]="isToday(calendarDate)"
+                [attr.aria-label]="calendarDate.toFormat('dd LLLL yyyy')"
+                [attr.aria-current]="isToday(calendarDate) ? 'date' : null"
+                [attr.aria-selected]="isSelected(calendarDate)"
+                (click)="selectDate(calendarDate)"
+              >
+                {{ calendarDate.day }}
+              </button>
+            } @else {
+              <span
+                class="mr-datepicker-day empty"
+                role="gridcell"
+                aria-hidden="true"
+              ></span>
+            }
+          }
+        }
+      </div>
+    </div>
+  </ng-template>
+</div>
