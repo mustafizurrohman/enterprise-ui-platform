@@ -23,7 +23,7 @@ const meta: Meta<MrDatepickerComponent> = {
 export default meta;
 type Story = StoryObj<MrDatepickerComponent>;
 
-export const Default: Story = {
+export const DateTime: Story = {
   args: {
     label: 'Datum auswählen',
     placeholder: 'Select date',

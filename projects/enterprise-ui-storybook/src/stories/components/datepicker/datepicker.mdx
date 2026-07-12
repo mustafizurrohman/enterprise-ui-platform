@@ -1,8 +1,10 @@
-import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import {Meta, Canvas, Controls} from '@storybook/addon-docs/blocks';
 import * as DatepickerStories from './datepicker.stories';
 
 <Meta of={DatepickerStories} />
 
 # Datepicker
 
-<Canvas of={DatepickerStories.Default} />
+<Canvas of={DatepickerStories.DateTime} />
+
+<Controls of={DatepickerStories.DateTime} />
