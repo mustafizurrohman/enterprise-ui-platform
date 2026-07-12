@@ -23,6 +23,8 @@ type TimeUnit = 'hour' | 'minute' | 'second';
 export class MrDatepickerComponent implements ControlValueAccessor {
   @Input() placeholder: string = 'Select date';
 
+  protected readonly dateFormat = "dd.MM.yyyy HH:mm:ss 'Uhr'";
+
   protected readonly hours = Array.from({ length: 24 }, (_, index) => index);
   protected readonly minutesAndSeconds = Array.from(
     { length: 60 },
@@ -127,6 +129,21 @@ export class MrDatepickerComponent implements ControlValueAccessor {
       this.selectedDate = date;
     }
     this.onChange(this.selectedDate.toISO());
+  }
+
+  protected onManualInput(input: HTMLInputElement): void {
+    const value = input.value;
+    const parsedDate = DateTime.fromFormat(value, this.dateFormat);
+
+    if (parsedDate.isValid) {
+      this.selectedDate = parsedDate;
+      this.viewDate = parsedDate;
+      this.generateGrid();
+      this.onChange(this.selectedDate.toISO());
+    } else {
+      input.value = this.selectedDate ? this.selectedDate.toFormat(this.dateFormat) : '';
+    }
+    this.onTouched();
   }
 
   protected updateTime(unit: TimeUnit, rawValue: string | number): void {

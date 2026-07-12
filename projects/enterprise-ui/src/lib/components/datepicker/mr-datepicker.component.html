@@ -5,17 +5,18 @@
     class="mr-datepicker-input"
   >
     <input
+      #dateInput
       type="text"
       role="combobox"
       aria-haspopup="dialog"
       [attr.aria-expanded]="isOpen()"
       [attr.aria-controls]="isOpen() ? 'mr-datepicker-calendar' : null"
-      [value]="selectedDate ? selectedDate.toFormat('dd.MM.yyyy HH:mm:ss \'Uhr\'') : ''"
+      [value]="selectedDate ? selectedDate.toFormat(dateFormat) : ''"
       [placeholder]="placeholder"
       (click)="openCalendar()"
       (keydown.enter)="openCalendar()"
       (keydown.arrowdown)="openCalendar()"
-      readonly
+      (change)="onManualInput(dateInput)"
     />
 
     <button

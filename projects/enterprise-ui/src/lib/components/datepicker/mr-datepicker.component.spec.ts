@@ -132,4 +132,60 @@ describe('MrDatepickerComponent', () => {
     expect(component.selectedDate?.toISO()).toBe(DateTime.fromISO(testDate).toISO());
     expect(component.viewDate.hasSame(DateTime.fromISO(testDate), 'month')).toBeTruthy();
   });
+
+  describe('Manual Input', () => {
+    it('should allow entering date manually', () => {
+      const input = fixture.nativeElement.querySelector('input');
+      expect(input.readOnly).toBeFalsy();
+
+      const testDateStr = '24.12.2023 18:00:00 Uhr';
+      input.value = testDateStr;
+      input.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+
+      const expectedDate = DateTime.fromFormat(testDateStr, (component as any).dateFormat);
+      expect(component.selectedDate?.toISODate()).toBe(expectedDate.toISODate());
+      expect(component.selectedDate?.hour).toBe(18);
+      expect(component.selectedDate?.minute).toBe(0);
+      expect(component.selectedDate?.second).toBe(0);
+    });
+
+    it('should reject invalid date input and revert to previous value', () => {
+      const input = fixture.nativeElement.querySelector('input');
+
+      // Set a valid date first
+      const initialDateStr = '01.01.2024 10:00:00 Uhr';
+      input.value = initialDateStr;
+      input.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+
+      expect(component.selectedDate?.year).toBe(2024);
+
+      // Enter invalid date
+      input.value = 'invalid date';
+      input.dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+
+      // Should still be the initial date
+      expect(component.selectedDate?.year).toBe(2024);
+      // Input should be reverted
+      expect(input.value).toBe(initialDateStr);
+    });
+
+    it('should open calendar on enter even if value changed', () => {
+      const input = fixture.nativeElement.querySelector('input');
+      const testDateStr = '24.12.2023 18:00:00 Uhr';
+      input.value = testDateStr;
+
+      // Simulate Enter key
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      input.dispatchEvent(new Event('change'));
+
+      fixture.detectChanges();
+
+      expect((component as any).isOpen()).toBeTruthy();
+      const expectedDate = DateTime.fromFormat(testDateStr, (component as any).dateFormat);
+      expect(component.selectedDate?.toISODate()).toBe(expectedDate.toISODate());
+    });
+  });
 });
