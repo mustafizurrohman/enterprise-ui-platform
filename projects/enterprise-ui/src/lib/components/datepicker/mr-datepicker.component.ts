@@ -33,7 +33,7 @@ type TimeUnit = 'hour' | 'minute' | 'second';
 @Component({
   selector: 'mr-datepicker',
   standalone: true,
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, CdkTrapFocus],
+  imports: [CommonModule, FormsModule, CdkConnectedOverlay, CdkOverlayOrigin, CdkTrapFocus],
   templateUrl: './mr-datepicker.component.html',
   styleUrl: './mr-datepicker.component.scss',
   providers: [
@@ -88,7 +88,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     if (this.dateOnly()) {
       return 'TT.MM.JJJJ';
     }
-    return this.showSeconds() ? 'TT.MM.JJJJ HH:MM:SS Uhr' : 'TT.MM.JJJJ HH:MM Uhr';
+    return this.showSeconds() ? 'TT.MM.JJJJ HH:mm:ss Uhr' : 'TT.MM.JJJJ HH:mm Uhr';
   });
 
 
