@@ -10,7 +10,7 @@
       aria-haspopup="dialog"
       [attr.aria-expanded]="isOpen()"
       [attr.aria-controls]="isOpen() ? 'mr-datepicker-calendar' : null"
-      [value]="selectedDate ? selectedDate.toFormat('dd LLL yyyy') : ''"
+      [value]="selectedDate ? selectedDate.toFormat('dd.MM.yyyy HH:mm:ss \'Uhr\'') : ''"
       [placeholder]="placeholder"
       (click)="openCalendar()"
       (keydown.enter)="openCalendar()"
@@ -118,6 +118,50 @@
             }
           }
         }
+      </div>
+
+      <div class="mr-datepicker-time-picker">
+        <div class="mr-datepicker-time-inputs">
+          <div class="mr-datepicker-time-field">
+            <input
+              type="number"
+              min="0"
+              max="23"
+              [value]="selectedDate?.hour ?? 0"
+              (input)="updateTime('hour', $any($event.target).value)"
+              aria-label="Stunden"
+            />
+          </div>
+          <span class="mr-datepicker-time-separator">:</span>
+          <div class="mr-datepicker-time-field">
+            <input
+              type="number"
+              min="0"
+              max="59"
+              [value]="selectedDate?.minute ?? 0"
+              (input)="updateTime('minute', $any($event.target).value)"
+              aria-label="Minuten"
+            />
+          </div>
+          <span class="mr-datepicker-time-separator">:</span>
+          <div class="mr-datepicker-time-field">
+            <input
+              type="number"
+              min="0"
+              max="59"
+              [value]="selectedDate?.second ?? 0"
+              (input)="updateTime('second', $any($event.target).value)"
+              aria-label="Sekunden"
+            />
+          </div>
+        </div>
+        <button
+          type="button"
+          class="mr-datepicker-confirm"
+          (click)="closeCalendar()"
+        >
+          OK
+        </button>
       </div>
     </div>
   </ng-template>

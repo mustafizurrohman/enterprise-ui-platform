@@ -62,16 +62,34 @@ describe('MrDatepickerComponent', () => {
     expect(component.viewDate.month).toBe(initialMonth);
   });
 
-  it('should select a date', () => {
+  it('should select a date and NOT close the calendar', () => {
+    const onChangeSpy = vi.fn();
+    component.registerOnChange(onChangeSpy);
+    (component as any).isOpen.set(true);
+
+    const today = DateTime.now().startOf('day');
+    (component as any).selectDate(today);
+
+    expect(component.selectedDate?.hasSame(today, 'day')).toBeTruthy();
+    expect(onChangeSpy).toHaveBeenCalledWith(today.toISO());
+    expect((component as any).isOpen()).toBeTruthy();
+  });
+
+  it('should update time', () => {
     const onChangeSpy = vi.fn();
     component.registerOnChange(onChangeSpy);
 
     const today = DateTime.now().startOf('day');
     (component as any).selectDate(today);
 
-    expect(component.selectedDate?.hasSame(today, 'day')).toBeTruthy();
-    expect(onChangeSpy).toHaveBeenCalledWith(today.toISODate());
-    expect((component as any).isOpen()).toBeFalsy();
+    (component as any).updateTime('hour', 14);
+    (component as any).updateTime('minute', 30);
+    (component as any).updateTime('second', 45);
+
+    expect(component.selectedDate?.hour).toBe(14);
+    expect(component.selectedDate?.minute).toBe(30);
+    expect(component.selectedDate?.second).toBe(45);
+    expect(onChangeSpy).toHaveBeenLastCalledWith(component.selectedDate?.toISO());
   });
 
   it('should update state when writeValue is called', () => {
@@ -79,7 +97,7 @@ describe('MrDatepickerComponent', () => {
     component.writeValue(testDate);
     fixture.detectChanges();
 
-    expect(component.selectedDate?.toISODate()).toBe(testDate);
+    expect(component.selectedDate?.toISO()).toBe(DateTime.fromISO(testDate).toISO());
     expect(component.viewDate.hasSame(DateTime.fromISO(testDate), 'month')).toBeTruthy();
   });
 });

@@ -109,15 +109,38 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   protected selectDate(date: DateTime): void {
-    this.selectedDate = date;
-    this.onChange(this.selectedDate.toISODate());
-    this.closeCalendar();
+    if (this.selectedDate) {
+      this.selectedDate = date.set({
+        hour: this.selectedDate.hour,
+        minute: this.selectedDate.minute,
+        second: this.selectedDate.second
+      });
+    } else {
+      this.selectedDate = date;
+    }
+    this.onChange(this.selectedDate.toISO());
+  }
+
+  protected updateTime(type: 'hour' | 'minute' | 'second', value: number): void {
+    if (!this.selectedDate) {
+      this.selectedDate = DateTime.now().startOf('day');
+    }
+    this.selectedDate = this.selectedDate.set({ [type]: value });
+    this.onChange(this.selectedDate.toISO());
   }
 
   writeValue(value: string | null): void {
     if (value) {
       this.selectedDate = DateTime.fromISO(value);
-      this.viewDate = this.selectedDate;
+      if (!this.selectedDate.isValid) {
+        this.selectedDate = DateTime.fromSQL(value); // Fallback for some formats
+      }
+      if (this.selectedDate.isValid) {
+        this.viewDate = this.selectedDate;
+      } else {
+        this.selectedDate = null;
+        this.viewDate = DateTime.now();
+      }
     } else {
       this.selectedDate = null;
       this.viewDate = DateTime.now();
