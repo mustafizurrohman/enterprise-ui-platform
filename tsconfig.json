@@ -4,7 +4,8 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
-      "enterprise-ui": ["./dist/enterprise-ui"]
+      "enterprise-ui": ["./dist/enterprise-ui"],
+      "@mr/enterprise-ui": ["./projects/enterprise-ui/src/public-api.ts"]
     },
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,

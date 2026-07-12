@@ -24,8 +24,8 @@ import {
   ValidationErrors,
   Validator
 } from '@angular/forms';
-import { ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
-import { A11yModule } from '@angular/cdk/a11y';
+import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
+import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { DateTime, Info } from 'luxon';
 
 type TimeUnit = 'hour' | 'minute' | 'second';
@@ -33,7 +33,7 @@ type TimeUnit = 'hour' | 'minute' | 'second';
 @Component({
   selector: 'mr-datepicker',
   standalone: true,
-  imports: [CommonModule, OverlayModule, A11yModule, FormsModule],
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, CdkTrapFocus],
   templateUrl: './mr-datepicker.component.html',
   styleUrl: './mr-datepicker.component.scss',
   providers: [
