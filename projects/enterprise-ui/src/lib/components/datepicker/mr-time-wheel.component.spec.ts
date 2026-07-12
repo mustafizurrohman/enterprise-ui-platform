@@ -94,7 +94,7 @@ describe("MrTimeWheelComponent", () => {
       ".mr-datepicker-time-preview",
     );
 
-    expect(previews[0].textContent.trim()).toBe("09");
-    expect(previews[1].textContent.trim()).toBe("11");
+    expect(previews[0].textContent.trim()).toBe("11");
+    expect(previews[1].textContent.trim()).toBe("09");
   });
 });

@@ -4,6 +4,7 @@
   "peerDependencies": {
     "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0",
+    "@angular/material": "^22.0.4",
     "luxon": "^3.0.0"
   },
   "dependencies": {

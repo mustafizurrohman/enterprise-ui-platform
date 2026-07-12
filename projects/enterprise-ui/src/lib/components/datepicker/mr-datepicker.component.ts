@@ -30,6 +30,7 @@ import {
   CdkOverlayOrigin,
   type ConnectedPosition,
 } from "@angular/cdk/overlay";
+import { MatIconModule } from "@angular/material/icon";
 import { CdkTrapFocus } from "@angular/cdk/a11y";
 import { DateTime, Info } from "luxon";
 import { MrTimeWheelComponent, type TimeUnit } from "./mr-time-wheel.component";
@@ -43,6 +44,7 @@ import { MrTimeWheelComponent, type TimeUnit } from "./mr-time-wheel.component";
     CdkConnectedOverlay,
     CdkOverlayOrigin,
     CdkTrapFocus,
+    MatIconModule,
     MrTimeWheelComponent,
   ],
   templateUrl: "./mr-datepicker.component.html",

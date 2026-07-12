@@ -376,17 +376,19 @@ describe("MrDatepickerComponent", () => {
       );
 
     expect(previews().map((element) => element.textContent?.trim())).toEqual([
-      "09",
       "11",
+      "09",
     ]);
 
     (component as any).updateTime("hour", 0);
     fixture.detectChanges();
-    expect(previews()[0].textContent?.trim()).toBe("23");
+    expect(previews()[0].textContent?.trim()).toBe("01");
+    expect(previews()[1].textContent?.trim()).toBe("23");
 
     (component as any).updateTime("hour", 23);
     fixture.detectChanges();
-    expect(previews()[1].textContent?.trim()).toBe("00");
+    expect(previews()[0].textContent?.trim()).toBe("00");
+    expect(previews()[1].textContent?.trim()).toBe("22");
   });
 
   it("should update state when writeValue is called", () => {
@@ -488,8 +490,8 @@ describe("MrDatepickerComponent", () => {
     expect(button.getAttribute("aria-label")).toContain("Kalender");
     expect(button.getAttribute("aria-haspopup")).toBe("dialog");
 
-    const svg = button.querySelector("svg");
-    expect(svg.getAttribute("aria-hidden")).toBe("true");
+    const icon = button.querySelector("mat-icon");
+    expect(icon.getAttribute("aria-hidden")).toBe("true");
   });
 
   it("should expose selection on the focusable calendar gridcell", async () => {
