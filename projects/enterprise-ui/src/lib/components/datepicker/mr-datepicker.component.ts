@@ -37,6 +37,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   @Input() label: string = 'Datum auswählen';
   @Input() placeholder: string = 'Datum auswählen';
   @Input({ transform: booleanAttribute }) dateOnly = false;
+  @Input({ transform: booleanAttribute }) showSeconds = false;
   private readonly _disabled = signal(false);
 
   @Input({ transform: booleanAttribute })
@@ -63,11 +64,17 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   protected readonly secondLabelId = `${this.componentId}-second-label`;
 
   protected get dateFormat(): string {
-    return this.dateOnly ? 'dd.MM.yyyy' : "dd.MM.yyyy HH:mm:ss 'Uhr'";
+    if (this.dateOnly) {
+      return 'dd.MM.yyyy';
+    }
+    return this.showSeconds ? "dd.MM.yyyy HH:mm:ss 'Uhr'" : "dd.MM.yyyy HH:mm 'Uhr'";
   }
 
   protected get dateFormatDescription(): string {
-    return this.dateOnly ? 'TT.MM.JJJJ' : 'TT.MM.JJJJ HH:MM:SS Uhr';
+    if (this.dateOnly) {
+      return 'TT.MM.JJJJ';
+    }
+    return this.showSeconds ? 'TT.MM.JJJJ HH:MM:SS Uhr' : 'TT.MM.JJJJ HH:MM Uhr';
   }
 
   protected readonly hours = Array.from({ length: 24 }, (_, index) => index);
@@ -296,10 +303,10 @@ export class MrDatepickerComponent implements ControlValueAccessor {
       this.selectedDate = date.set({
         hour: this.selectedDate.hour,
         minute: this.selectedDate.minute,
-        second: this.selectedDate.second
+        second: this.showSeconds ? this.selectedDate.second : 0
       });
     } else {
-      this.selectedDate = date;
+      this.selectedDate = this.showSeconds ? date : date.set({ second: 0 });
     }
 
     this.onChange(this.selectedDate.toISO());
@@ -309,6 +316,8 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     this.selectedDate = DateTime.now();
     if (this.dateOnly) {
       this.selectedDate = this.selectedDate.startOf('day');
+    } else if (!this.showSeconds) {
+      this.selectedDate = this.selectedDate.set({ second: 0, millisecond: 0 });
     }
     this.onChange(this.selectedDate.toISO());
     this.closeCalendar();
@@ -380,11 +389,14 @@ export class MrDatepickerComponent implements ControlValueAccessor {
       return;
     }
 
-    this.timeAnnouncement.set(
-      `Uhrzeit ${this.formatTimeValue(date.hour)} Uhr, ` +
-      `${this.formatTimeValue(date.minute)} Minuten und ` +
-      `${this.formatTimeValue(date.second)} Sekunden`
-    );
+    let announcement = `Uhrzeit ${this.formatTimeValue(date.hour)} Uhr, ` +
+      `${this.formatTimeValue(date.minute)} Minuten`;
+
+    if (this.showSeconds) {
+      announcement += ` und ${this.formatTimeValue(date.second)} Sekunden`;
+    }
+
+    this.timeAnnouncement.set(announcement);
   }
 
   protected incrementTime(unit: TimeUnit): void {
@@ -439,6 +451,8 @@ export class MrDatepickerComponent implements ControlValueAccessor {
       if (this.selectedDate.isValid) {
         if (this.dateOnly) {
           this.selectedDate = this.selectedDate.startOf('day');
+        } else if (!this.showSeconds) {
+          this.selectedDate = this.selectedDate.set({ second: 0, millisecond: 0 });
         }
 
         this.viewDate = this.selectedDate;

@@ -17,6 +17,14 @@ const meta: Meta<MrDatepickerComponent> = {
       control: 'boolean',
       description: 'Whether to show only the date or also the time',
     },
+    disabled: {
+      control: 'boolean',
+      description: 'Whether the datepicker is disabled',
+    },
+    showSeconds: {
+      control: 'boolean',
+      description: 'Whether to show seconds in the time picker',
+    }
   },
 };
 
@@ -28,6 +36,8 @@ export const DateTime: Story = {
     label: 'Datum auswählen',
     placeholder: 'Select date',
     dateOnly: false,
+    disabled: false,
+    showSeconds: false,
   },
 };
 

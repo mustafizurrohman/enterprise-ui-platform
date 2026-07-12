@@ -193,6 +193,7 @@ describe('MrDatepickerComponent', () => {
   });
   
   it('should select now and close the calendar when Jetzt is clicked', async () => {
+    fixture.componentRef.setInput('showSeconds', true);
     const onChangeSpy = vi.fn();
     component.registerOnChange(onChangeSpy);
     const button = fixture.nativeElement.querySelector('.mr-datepicker-icon');
@@ -214,7 +215,7 @@ describe('MrDatepickerComponent', () => {
     // Should be between before and after
     expect(selectedDate.toMillis()).toBeGreaterThanOrEqual(before.toMillis() - 1000); // Tolerance for slight delays
     expect(selectedDate.toMillis()).toBeLessThanOrEqual(after.toMillis() + 1000);
-    
+
     expect(onChangeSpy).toHaveBeenCalled();
     expect((component as any).isOpen()).toBeFalsy();
   });
@@ -279,6 +280,7 @@ describe('MrDatepickerComponent', () => {
 
   describe('Manual Input', () => {
     it('should allow entering date manually', () => {
+      fixture.componentRef.setInput('showSeconds', true);
       const input = fixture.nativeElement.querySelector('input');
       expect(input.readOnly).toBeFalsy();
 
@@ -295,6 +297,7 @@ describe('MrDatepickerComponent', () => {
     });
 
     it('should reject invalid date input and revert to previous value', () => {
+      fixture.componentRef.setInput('showSeconds', true);
       const input = fixture.nativeElement.querySelector('input');
 
       // Set a valid date first
@@ -317,6 +320,7 @@ describe('MrDatepickerComponent', () => {
     });
 
     it('should open calendar on enter even if value changed', () => {
+      fixture.componentRef.setInput('showSeconds', true);
       const input = fixture.nativeElement.querySelector('input');
       const testDateStr = '24.12.2023 18:00:00 Uhr';
       input.value = testDateStr;
@@ -496,6 +500,66 @@ describe('MrDatepickerComponent', () => {
 
       const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
       expect(input.value).toBe(DateTime.fromISO(testDate).toFormat((component as any).dateFormat));
+    });
+  });
+
+  describe('showSeconds', () => {
+    it('should be false by default', () => {
+      expect(component.showSeconds).toBeFalsy();
+    });
+
+    it('should hide seconds wheel by default', async () => {
+      const button = fixture.nativeElement.querySelector('.mr-datepicker-icon');
+      button.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.querySelector('#' + (component as any).secondSelectId)).toBeNull();
+      expect(document.querySelectorAll('.mr-datepicker-time-wheel')).toHaveLength(2);
+    });
+
+    it('should show seconds wheel when showSeconds is true', async () => {
+      fixture.componentRef.setInput('showSeconds', true);
+      fixture.detectChanges();
+
+      const button = fixture.nativeElement.querySelector('.mr-datepicker-icon');
+      button.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.querySelector('#' + (component as any).secondSelectId)).toBeTruthy();
+      expect(document.querySelectorAll('.mr-datepicker-time-wheel')).toHaveLength(3);
+    });
+
+    it('should adjust dateFormat when showSeconds is toggled', () => {
+      expect((component as any).dateFormat).not.toContain(':ss');
+      
+      fixture.componentRef.setInput('showSeconds', true);
+      fixture.detectChanges();
+      expect((component as any).dateFormat).toContain(':ss');
+    });
+
+    it('should adjust announceTime when showSeconds is true', () => {
+      const testDate = DateTime.fromISO('2026-07-12T14:30:45');
+      component.selectedDate = testDate;
+      
+      (component as any).announceTime();
+      expect((component as any).timeAnnouncement()).not.toContain('Sekunden');
+
+      fixture.componentRef.setInput('showSeconds', true);
+      fixture.detectChanges();
+      (component as any).announceTime();
+      expect((component as any).timeAnnouncement()).toContain('45 Sekunden');
+    });
+
+    it('should strip seconds in writeValue when showSeconds is false', () => {
+      const testDate = '2026-07-12T14:30:45';
+      component.writeValue(testDate);
+      expect(component.selectedDate?.second).toBe(0);
+
+      fixture.componentRef.setInput('showSeconds', true);
+      component.writeValue(testDate);
+      expect(component.selectedDate?.second).toBe(45);
     });
   });
 });
