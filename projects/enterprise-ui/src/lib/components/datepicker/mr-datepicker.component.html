@@ -304,206 +304,41 @@
             aria-label="Zeit-Einsteller"
             [attr.data-testid]="testIdFor('time-wheels')"
           >
-            <div
-              class="mr-datepicker-time-wheel"
-              role="group"
-              [attr.aria-labelledby]="hourLabelId"
-            >
-              <button
-                type="button"
-                class="mr-datepicker-time-button"
-                [attr.aria-controls]="hourSelectId"
-                aria-label="Stunde um eins erhöhen"
-                [attr.data-testid]="testIdFor('hour-increment')"
-                (click)="incrementTime('hour')"
-              >
-                <span aria-hidden="true">⌃</span>
-              </button>
-
-              <div class="mr-datepicker-time-value">
-                <span class="mr-datepicker-time-preview" aria-hidden="true">
-                  {{ previousTimeValue("hour") }}
-                </span>
-
-                <input
-                  type="text"
-                  inputmode="numeric"
-                  role="spinbutton"
-                  autocomplete="off"
-                  [id]="hourSelectId"
-                  class="mr-datepicker-time-select"
-                  [attr.aria-labelledby]="hourLabelId"
-                  [attr.aria-valuemin]="0"
-                  [attr.aria-valuemax]="23"
-                  [attr.aria-valuenow]="selectedDate()?.hour ?? 0"
-                  [attr.aria-valuetext]="
-                    formatTimeValue(selectedDate()?.hour ?? 0) + ' Uhr'
-                  "
-                  [attr.data-testid]="testIdFor('hour-input')"
-                  [value]="formatTimeValue(selectedDate()?.hour ?? 0)"
-                  (input)="onTimeInput('hour', $event)"
-                  (keydown)="onTimeKeyDown('hour', $event)"
-                  (change)="updateTime('hour', hourInput.value)"
-                  #hourInput
-                />
-
-                <span class="mr-datepicker-time-preview" aria-hidden="true">
-                  {{ nextTimeValue("hour") }}
-                </span>
-              </div>
-
-              <button
-                type="button"
-                class="mr-datepicker-time-button"
-                [attr.aria-controls]="hourSelectId"
-                aria-label="Stunde um eins verringern"
-                [attr.data-testid]="testIdFor('hour-decrement')"
-                (click)="decrementTime('hour')"
-              >
-                <span aria-hidden="true">⌄</span>
-              </button>
-
-              <span [id]="hourLabelId" class="mr-datepicker-time-label">
-                Stunden
-              </span>
-            </div>
+            <mr-time-wheel
+              [unit]="'hour'"
+              [value]="selectedDate()?.hour ?? 0"
+              [controlId]="hourSelectId"
+              [labelId]="hourLabelId"
+              [testIdPrefix]="testIdPrefix()"
+              (valueChange)="updateTime('hour', $event)"
+            />
 
             <span class="mr-datepicker-time-separator" aria-hidden="true"
               >:</span
             >
 
-            <div
-              class="mr-datepicker-time-wheel"
-              role="group"
-              [attr.aria-labelledby]="minuteLabelId"
-            >
-              <button
-                type="button"
-                class="mr-datepicker-time-button"
-                [attr.aria-controls]="minuteSelectId"
-                aria-label="Minute um eins erhöhen"
-                [attr.data-testid]="testIdFor('minute-increment')"
-                (click)="incrementTime('minute')"
-              >
-                <span aria-hidden="true">⌃</span>
-              </button>
-
-              <div class="mr-datepicker-time-value">
-                <span class="mr-datepicker-time-preview" aria-hidden="true">
-                  {{ previousTimeValue("minute") }}
-                </span>
-
-                <input
-                  type="text"
-                  inputmode="numeric"
-                  role="spinbutton"
-                  autocomplete="off"
-                  [id]="minuteSelectId"
-                  class="mr-datepicker-time-select"
-                  [attr.aria-labelledby]="minuteLabelId"
-                  [attr.aria-valuemin]="0"
-                  [attr.aria-valuemax]="59"
-                  [attr.aria-valuenow]="selectedDate()?.minute ?? 0"
-                  [attr.aria-valuetext]="
-                    formatTimeValue(selectedDate()?.minute ?? 0) + ' Minuten'
-                  "
-                  [attr.data-testid]="testIdFor('minute-input')"
-                  [value]="formatTimeValue(selectedDate()?.minute ?? 0)"
-                  (input)="onTimeInput('minute', $event)"
-                  (keydown)="onTimeKeyDown('minute', $event)"
-                  (change)="updateTime('minute', minuteInput.value)"
-                  #minuteInput
-                />
-
-                <span class="mr-datepicker-time-preview" aria-hidden="true">
-                  {{ nextTimeValue("minute") }}
-                </span>
-              </div>
-
-              <button
-                type="button"
-                class="mr-datepicker-time-button"
-                [attr.aria-controls]="minuteSelectId"
-                aria-label="Minute um eins verringern"
-                [attr.data-testid]="testIdFor('minute-decrement')"
-                (click)="decrementTime('minute')"
-              >
-                <span aria-hidden="true">⌄</span>
-              </button>
-
-              <span [id]="minuteLabelId" class="mr-datepicker-time-label">
-                Minuten
-              </span>
-            </div>
+            <mr-time-wheel
+              [unit]="'minute'"
+              [value]="selectedDate()?.minute ?? 0"
+              [controlId]="minuteSelectId"
+              [labelId]="minuteLabelId"
+              [testIdPrefix]="testIdPrefix()"
+              (valueChange)="updateTime('minute', $event)"
+            />
 
             @if (showSeconds()) {
               <span class="mr-datepicker-time-separator" aria-hidden="true"
                 >:</span
               >
 
-              <div
-                class="mr-datepicker-time-wheel"
-                role="group"
-                [attr.aria-labelledby]="secondLabelId"
-              >
-                <button
-                  type="button"
-                  class="mr-datepicker-time-button"
-                  [attr.aria-controls]="secondSelectId"
-                  aria-label="Sekunde um eins erhöhen"
-                  [attr.data-testid]="testIdFor('second-increment')"
-                  (click)="incrementTime('second')"
-                >
-                  <span aria-hidden="true">⌃</span>
-                </button>
-
-                <div class="mr-datepicker-time-value">
-                  <span class="mr-datepicker-time-preview" aria-hidden="true">
-                    {{ previousTimeValue("second") }}
-                  </span>
-
-                  <input
-                    type="text"
-                    inputmode="numeric"
-                    role="spinbutton"
-                    autocomplete="off"
-                    [id]="secondSelectId"
-                    class="mr-datepicker-time-select"
-                    [attr.aria-labelledby]="secondLabelId"
-                    [attr.aria-valuemin]="0"
-                    [attr.aria-valuemax]="59"
-                    [attr.aria-valuenow]="selectedDate()?.second ?? 0"
-                    [attr.aria-valuetext]="
-                      formatTimeValue(selectedDate()?.second ?? 0) + ' Sekunden'
-                    "
-                    [attr.data-testid]="testIdFor('second-input')"
-                    [value]="formatTimeValue(selectedDate()?.second ?? 0)"
-                    (input)="onTimeInput('second', $event)"
-                    (keydown)="onTimeKeyDown('second', $event)"
-                    (change)="updateTime('second', secondInput.value)"
-                    #secondInput
-                  />
-
-                  <span class="mr-datepicker-time-preview" aria-hidden="true">
-                    {{ nextTimeValue("second") }}
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  class="mr-datepicker-time-button"
-                  [attr.aria-controls]="secondSelectId"
-                  aria-label="Sekunde um eins verringern"
-                  [attr.data-testid]="testIdFor('second-decrement')"
-                  (click)="decrementTime('second')"
-                >
-                  <span aria-hidden="true">⌄</span>
-                </button>
-
-                <span [id]="secondLabelId" class="mr-datepicker-time-label">
-                  Sekunden
-                </span>
-              </div>
+              <mr-time-wheel
+                [unit]="'second'"
+                [value]="selectedDate()?.second ?? 0"
+                [controlId]="secondSelectId"
+                [labelId]="secondLabelId"
+                [testIdPrefix]="testIdPrefix()"
+                (valueChange)="updateTime('second', $event)"
+              />
             }
           </div>
 

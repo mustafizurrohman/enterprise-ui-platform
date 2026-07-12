@@ -324,40 +324,69 @@ describe("MrDatepickerComponent", () => {
     );
   });
 
-  it("should increment and decrement time", () => {
-    const today = DateTime.now()
-      .startOf("day")
-      .set({ hour: 10, minute: 30, second: 30 });
-    (component as any).selectedDate.set(today);
+  it("should increment and decrement time through the reusable wheel", async () => {
+    component.writeValue("2026-07-12T10:30:30");
+    const toggle = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-toggle"]',
+    ) as HTMLButtonElement;
+    toggle.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-    (component as any).incrementTime("hour");
+    const increment = document.querySelector(
+      '[data-testid="datepicker-hour-increment"]',
+    ) as HTMLButtonElement;
+    const decrement = document.querySelector(
+      '[data-testid="datepicker-hour-decrement"]',
+    ) as HTMLButtonElement;
+
+    increment.click();
+    fixture.detectChanges();
     expect(component.selectedDate()?.hour).toBe(11);
 
-    (component as any).decrementTime("hour");
+    decrement.click();
+    fixture.detectChanges();
     expect(component.selectedDate()?.hour).toBe(10);
 
-    // Test wrap around
     (component as any).updateTime("hour", 23);
-    (component as any).incrementTime("hour");
+    fixture.detectChanges();
+    increment.click();
+    fixture.detectChanges();
     expect(component.selectedDate()?.hour).toBe(0);
 
-    (component as any).decrementTime("hour");
+    decrement.click();
+    fixture.detectChanges();
     expect(component.selectedDate()?.hour).toBe(23);
   });
 
-  it("should return correct previous and next time values", () => {
-    (component as any).selectedDate.set(
-      DateTime.now().startOf("day").set({ hour: 10 }),
-    );
+  it("should render correct previous and next time values", async () => {
+    component.writeValue("2026-07-12T10:30:00");
+    const toggle = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-toggle"]',
+    ) as HTMLButtonElement;
+    toggle.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-    expect((component as any).previousTimeValue("hour")).toBe("09");
-    expect((component as any).nextTimeValue("hour")).toBe("11");
+    const previews = (): HTMLElement[] =>
+      Array.from(
+        document.querySelectorAll<HTMLElement>(
+          "mr-time-wheel:first-of-type .mr-datepicker-time-preview",
+        ),
+      );
+
+    expect(previews().map((element) => element.textContent?.trim())).toEqual([
+      "09",
+      "11",
+    ]);
 
     (component as any).updateTime("hour", 0);
-    expect((component as any).previousTimeValue("hour")).toBe("23");
+    fixture.detectChanges();
+    expect(previews()[0].textContent?.trim()).toBe("23");
 
     (component as any).updateTime("hour", 23);
-    expect((component as any).nextTimeValue("hour")).toBe("00");
+    fixture.detectChanges();
+    expect(previews()[1].textContent?.trim()).toBe("00");
   });
 
   it("should update state when writeValue is called", () => {
@@ -772,7 +801,7 @@ describe("MrDatepickerComponent", () => {
     hourInput.value = "ab";
     hourInput.dispatchEvent(new Event("input"));
     fixture.detectChanges();
-    // Logic in onTimeInput strips non-numeric
+    // The reusable wheel strips non-numeric input
     expect(hourInput.value).toBe("");
 
     // Try to enter value > 23

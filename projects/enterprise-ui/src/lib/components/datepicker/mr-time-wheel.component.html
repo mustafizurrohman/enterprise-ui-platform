@@ -1,0 +1,63 @@
+<div
+  class="mr-datepicker-time-wheel"
+  role="group"
+  [attr.aria-labelledby]="labelId()"
+>
+  <button
+    type="button"
+    class="mr-datepicker-time-button"
+    [attr.aria-controls]="controlId()"
+    [attr.aria-label]="configuration().singularLabel + ' um eins erhöhen'"
+    [attr.data-testid]="testIdFor('increment')"
+    (click)="increment()"
+  >
+    <span aria-hidden="true">⌃</span>
+  </button>
+
+  <div class="mr-datepicker-time-value">
+    <span class="mr-datepicker-time-preview" aria-hidden="true">
+      {{ nextValue() }}
+    </span>
+
+    <input
+      #timeInput
+      type="text"
+      inputmode="numeric"
+      role="spinbutton"
+      autocomplete="off"
+      [id]="controlId()"
+      class="mr-datepicker-time-select"
+      [attr.aria-labelledby]="labelId()"
+      [attr.aria-valuemin]="0"
+      [attr.aria-valuemax]="configuration().maximum"
+      [attr.aria-valuenow]="value()"
+      [attr.aria-valuetext]="
+        formatValue(value()) + ' ' + configuration().valueTextSuffix
+      "
+      [attr.data-testid]="testIdFor('input')"
+      [value]="formatValue(value())"
+      (input)="onInput($event)"
+      (keydown)="onKeyDown($event)"
+      (change)="commit(timeInput.value)"
+    />
+
+    <span class="mr-datepicker-time-preview" aria-hidden="true">
+      {{ previousValue() }}
+    </span>
+  </div>
+
+  <button
+    type="button"
+    class="mr-datepicker-time-button"
+    [attr.aria-controls]="controlId()"
+    [attr.aria-label]="configuration().singularLabel + ' um eins verringern'"
+    [attr.data-testid]="testIdFor('decrement')"
+    (click)="decrement()"
+  >
+    <span aria-hidden="true">⌄</span>
+  </button>
+
+  <span [id]="labelId()" class="mr-datepicker-time-label">
+    {{ configuration().label }}
+  </span>
+</div>

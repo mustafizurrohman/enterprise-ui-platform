@@ -1,0 +1,122 @@
+:host {
+  display: contents;
+}
+
+.mr-datepicker-time-wheel {
+  display: grid;
+  grid-template-rows: 32px 104px 32px auto;
+  justify-items: center;
+  min-width: 64px;
+}
+
+.mr-datepicker-time-button {
+  display: grid;
+  width: 40px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #007aff;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  transition:
+    background-color 150ms ease,
+    transform 100ms ease;
+
+  &:hover {
+    background: rgb(0 122 255 / 10%);
+  }
+
+  &:active {
+    transform: scale(0.92);
+    background: rgb(0 122 255 / 16%);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #007aff;
+    outline-offset: 2px;
+  }
+}
+
+.mr-datepicker-time-value {
+  position: relative;
+  display: grid;
+  width: 64px;
+  grid-template-rows: 28px 48px 28px;
+  align-items: center;
+  justify-items: center;
+  overflow: hidden;
+
+  &::before {
+    position: absolute;
+    top: 28px;
+    right: 0;
+    bottom: 28px;
+    left: 0;
+    border-radius: 12px;
+    background: rgb(118 118 128 / 12%);
+    content: "";
+    pointer-events: none;
+  }
+
+  &::after {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgb(250 250 252 / 95%),
+      transparent 32%,
+      transparent 68%,
+      rgb(250 250 252 / 95%)
+    );
+    content: "";
+    pointer-events: none;
+  }
+}
+
+.mr-datepicker-time-preview {
+  color: rgb(60 60 67 / 35%);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.mr-datepicker-time-select {
+  position: relative;
+  z-index: 1;
+  width: 64px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #1c1c1e;
+  cursor: text;
+  font: inherit;
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+
+  &:focus-visible {
+    border-radius: 10px;
+    outline: 2px solid #007aff;
+    outline-offset: -2px;
+  }
+}
+
+.mr-datepicker-time-label {
+  margin-top: 4px;
+  color: rgb(60 60 67 / 60%);
+  font-size: 12px;
+}
+
+@media (forced-colors: active) {
+  .mr-datepicker-time-button:focus-visible,
+  .mr-datepicker-time-select:focus-visible {
+    outline: 2px solid CanvasText;
+  }
+}

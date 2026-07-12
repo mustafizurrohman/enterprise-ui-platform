@@ -17,23 +17,22 @@ import {
 import { CommonModule } from "@angular/common";
 import {
   AbstractControl,
-  ControlValueAccessor,
+  type ControlValueAccessor,
   FormsModule,
   NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
   NgControl,
-  ValidationErrors,
-  Validator,
+  type ValidationErrors,
+  type Validator,
 } from "@angular/forms";
 import {
   CdkConnectedOverlay,
   CdkOverlayOrigin,
-  ConnectedPosition,
+  type ConnectedPosition,
 } from "@angular/cdk/overlay";
 import { CdkTrapFocus } from "@angular/cdk/a11y";
 import { DateTime, Info } from "luxon";
-
-type TimeUnit = "hour" | "minute" | "second";
+import { MrTimeWheelComponent, type TimeUnit } from "./mr-time-wheel.component";
 
 @Component({
   selector: "mr-datepicker",
@@ -44,6 +43,7 @@ type TimeUnit = "hour" | "minute" | "second";
     CdkConnectedOverlay,
     CdkOverlayOrigin,
     CdkTrapFocus,
+    MrTimeWheelComponent,
   ],
   templateUrl: "./mr-datepicker.component.html",
   styleUrl: "./mr-datepicker.component.scss",
@@ -113,16 +113,12 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
       : "TT.MM.JJJJ HH:mm Uhr";
   });
 
-  protected readonly hours = Array.from({ length: 24 }, (_, index) => index);
-  protected readonly minutesAndSeconds = Array.from(
-    { length: 60 },
-    (_, index) => index,
-  );
-
   readonly selectedDate = signal<DateTime | null>(null);
   readonly viewDate = signal<DateTime>(DateTime.now());
   protected readonly isOpen = signal(false);
-  protected readonly activeDate = signal(DateTime.local().startOf("day"));
+  protected readonly activeDate = signal<DateTime>(
+    DateTime.local().startOf("day"),
+  );
   protected readonly timeAnnouncement = signal("");
   protected readonly dateAnnouncement = signal("");
 
@@ -535,57 +531,6 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     this.announceTime();
   }
 
-  protected onTimeInput(unit: TimeUnit, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    let value = input.value.replace(/[^0-9]/g, "");
-
-    if (value.length > 2) {
-      value = value.slice(-2);
-    }
-
-    input.value = value;
-
-    if (value.length > 0) {
-      this.updateTime(unit, value);
-    }
-  }
-
-  protected onTimeKeyDown(unit: TimeUnit, event: KeyboardEvent): void {
-    const maximum = unit === "hour" ? 23 : 59;
-
-    switch (event.key) {
-      case "ArrowUp":
-        event.preventDefault();
-        this.incrementTime(unit);
-        break;
-
-      case "ArrowDown":
-        event.preventDefault();
-        this.decrementTime(unit);
-        break;
-
-      case "PageUp":
-        event.preventDefault();
-        this.changeTime(unit, 10);
-        break;
-
-      case "PageDown":
-        event.preventDefault();
-        this.changeTime(unit, -10);
-        break;
-
-      case "Home":
-        event.preventDefault();
-        this.updateTime(unit, 0);
-        break;
-
-      case "End":
-        event.preventDefault();
-        this.updateTime(unit, maximum);
-        break;
-    }
-  }
-
   private announceTime(): void {
     const date = this.selectedDate();
 
@@ -594,57 +539,13 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
     }
 
     let announcement =
-      `Uhrzeit ${this.formatTimeValue(date.hour)} Uhr, ` +
-      `${this.formatTimeValue(date.minute)} Minuten`;
+      `Uhrzeit ${date.toFormat("HH")} Uhr, ` + `${date.toFormat("mm")} Minuten`;
 
     if (this.showSeconds()) {
-      announcement += ` und ${this.formatTimeValue(date.second)} Sekunden`;
+      announcement += ` und ${date.toFormat("ss")} Sekunden`;
     }
 
     this.timeAnnouncement.set(announcement);
-  }
-
-  protected incrementTime(unit: TimeUnit): void {
-    this.changeTime(unit, 1);
-  }
-
-  protected decrementTime(unit: TimeUnit): void {
-    this.changeTime(unit, -1);
-  }
-
-  protected previousTimeValue(unit: TimeUnit): string {
-    return this.formatTimeValue(
-      this.normalizeTimeValue(unit, this.getTimeValue(unit) - 1),
-    );
-  }
-
-  protected nextTimeValue(unit: TimeUnit): string {
-    return this.formatTimeValue(
-      this.normalizeTimeValue(unit, this.getTimeValue(unit) + 1),
-    );
-  }
-
-  protected formatTimeValue(value: number): string {
-    return String(value).padStart(2, "0");
-  }
-
-  private changeTime(unit: TimeUnit, difference: number): void {
-    const nextValue = this.normalizeTimeValue(
-      unit,
-      this.getTimeValue(unit) + difference,
-    );
-
-    this.updateTime(unit, nextValue);
-  }
-
-  private getTimeValue(unit: TimeUnit): number {
-    return this.selectedDate()?.[unit] ?? 0;
-  }
-
-  private normalizeTimeValue(unit: TimeUnit, value: number): number {
-    const range = unit === "hour" ? 24 : 60;
-
-    return ((value % range) + range) % range;
   }
 
   writeValue(value: string | null): void {
