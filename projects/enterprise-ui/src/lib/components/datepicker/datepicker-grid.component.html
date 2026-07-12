@@ -1,6 +1,6 @@
 <div
   [id]="gridId()"
-  class="mr-datepicker-grid"
+  class="datepicker-grid"
   role="grid"
   aria-readonly="true"
   [attr.aria-labelledby]="monthHeadingId()"
@@ -8,9 +8,9 @@
   aria-colcount="8"
   [attr.data-testid]="testIdFor('calendar-grid')"
 >
-  <div role="row" aria-rowindex="1" class="mr-datepicker-weekday-row">
+  <div role="row" aria-rowindex="1" class="datepicker-weekday-row">
     <div
-      class="mr-datepicker-day-name mr-datepicker-kw"
+      class="datepicker-day-name datepicker-kw"
       role="columnheader"
       aria-colindex="1"
       aria-label="Kalenderwoche"
@@ -21,7 +21,7 @@
 
     @for (day of daysOfWeek(); track day.weekday; let dayIndex = $index) {
       <div
-        class="mr-datepicker-day-name"
+        class="datepicker-day-name"
         role="columnheader"
         [attr.aria-colindex]="dayIndex + 2"
         [attr.aria-label]="day.long"
@@ -38,12 +38,12 @@
   @for (weekInfo of weeks(); track $index; let weekIndex = $index) {
     <div
       role="row"
-      class="mr-datepicker-week"
+      class="datepicker-week"
       [attr.aria-rowindex]="weekIndex + 2"
       [attr.data-testid]="testIdFor('week-' + weekIndex)"
     >
       <div
-        class="mr-datepicker-kw-value"
+        class="datepicker-kw-value"
         role="rowheader"
         aria-colindex="1"
         [attr.aria-label]="'Kalenderwoche ' + weekInfo.weekNumber"
@@ -55,7 +55,7 @@
 
       @for (date of weekInfo.days; track $index; let cellIndex = $index) {
         <div
-          class="mr-datepicker-gridcell"
+          class="datepicker-gridcell"
           [attr.role]="date ? 'presentation' : 'gridcell'"
           [attr.aria-colindex]="date ? null : cellIndex + 2"
           [attr.aria-label]="
@@ -71,7 +71,7 @@
               #calendarDay
               type="button"
               role="gridcell"
-              class="mr-datepicker-day"
+              class="datepicker-day"
               aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End PageUp PageDown Shift+PageUp Shift+PageDown Enter Space Escape"
               [class.selected]="isSelected(calendarDate)"
               [class.today]="isToday(calendarDate)"
@@ -90,7 +90,7 @@
             </button>
           } @else if (weekIndex === 0 && cellIndex === 0) {
             <div
-              class="mr-datepicker-month-abbreviation"
+              class="datepicker-month-abbreviation"
               aria-hidden="true"
               [attr.data-testid]="testIdFor('month-abbreviation')"
             >

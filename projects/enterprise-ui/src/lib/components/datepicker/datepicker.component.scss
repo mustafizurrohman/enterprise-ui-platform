@@ -9,7 +9,7 @@ $background-card: #fff;
 $hover-background: rgba(0, 0, 0, 0.04);
 $divider: rgba(0, 0, 0, 0.12);
 
-.mr-visually-hidden {
+.visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -22,12 +22,12 @@ $divider: rgba(0, 0, 0, 0.12);
   clip-path: inset(50%);
 }
 
-.mr-datepicker {
+.datepicker {
   display: inline-block;
   font-family: Roboto, "Helvetica Neue", sans-serif;
   width: 250px;
 
-  .mr-datepicker-label {
+  .datepicker-label {
     display: block;
     font-size: 12px;
     color: $primary;
@@ -38,7 +38,7 @@ $divider: rgba(0, 0, 0, 0.12);
     }
   }
 
-  .mr-datepicker-input {
+  .datepicker-input {
     display: flex;
     align-items: center;
     border-bottom: 1px solid $primary;
@@ -64,7 +64,7 @@ $divider: rgba(0, 0, 0, 0.12);
         cursor: default;
       }
 
-      .mr-datepicker-icon {
+      .datepicker-icon {
         color: #9e9e9e;
         cursor: default;
       }
@@ -89,7 +89,7 @@ $divider: rgba(0, 0, 0, 0.12);
       }
     }
 
-    .mr-datepicker-icon {
+    .datepicker-icon {
       background: none;
       border: none;
       cursor: pointer;
@@ -134,8 +134,8 @@ $divider: rgba(0, 0, 0, 0.12);
 
 
 @media (forced-colors: active) {
-  .mr-datepicker-input:focus-within,
-  .mr-datepicker-icon:focus-visible {
+  .datepicker-input:focus-within,
+  .datepicker-icon:focus-visible {
     outline: 2px solid CanvasText;
   }
 }

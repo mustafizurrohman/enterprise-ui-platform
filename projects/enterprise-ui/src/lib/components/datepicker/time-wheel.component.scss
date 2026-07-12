@@ -2,14 +2,14 @@
   display: contents;
 }
 
-.mr-datepicker-time-wheel {
+.datepicker-time-wheel {
   display: grid;
   grid-template-rows: 32px 104px 32px auto;
   justify-items: center;
   min-width: 64px;
 }
 
-.mr-datepicker-time-button {
+.datepicker-time-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -53,7 +53,7 @@
   }
 }
 
-.mr-datepicker-time-value {
+.datepicker-time-value {
   position: relative;
   display: grid;
   width: 64px;
@@ -89,14 +89,14 @@
   }
 }
 
-.mr-datepicker-time-preview {
+.datepicker-time-preview {
   color: rgb(60 60 67 / 35%);
   font-size: 15px;
   font-variant-numeric: tabular-nums;
   user-select: none;
 }
 
-.mr-datepicker-time-select {
+.datepicker-time-select {
   position: relative;
   z-index: 1;
   width: 64px;
@@ -120,15 +120,15 @@
   }
 }
 
-.mr-datepicker-time-label {
+.datepicker-time-label {
   margin-top: 4px;
   color: rgb(60 60 67 / 60%);
   font-size: 12px;
 }
 
 @media (forced-colors: active) {
-  .mr-datepicker-time-button:focus-visible,
-  .mr-datepicker-time-select:focus-visible {
+  .datepicker-time-button:focus-visible,
+  .datepicker-time-select:focus-visible {
     outline: 2px solid CanvasText;
   }
 }

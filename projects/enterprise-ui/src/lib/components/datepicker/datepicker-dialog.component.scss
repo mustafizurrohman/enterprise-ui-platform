@@ -11,7 +11,7 @@ $hover-background: rgba(0, 0, 0, 0.04);
   display: block;
 }
 
-.mr-visually-hidden {
+.visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -24,7 +24,7 @@ $hover-background: rgba(0, 0, 0, 0.04);
   clip-path: inset(50%);
 }
 
-.mr-datepicker-calendar {
+.datepicker-calendar {
   background: $background-card;
   border-radius: 4px;
   box-shadow:
@@ -36,25 +36,25 @@ $hover-background: rgba(0, 0, 0, 0.04);
   user-select: none;
   font-family: Roboto, "Helvetica Neue", sans-serif;
 
-  .mr-datepicker-header {
+  .datepicker-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 8px 8px 16px 8px;
 
-    .mr-datepicker-month-year {
+    .datepicker-month-year {
       font-weight: 500;
       font-size: 14px;
       color: $foreground;
       text-transform: capitalize;
     }
 
-    .mr-datepicker-navigation-wrapper {
+    .datepicker-navigation-wrapper {
       display: flex;
       gap: 8px;
     }
 
-    .mr-datepicker-navigation {
+    .datepicker-navigation {
       background: none;
       border: none;
       border-radius: 50%;
@@ -87,7 +87,7 @@ $hover-background: rgba(0, 0, 0, 0.04);
     }
   }
 
-  .mr-datepicker-time-picker {
+  .datepicker-time-picker {
     border: none;
     margin: 0;
     padding: 16px;
@@ -95,14 +95,14 @@ $hover-background: rgba(0, 0, 0, 0.04);
     background: rgb(250 250 252);
   }
 
-  .mr-datepicker-time-wheels {
+  .datepicker-time-wheels {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
   }
 
-  .mr-datepicker-time-separator {
+  .datepicker-time-separator {
     align-self: center;
     margin-bottom: 18px;
     color: #1c1c1e;
@@ -110,18 +110,18 @@ $hover-background: rgba(0, 0, 0, 0.04);
     font-weight: 600;
   }
 
-  .mr-datepicker-actions {
+  .datepicker-actions {
     display: flex;
     gap: 12px;
     margin-top: 16px;
 
-    &.mr-datepicker-actions--without-time {
+    &.datepicker-actions--without-time {
       margin-top: 0;
     }
   }
 
-  .mr-datepicker-now,
-  .mr-datepicker-confirm {
+  .datepicker-now,
+  .datepicker-confirm {
     flex: 1;
     min-height: 44px;
     border: 0;
@@ -147,21 +147,21 @@ $hover-background: rgba(0, 0, 0, 0.04);
     }
   }
 
-  .mr-datepicker-now {
+  .datepicker-now {
     background: #f2f2f7;
     color: #007aff;
   }
 
-  .mr-datepicker-confirm {
+  .datepicker-confirm {
     background: #007aff;
     color: #fff;
   }
 }
 
 @media (forced-colors: active) {
-  .mr-datepicker-navigation:focus-visible,
-  .mr-datepicker-now:focus-visible,
-  .mr-datepicker-confirm:focus-visible {
+  .datepicker-navigation:focus-visible,
+  .datepicker-now:focus-visible,
+  .datepicker-confirm:focus-visible {
     outline: 2px solid CanvasText;
   }
 }

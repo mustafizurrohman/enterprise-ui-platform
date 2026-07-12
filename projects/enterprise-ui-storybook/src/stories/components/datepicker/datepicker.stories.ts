@@ -1,11 +1,11 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MrDatepickerComponent } from '../../../../../enterprise-ui/src/lib/components/datepicker/mr-datepicker.component';
+import { DatepickerComponent } from '../../../../../enterprise-ui/src/lib/components/datepicker/datepicker.component';
 import { CommonModule } from '@angular/common';
 
-const meta: Meta<MrDatepickerComponent> = {
+const meta: Meta<DatepickerComponent> = {
   title: 'Components/Datepicker',
-  component: MrDatepickerComponent,
+  component: DatepickerComponent,
   decorators: [
     moduleMetadata({
       imports: [ReactiveFormsModule, CommonModule],
@@ -32,7 +32,7 @@ const meta: Meta<MrDatepickerComponent> = {
 };
 
 export default meta;
-type Story = StoryObj<MrDatepickerComponent>;
+type Story = StoryObj<DatepickerComponent>;
 
 export const DateTime: Story = {
   args: {
@@ -67,13 +67,13 @@ export const ReactiveForm: Story = {
       },
       template: `
         <form [formGroup]="form">
-          <mr-datepicker
+          <datepicker
             formControlName="date"
             [label]="label"
             [dateOnly]="dateOnly"
             [disabled]="disabled"
             [showSeconds]="showSeconds"
-          ></mr-datepicker>
+          ></datepicker>
         </form>
         <div style="margin-top: 20px;">
             <p>Current Form Value: {{ form.get('date')?.value || 'null' }}</p>

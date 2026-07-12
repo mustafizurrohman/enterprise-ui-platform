@@ -1,12 +1,12 @@
 <div
-  class="mr-datepicker-time-wheel"
+  class="datepicker-time-wheel"
   role="group"
   [attr.aria-labelledby]="labelId()"
   [attr.data-testid]="testIdFor('wheel')"
 >
   <button
     type="button"
-    class="mr-datepicker-time-button"
+    class="datepicker-time-button"
     [attr.aria-controls]="controlId()"
     [attr.aria-label]="configuration().singularLabel + ' um eins erhöhen'"
     [attr.data-testid]="testIdFor('increment')"
@@ -20,9 +20,9 @@
     </mat-icon>
   </button>
 
-  <div class="mr-datepicker-time-value" [attr.data-testid]="testIdFor('value')">
+  <div class="datepicker-time-value" [attr.data-testid]="testIdFor('value')">
     <span
-      class="mr-datepicker-time-preview"
+      class="datepicker-time-preview"
       aria-hidden="true"
       [attr.data-testid]="testIdFor('next-value')"
     >
@@ -40,7 +40,7 @@
       spellcheck="false"
       aria-keyshortcuts="ArrowUp ArrowDown PageUp PageDown Home End"
       [id]="controlId()"
-      class="mr-datepicker-time-select"
+      class="datepicker-time-select"
       [attr.aria-labelledby]="labelId()"
       [attr.aria-valuemin]="0"
       [attr.aria-valuemax]="configuration().maximum"
@@ -56,7 +56,7 @@
     />
 
     <span
-      class="mr-datepicker-time-preview"
+      class="datepicker-time-preview"
       aria-hidden="true"
       [attr.data-testid]="testIdFor('previous-value')"
     >
@@ -66,7 +66,7 @@
 
   <button
     type="button"
-    class="mr-datepicker-time-button"
+    class="datepicker-time-button"
     [attr.aria-controls]="controlId()"
     [attr.aria-label]="configuration().singularLabel + ' um eins verringern'"
     [attr.data-testid]="testIdFor('decrement')"
@@ -82,7 +82,7 @@
 
   <span
     [id]="labelId()"
-    class="mr-datepicker-time-label"
+    class="datepicker-time-label"
     [attr.data-testid]="testIdFor('label')"
   >
     {{ configuration().label }}

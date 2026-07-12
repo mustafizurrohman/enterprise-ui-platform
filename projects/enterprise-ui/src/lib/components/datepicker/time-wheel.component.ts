@@ -32,13 +32,13 @@ const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
 };
 
 @Component({
-  selector: "mr-time-wheel",
+  selector: "time-wheel",
   standalone: true,
   imports: [MatIconModule],
-  templateUrl: "./mr-time-wheel.component.html",
-  styleUrl: "./mr-time-wheel.component.scss",
+  templateUrl: "./time-wheel.component.html",
+  styleUrl: "./time-wheel.component.scss",
 })
-export class MrTimeWheelComponent {
+export class TimeWheelComponent {
   readonly unit = input.required<TimeUnit>();
   readonly value = input.required<number>();
   readonly controlId = input.required<string>();

@@ -10,15 +10,15 @@ $divider: rgba(0, 0, 0, 0.12);
   display: block;
 }
 
-.mr-datepicker-grid {
-  .mr-datepicker-weekday-row,
-  .mr-datepicker-week {
+.datepicker-grid {
+  .datepicker-weekday-row,
+  .datepicker-week {
     display: grid;
     grid-template-columns: 32px repeat(7, minmax(0, 1fr));
   }
 
-  .mr-datepicker-kw,
-  .mr-datepicker-kw-value {
+  .datepicker-kw,
+  .datepicker-kw-value {
     color: $foreground-disabled;
     font-size: 11px;
     display: flex;
@@ -33,13 +33,13 @@ $divider: rgba(0, 0, 0, 0.12);
     }
   }
 
-  .mr-datepicker-kw,
-  .mr-datepicker-kw-value {
+  .datepicker-kw,
+  .datepicker-kw-value {
     font-weight: 700;
   }
 
-  .mr-datepicker-day-name,
-  .mr-datepicker-month-abbreviation {
+  .datepicker-day-name,
+  .datepicker-month-abbreviation {
     color: $foreground-secondary;
     font-size: 12px;
     font-weight: 700;
@@ -54,7 +54,7 @@ $divider: rgba(0, 0, 0, 0.12);
     }
   }
 
-  .mr-datepicker-day {
+  .datepicker-day {
     background: none;
     border: none;
     border-radius: 50%;
@@ -99,11 +99,11 @@ $divider: rgba(0, 0, 0, 0.12);
 }
 
 @media (forced-colors: active) {
-  .mr-datepicker-day:focus-visible {
+  .datepicker-day:focus-visible {
     outline: 2px solid CanvasText;
   }
 
-  .mr-datepicker-day.selected {
+  .datepicker-day.selected {
     border: 2px solid CanvasText;
   }
 }

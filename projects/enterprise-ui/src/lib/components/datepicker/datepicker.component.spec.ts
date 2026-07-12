@@ -1,20 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { MrDatepickerComponent } from "./mr-datepicker.component";
+import { DatepickerComponent } from "./datepicker.component";
 import { DateTime, Info } from "luxon";
 import { Component, signal } from "@angular/core";
 import { FormControl, FormsModule, ReactiveFormsModule } from "@angular/forms";
 
-describe("MrDatepickerComponent", () => {
-  let component: MrDatepickerComponent;
-  let fixture: ComponentFixture<MrDatepickerComponent>;
+describe("DatepickerComponent", () => {
+  let component: DatepickerComponent;
+  let fixture: ComponentFixture<DatepickerComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MrDatepickerComponent],
+      imports: [DatepickerComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MrDatepickerComponent);
+    fixture = TestBed.createComponent(DatepickerComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput("testId", "datepicker");
     fixture.detectChanges();
@@ -27,7 +27,7 @@ describe("MrDatepickerComponent", () => {
 
   it("should have calendar closed by default", () => {
     expect((component as any).isOpen()).toBeFalsy();
-    const calendar = document.querySelector(".mr-datepicker-calendar");
+    const calendar = document.querySelector(".datepicker-calendar");
     expect(calendar).toBeNull();
   });
 
@@ -64,8 +64,8 @@ describe("MrDatepickerComponent", () => {
       expect(
         document.querySelector('[data-testid="datepicker-calendar-grid"]'),
       ).toBeTruthy();
-      expect(document.querySelector("mr-datepicker-dialog")).toBeTruthy();
-      expect(document.querySelector("mr-datepicker-grid")).toBeTruthy();
+      expect(document.querySelector("datepicker-dialog")).toBeTruthy();
+      expect(document.querySelector("datepicker-grid")).toBeTruthy();
       expect(
         document.querySelector('[data-testid^="datepicker-day-"]'),
       ).toBeTruthy();
@@ -107,9 +107,9 @@ describe("MrDatepickerComponent", () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(document.querySelector(".mr-datepicker-time-wheels")).toBeNull();
-      expect(document.querySelector(".mr-datepicker-time-select")).toBeNull();
-      expect(document.querySelector(".mr-datepicker-confirm")).toBeTruthy();
+      expect(document.querySelector(".datepicker-time-wheels")).toBeNull();
+      expect(document.querySelector(".datepicker-time-select")).toBeNull();
+      expect(document.querySelector(".datepicker-confirm")).toBeTruthy();
     });
 
     it("should emit the selected date at the start of the day", () => {
@@ -134,7 +134,7 @@ describe("MrDatepickerComponent", () => {
     input.click();
     fixture.detectChanges();
     expect((component as any).isOpen()).toBeTruthy();
-    let calendar = document.querySelector(".mr-datepicker-calendar");
+    let calendar = document.querySelector(".datepicker-calendar");
     expect(calendar).toBeTruthy();
 
     input.click();
@@ -143,11 +143,11 @@ describe("MrDatepickerComponent", () => {
     // If we want to test toggling, we should click the button.
     expect((component as any).isOpen()).toBeTruthy();
 
-    const button = fixture.nativeElement.querySelector(".mr-datepicker-icon");
+    const button = fixture.nativeElement.querySelector(".datepicker-icon");
     button.click();
     fixture.detectChanges();
     expect((component as any).isOpen()).toBeFalsy();
-    calendar = document.querySelector(".mr-datepicker-calendar");
+    calendar = document.querySelector(".datepicker-calendar");
     expect(calendar).toBeNull();
   });
 
@@ -169,11 +169,11 @@ describe("MrDatepickerComponent", () => {
       );
 
       const weekdayCells = document.querySelectorAll(
-        ".mr-datepicker-weekday-row .mr-datepicker-day-name",
+        ".datepicker-weekday-row .datepicker-day-name",
       );
-      const weekRows = document.querySelectorAll(".mr-datepicker-week");
+      const weekRows = document.querySelectorAll(".datepicker-week");
       const firstRowCells = weekRows[0].querySelectorAll(
-        ".mr-datepicker-kw-value, .mr-datepicker-gridcell",
+        ".datepicker-kw-value, .datepicker-gridcell",
       );
 
       expect(weekdayCells).toHaveLength(8);
@@ -187,7 +187,7 @@ describe("MrDatepickerComponent", () => {
 
       const renderedDates = Array.from(
         document.querySelectorAll<HTMLButtonElement>(
-          ".mr-datepicker-day[data-date]",
+          ".datepicker-day[data-date]",
         ),
       ).map((button) => button.dataset["date"]);
 
@@ -256,7 +256,7 @@ describe("MrDatepickerComponent", () => {
     fixture.detectChanges();
 
     const tabbableDays = document.querySelectorAll(
-      '.mr-datepicker-day[tabindex="0"]',
+      '.datepicker-day[tabindex="0"]',
     );
     expect(tabbableDays).toHaveLength(1);
     expect((tabbableDays[0] as HTMLElement).getAttribute("data-date")).toBe(
@@ -281,13 +281,13 @@ describe("MrDatepickerComponent", () => {
     fixture.componentRef.setInput("showSeconds", true);
     const onChangeSpy = vi.fn();
     component.registerOnChange(onChangeSpy);
-    const button = fixture.nativeElement.querySelector(".mr-datepicker-icon");
+    const button = fixture.nativeElement.querySelector(".datepicker-icon");
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
 
     const jetztButton = document.querySelector(
-      ".mr-datepicker-now",
+      ".datepicker-now",
     ) as HTMLButtonElement;
     expect(jetztButton).toBeTruthy();
     expect(jetztButton.textContent?.trim()).toBe("Jetzt");
@@ -377,7 +377,7 @@ describe("MrDatepickerComponent", () => {
     const previews = (): HTMLElement[] =>
       Array.from(
         document.querySelectorAll<HTMLElement>(
-          "mr-time-wheel:first-of-type .mr-datepicker-time-preview",
+          "time-wheel:first-of-type .datepicker-time-preview",
         ),
       );
 
@@ -480,9 +480,9 @@ describe("MrDatepickerComponent", () => {
   });
 
   it("should have correct accessibility attributes", () => {
-    const label = fixture.nativeElement.querySelector(".mr-datepicker-label");
+    const label = fixture.nativeElement.querySelector(".datepicker-label");
     const input = fixture.nativeElement.querySelector("input");
-    const button = fixture.nativeElement.querySelector(".mr-datepicker-icon");
+    const button = fixture.nativeElement.querySelector(".datepicker-icon");
 
     expect(label.textContent).toContain(component.label());
     expect(label.getAttribute("for")).toBe(input.id);
@@ -522,12 +522,12 @@ describe("MrDatepickerComponent", () => {
   });
 
   it("should trap focus and have dialog attributes when calendar is open", async () => {
-    const button = fixture.nativeElement.querySelector(".mr-datepicker-icon");
+    const button = fixture.nativeElement.querySelector(".datepicker-icon");
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const dialog = document.querySelector(".mr-datepicker-calendar");
+    const dialog = document.querySelector(".datepicker-calendar");
     expect(dialog).toBeTruthy();
     expect(dialog?.getAttribute("role")).toBe("dialog");
     expect(dialog?.getAttribute("aria-modal")).toBe("true");
@@ -536,7 +536,7 @@ describe("MrDatepickerComponent", () => {
     const title = document.getElementById(
       dialog?.getAttribute("aria-labelledby") || "",
     );
-    expect(title?.classList.contains("mr-visually-hidden")).toBeTruthy();
+    expect(title?.classList.contains("visually-hidden")).toBeTruthy();
   });
 
   it("should navigate calendar with keyboard", async () => {
@@ -549,7 +549,7 @@ describe("MrDatepickerComponent", () => {
 
     // Simulate ArrowRight on the active day button
     const activeDayButton = document.querySelector(
-      '.mr-datepicker-day[tabindex="0"]',
+      '.datepicker-day[tabindex="0"]',
     ) as HTMLButtonElement;
     expect(activeDayButton).toBeTruthy();
 
@@ -568,7 +568,7 @@ describe("MrDatepickerComponent", () => {
 
     // Simulate ArrowDown (next week)
     const activeDayButtonNext = document.querySelector(
-      '.mr-datepicker-day[tabindex="0"]',
+      '.datepicker-day[tabindex="0"]',
     ) as HTMLButtonElement;
     const eventDown = new KeyboardEvent("keydown", {
       key: "ArrowDown",
@@ -734,7 +734,7 @@ describe("MrDatepickerComponent", () => {
       fixture.detectChanges();
 
       const activeDay = document.querySelector(
-        '.mr-datepicker-day[tabindex="0"]',
+        '.datepicker-day[tabindex="0"]',
       ) as HTMLButtonElement;
       expect(document.activeElement).toBe(activeDay);
 
@@ -777,13 +777,13 @@ describe("MrDatepickerComponent", () => {
 
   it("should allow typing time in time picker", async () => {
     component.registerOnChange(vi.fn());
-    const button = fixture.nativeElement.querySelector(".mr-datepicker-icon");
+    const button = fixture.nativeElement.querySelector(".datepicker-icon");
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
 
     const hourInput = document.querySelector(
-      ".mr-datepicker-time-select",
+      ".datepicker-time-select",
     ) as HTMLInputElement;
     expect(hourInput).toBeTruthy();
     expect(hourInput.tagName).toBe("INPUT");
@@ -797,13 +797,13 @@ describe("MrDatepickerComponent", () => {
   });
 
   it("should validate time typing", async () => {
-    const button = fixture.nativeElement.querySelector(".mr-datepicker-icon");
+    const button = fixture.nativeElement.querySelector(".datepicker-icon");
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
 
     const hourInput = document.querySelector(
-      ".mr-datepicker-time-select",
+      ".datepicker-time-select",
     ) as HTMLInputElement;
 
     // Try to enter non-numeric value
@@ -822,7 +822,7 @@ describe("MrDatepickerComponent", () => {
   });
 
   it("should announce time changes", async () => {
-    const button = fixture.nativeElement.querySelector(".mr-datepicker-icon");
+    const button = fixture.nativeElement.querySelector(".datepicker-icon");
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -846,13 +846,13 @@ describe("MrDatepickerComponent", () => {
         "input",
       ) as HTMLInputElement;
       const button = fixture.nativeElement.querySelector(
-        ".mr-datepicker-icon",
+        ".datepicker-icon",
       ) as HTMLButtonElement;
 
       expect(input.disabled).toBeTruthy();
       expect(button.disabled).toBeTruthy();
       expect(
-        button.classList.contains("mr-datepicker-icon--disabled"),
+        button.classList.contains("datepicker-icon--disabled"),
       ).toBeTruthy();
       expect(button.querySelector("mat-icon")).toBeTruthy();
     });
@@ -869,7 +869,7 @@ describe("MrDatepickerComponent", () => {
       expect((component as any).isOpen()).toBeFalsy();
 
       const button = fixture.nativeElement.querySelector(
-        ".mr-datepicker-icon",
+        ".datepicker-icon",
       ) as HTMLButtonElement;
       button.click();
       fixture.detectChanges();
@@ -913,7 +913,7 @@ describe("MrDatepickerComponent", () => {
     });
 
     it("should hide seconds wheel by default", async () => {
-      const button = fixture.nativeElement.querySelector(".mr-datepicker-icon");
+      const button = fixture.nativeElement.querySelector(".datepicker-icon");
       button.click();
       fixture.detectChanges();
       await fixture.whenStable();
@@ -922,7 +922,7 @@ describe("MrDatepickerComponent", () => {
         document.querySelector("#" + (component as any).secondSelectId),
       ).toBeNull();
       expect(
-        document.querySelectorAll(".mr-datepicker-time-wheel"),
+        document.querySelectorAll(".datepicker-time-wheel"),
       ).toHaveLength(2);
     });
 
@@ -930,7 +930,7 @@ describe("MrDatepickerComponent", () => {
       fixture.componentRef.setInput("showSeconds", true);
       fixture.detectChanges();
 
-      const button = fixture.nativeElement.querySelector(".mr-datepicker-icon");
+      const button = fixture.nativeElement.querySelector(".datepicker-icon");
       button.click();
       fixture.detectChanges();
       await fixture.whenStable();
@@ -939,7 +939,7 @@ describe("MrDatepickerComponent", () => {
         document.querySelector("#" + (component as any).secondSelectId),
       ).toBeTruthy();
       expect(
-        document.querySelectorAll(".mr-datepicker-time-wheel"),
+        document.querySelectorAll(".datepicker-time-wheel"),
       ).toHaveLength(3);
     });
 
@@ -1016,19 +1016,19 @@ describe("MrDatepickerComponent", () => {
       await fixture.whenStable();
 
       const weekdayHeaders = document.querySelectorAll(
-        ".mr-datepicker-day-name",
+        ".datepicker-day-name",
       );
       // Index 0 is KW, Index 1 is Monday
       expect(weekdayHeaders[1].classList.contains("today")).toBeTruthy();
       expect(weekdayHeaders[2].classList.contains("today")).toBeFalsy();
 
       const todayButton = document.querySelector(
-        `.mr-datepicker-day[data-date="2026-07-20"]`,
+        `.datepicker-day[data-date="2026-07-20"]`,
       );
       expect(todayButton?.classList.contains("today")).toBeTruthy();
 
-      const weekRow = todayButton?.closest(".mr-datepicker-week");
-      const kwCell = weekRow?.querySelector(".mr-datepicker-kw-value");
+      const weekRow = todayButton?.closest(".datepicker-week");
+      const kwCell = weekRow?.querySelector(".datepicker-kw-value");
       expect(kwCell?.classList.contains("today")).toBeTruthy();
     });
 
@@ -1043,7 +1043,7 @@ describe("MrDatepickerComponent", () => {
       await fixture.whenStable();
 
       const weekdayHeaders = document.querySelectorAll(
-        ".mr-datepicker-day-name",
+        ".datepicker-day-name",
       );
       // Index 1 is Monday. It should NOT have 'today' class because we are in June.
       expect(weekdayHeaders[1].classList.contains("today")).toBeFalsy();
@@ -1053,19 +1053,19 @@ describe("MrDatepickerComponent", () => {
 
 @Component({
   standalone: true,
-  imports: [MrDatepickerComponent, ReactiveFormsModule, FormsModule],
+  imports: [DatepickerComponent, ReactiveFormsModule, FormsModule],
   template: `
-    <mr-datepicker
+    <datepicker
       id="reactive"
       testId="reactive-datepicker"
       [formControl]="control"
     />
-    <mr-datepicker
+    <datepicker
       id="template"
       testId="template-datepicker"
       [(ngModel)]="templateValue"
     />
-    <mr-datepicker
+    <datepicker
       id="signal"
       testId="signal-datepicker"
       [(value)]="signalValue"
@@ -1078,7 +1078,7 @@ class TestHostComponent {
   signalValue = signal<Date | string | null>(null);
 }
 
-describe("MrDatepickerComponent Forms Compatibility", () => {
+describe("DatepickerComponent Forms Compatibility", () => {
   let fixture: ComponentFixture<TestHostComponent>;
   let host: TestHostComponent;
 
@@ -1152,14 +1152,14 @@ describe("MrDatepickerComponent Forms Compatibility", () => {
     const datepickerElement = fixture.nativeElement.querySelector("#signal");
 
     const button = datepickerElement.querySelector(
-      ".mr-datepicker-icon",
+      ".datepicker-icon",
     ) as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
 
     const dayButton = document.querySelector(
-      '.mr-datepicker-day[data-date="2026-07-14"]',
+      '.datepicker-day[data-date="2026-07-14"]',
     ) as HTMLButtonElement;
     expect(dayButton).toBeTruthy();
     dayButton.click();

@@ -4,10 +4,10 @@
 @let invalid = hasInputError();
 @let currentDate = selectedDate();
 
-<div class="mr-datepicker" [attr.data-testid]="testIdFor()">
+<div class="datepicker" [attr.data-testid]="testIdFor()">
   <label
-    class="mr-datepicker-label"
-    [class.mr-datepicker-label--disabled]="disabled"
+    class="datepicker-label"
+    [class.datepicker-label--disabled]="disabled"
     [for]="inputId"
     [attr.data-testid]="testIdFor('label')"
   >
@@ -17,8 +17,8 @@
   <div
     #calendarOrigin="cdkOverlayOrigin"
     cdkOverlayOrigin
-    class="mr-datepicker-input"
-    [class.mr-datepicker-input--disabled]="disabled"
+    class="datepicker-input"
+    [class.datepicker-input--disabled]="disabled"
     [attr.data-testid]="testIdFor('input-wrapper')"
   >
     <input
@@ -46,8 +46,8 @@
     @if (currentDate) {
       <button
         type="button"
-        class="mr-datepicker-icon mr-datepicker-clear"
-        [class.mr-datepicker-icon--disabled]="disabled"
+        class="datepicker-icon datepicker-clear"
+        [class.datepicker-icon--disabled]="disabled"
         [disabled]="disabled"
         aria-label="Ausgewähltes Datum löschen"
         [attr.data-testid]="testIdFor('clear')"
@@ -60,8 +60,8 @@
     <button
       #calendarToggle
       type="button"
-      class="mr-datepicker-icon"
-      [class.mr-datepicker-icon--disabled]="disabled"
+      class="datepicker-icon"
+      [class.datepicker-icon--disabled]="disabled"
       [disabled]="disabled"
       [attr.aria-label]="calendarToggleLabel()"
       aria-haspopup="dialog"
@@ -76,7 +76,7 @@
 
   <div
     [id]="inputHintId"
-    class="mr-visually-hidden"
+    class="visually-hidden"
     [attr.data-testid]="testIdFor('hint')"
   >
     Erwartetes Format: {{ dateFormatDescription() }}. Zum Öffnen des Kalenders
@@ -86,7 +86,7 @@
   @if (invalid) {
     <div
       [id]="inputErrorId"
-      class="mr-datepicker-error"
+      class="datepicker-error"
       role="alert"
       [attr.data-testid]="testIdFor('error')"
     >
@@ -102,7 +102,7 @@
     [cdkConnectedOverlayPositions]="overlayPositions"
     [cdkConnectedOverlayHasBackdrop]="true"
     cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
-    cdkConnectedOverlayPanelClass="mr-datepicker-overlay-pane"
+    cdkConnectedOverlayPanelClass="datepicker-overlay-pane"
     [cdkConnectedOverlayFlexibleDimensions]="false"
     [cdkConnectedOverlayPush]="true"
     [cdkConnectedOverlayViewportMargin]="8"
@@ -111,7 +111,7 @@
     (attach)="onOverlayAttached()"
     (detach)="onOverlayDetached()"
   >
-    <mr-datepicker-dialog
+    <datepicker-dialog
       [dialogId]="dialogId"
       [dialogTitleId]="dialogTitleId"
       [dialogDescriptionId]="dialogDescriptionId"

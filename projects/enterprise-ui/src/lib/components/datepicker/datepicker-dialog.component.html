@@ -2,26 +2,26 @@
   cdkTrapFocus
   [cdkTrapFocusAutoCapture]="true"
   [id]="dialogId()"
-  class="mr-datepicker-calendar"
+  class="datepicker-calendar"
   role="dialog"
   aria-modal="true"
   [attr.aria-labelledby]="dialogTitleId()"
   [attr.aria-describedby]="dialogDescriptionId()"
   [attr.data-testid]="testIdFor('dialog')"
 >
-  <h2 [id]="dialogTitleId()" class="mr-visually-hidden">{{ dialogTitle() }}</h2>
+  <h2 [id]="dialogTitleId()" class="visually-hidden">{{ dialogTitle() }}</h2>
 
-  <p [id]="dialogDescriptionId()" class="mr-visually-hidden">
+  <p [id]="dialogDescriptionId()" class="visually-hidden">
     Verwenden Sie die Pfeiltasten zur Navigation zwischen den Tagen. Pos1 und
     Ende springen zum Wochenanfang beziehungsweise Wochenende. Bild auf und Bild
     ab wechseln den Monat; mit Umschalttaste wechseln Sie das Jahr. Enter oder
     Leertaste wählen den fokussierten Tag aus. Escape schließt den Kalender.
   </p>
 
-  <div class="mr-datepicker-header">
+  <div class="datepicker-header">
     <div
       [id]="monthHeadingId()"
-      class="mr-datepicker-month-year"
+      class="datepicker-month-year"
       aria-live="polite"
       aria-atomic="true"
       [attr.data-testid]="testIdFor('month-heading')"
@@ -29,10 +29,10 @@
       {{ formattedMonth() }}
     </div>
 
-    <div class="mr-datepicker-navigation-wrapper" role="group" aria-label="Monat wechseln">
+    <div class="datepicker-navigation-wrapper" role="group" aria-label="Monat wechseln">
       <button
         type="button"
-        class="mr-datepicker-navigation"
+        class="datepicker-navigation"
         aria-label="Vorherigen Monat anzeigen"
         [attr.aria-controls]="calendarGridId()"
         [attr.data-testid]="testIdFor('previous-month')"
@@ -43,7 +43,7 @@
 
       <button
         type="button"
-        class="mr-datepicker-navigation"
+        class="datepicker-navigation"
         aria-label="Nächsten Monat anzeigen"
         [attr.aria-controls]="calendarGridId()"
         [attr.data-testid]="testIdFor('next-month')"
@@ -54,7 +54,7 @@
     </div>
   </div>
 
-  <mr-datepicker-grid
+  <datepicker-grid
     [gridId]="calendarGridId()"
     [daysOfWeek]="daysOfWeek()"
     [weeks]="weeks()"
@@ -70,41 +70,41 @@
     (dateKeydown)="dateKeydown.emit($event)"
   />
 
-  <div class="mr-visually-hidden" role="status" aria-live="polite" aria-atomic="true" [attr.data-testid]="testIdFor('date-status')">
+  <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" [attr.data-testid]="testIdFor('date-status')">
     {{ dateAnnouncement() }}
   </div>
 
   @if (!dateOnly()) {
-    <fieldset class="mr-datepicker-time-picker" [attr.data-testid]="testIdFor('time-picker')">
-      <legend class="mr-visually-hidden">Uhrzeit auswählen</legend>
+    <fieldset class="datepicker-time-picker" [attr.data-testid]="testIdFor('time-picker')">
+      <legend class="visually-hidden">Uhrzeit auswählen</legend>
 
-      <div class="mr-datepicker-time-wheels" role="group" aria-label="Zeit-Einsteller" [attr.data-testid]="testIdFor('time-wheels')">
-        <mr-time-wheel unit="hour" [value]="selectedDate()?.hour ?? 0" [controlId]="hourSelectId()" [labelId]="hourLabelId()" [testIdPrefix]="testIdPrefix()" (valueChange)="emitTimeChange('hour', $event)" />
-        <span class="mr-datepicker-time-separator" aria-hidden="true">:</span>
-        <mr-time-wheel unit="minute" [value]="selectedDate()?.minute ?? 0" [controlId]="minuteSelectId()" [labelId]="minuteLabelId()" [testIdPrefix]="testIdPrefix()" (valueChange)="emitTimeChange('minute', $event)" />
+      <div class="datepicker-time-wheels" role="group" aria-label="Zeit-Einsteller" [attr.data-testid]="testIdFor('time-wheels')">
+        <time-wheel unit="hour" [value]="selectedDate()?.hour ?? 0" [controlId]="hourSelectId()" [labelId]="hourLabelId()" [testIdPrefix]="testIdPrefix()" (valueChange)="emitTimeChange('hour', $event)" />
+        <span class="datepicker-time-separator" aria-hidden="true">:</span>
+        <time-wheel unit="minute" [value]="selectedDate()?.minute ?? 0" [controlId]="minuteSelectId()" [labelId]="minuteLabelId()" [testIdPrefix]="testIdPrefix()" (valueChange)="emitTimeChange('minute', $event)" />
 
         @if (showSeconds()) {
-          <span class="mr-datepicker-time-separator" aria-hidden="true">:</span>
-          <mr-time-wheel unit="second" [value]="selectedDate()?.second ?? 0" [controlId]="secondSelectId()" [labelId]="secondLabelId()" [testIdPrefix]="testIdPrefix()" (valueChange)="emitTimeChange('second', $event)" />
+          <span class="datepicker-time-separator" aria-hidden="true">:</span>
+          <time-wheel unit="second" [value]="selectedDate()?.second ?? 0" [controlId]="secondSelectId()" [labelId]="secondLabelId()" [testIdPrefix]="testIdPrefix()" (valueChange)="emitTimeChange('second', $event)" />
         }
       </div>
 
-      <div class="mr-visually-hidden" role="status" aria-live="polite" aria-atomic="true" [attr.data-testid]="testIdFor('time-status')">
+      <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" [attr.data-testid]="testIdFor('time-status')">
         {{ timeAnnouncement() }}
       </div>
 
       <ng-container [ngTemplateOutlet]="actions" [ngTemplateOutletContext]="{ withoutTime: false }" />
     </fieldset>
   } @else {
-    <div class="mr-datepicker-time-picker" [attr.data-testid]="testIdFor('date-only-actions')">
+    <div class="datepicker-time-picker" [attr.data-testid]="testIdFor('date-only-actions')">
       <ng-container [ngTemplateOutlet]="actions" [ngTemplateOutletContext]="{ withoutTime: true }" />
     </div>
   }
 </div>
 
 <ng-template #actions let-withoutTime="withoutTime">
-  <div class="mr-datepicker-actions" [class.mr-datepicker-actions--without-time]="withoutTime">
-    <button type="button" class="mr-datepicker-now" [attr.data-testid]="testIdFor('now')" (click)="nowSelected.emit()">Jetzt</button>
-    <button type="button" class="mr-datepicker-confirm" aria-label="Auswahl übernehmen und Kalender schließen" [attr.data-testid]="testIdFor('confirm')" (click)="confirmed.emit()">OK</button>
+  <div class="datepicker-actions" [class.datepicker-actions--without-time]="withoutTime">
+    <button type="button" class="datepicker-now" [attr.data-testid]="testIdFor('now')" (click)="nowSelected.emit()">Jetzt</button>
+    <button type="button" class="datepicker-confirm" aria-label="Auswahl übernehmen und Kalender schließen" [attr.data-testid]="testIdFor('confirm')" (click)="confirmed.emit()">OK</button>
   </div>
 </ng-template>

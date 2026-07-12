@@ -2,17 +2,17 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { DateTime, Info } from "luxon";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  MrDatepickerGridComponent,
-  type MrDatepickerWeek,
-} from "./mr-datepicker-grid.component";
+  DatepickerGridComponent,
+  type DatepickerWeek,
+} from "./datepicker-grid.component";
 
-describe("MrDatepickerGridComponent", () => {
-  let fixture: ComponentFixture<MrDatepickerGridComponent>;
-  let component: MrDatepickerGridComponent;
+describe("DatepickerGridComponent", () => {
+  let fixture: ComponentFixture<DatepickerGridComponent>;
+  let component: DatepickerGridComponent;
 
   const selectedDate = DateTime.fromISO("2026-07-15");
   const today = DateTime.fromISO("2026-07-20");
-  const weeks: MrDatepickerWeek[] = [
+  const weeks: DatepickerWeek[] = [
     {
       weekNumber: 27,
       days: [
@@ -41,10 +41,10 @@ describe("MrDatepickerGridComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MrDatepickerGridComponent],
+      imports: [DatepickerGridComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MrDatepickerGridComponent);
+    fixture = TestBed.createComponent(DatepickerGridComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput("gridId", "calendar-grid");
     fixture.componentRef.setInput(

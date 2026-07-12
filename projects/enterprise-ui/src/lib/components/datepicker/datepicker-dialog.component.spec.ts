@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { DateTime, Info } from "luxon";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MrDatepickerDialogComponent } from "./mr-datepicker-dialog.component";
+import { DatepickerDialogComponent } from "./datepicker-dialog.component";
 
-describe("MrDatepickerDialogComponent", () => {
-  let fixture: ComponentFixture<MrDatepickerDialogComponent>;
-  let component: MrDatepickerDialogComponent;
+describe("DatepickerDialogComponent", () => {
+  let fixture: ComponentFixture<DatepickerDialogComponent>;
+  let component: DatepickerDialogComponent;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({ imports: [MrDatepickerDialogComponent] }).compileComponents();
-    fixture = TestBed.createComponent(MrDatepickerDialogComponent);
+    await TestBed.configureTestingModule({ imports: [DatepickerDialogComponent] }).compileComponents();
+    fixture = TestBed.createComponent(DatepickerDialogComponent);
     component = fixture.componentInstance;
     const date = DateTime.fromISO("2026-07-15");
     const inputs: Record<string, unknown> = {

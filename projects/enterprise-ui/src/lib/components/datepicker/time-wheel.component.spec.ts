@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MrTimeWheelComponent } from "./mr-time-wheel.component";
+import { TimeWheelComponent } from "./time-wheel.component";
 
-describe("MrTimeWheelComponent", () => {
-  let fixture: ComponentFixture<MrTimeWheelComponent>;
-  let component: MrTimeWheelComponent;
+describe("TimeWheelComponent", () => {
+  let fixture: ComponentFixture<TimeWheelComponent>;
+  let component: TimeWheelComponent;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MrTimeWheelComponent],
+      imports: [TimeWheelComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MrTimeWheelComponent);
+    fixture = TestBed.createComponent(TimeWheelComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput("unit", "hour");
     fixture.componentRef.setInput("value", 10);
@@ -91,7 +91,7 @@ describe("MrTimeWheelComponent", () => {
 
   it("should render previous and next preview values", () => {
     const previews = fixture.nativeElement.querySelectorAll(
-      ".mr-datepicker-time-preview",
+      ".datepicker-time-preview",
     );
 
     expect(previews[0].textContent.trim()).toBe("11");

@@ -31,11 +31,11 @@ import {
 } from "@angular/cdk/overlay";
 import { MatIconModule } from "@angular/material/icon";
 import { DateTime, Info } from "luxon";
-import { MrDatepickerDialogComponent } from "./mr-datepicker-dialog.component";
-import type { TimeUnit } from "./mr-time-wheel.component";
+import { DatepickerDialogComponent } from "./datepicker-dialog.component";
+import type { TimeUnit } from "./time-wheel.component";
 
 @Component({
-  selector: "mr-datepicker",
+  selector: "datepicker",
   standalone: true,
   imports: [
     CommonModule,
@@ -43,26 +43,26 @@ import type { TimeUnit } from "./mr-time-wheel.component";
     CdkConnectedOverlay,
     CdkOverlayOrigin,
     MatIconModule,
-    MrDatepickerDialogComponent,
+    DatepickerDialogComponent,
   ],
-  templateUrl: "./mr-datepicker.component.html",
-  styleUrl: "./mr-datepicker.component.scss",
+  templateUrl: "./datepicker.component.html",
+  styleUrl: "./datepicker.component.scss",
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => MrDatepickerComponent),
+      useExisting: forwardRef(() => DatepickerComponent),
       multi: true,
     },
     {
       provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => MrDatepickerComponent),
+      useExisting: forwardRef(() => DatepickerComponent),
       multi: true,
     },
   ],
 })
-export class MrDatepickerComponent implements ControlValueAccessor, Validator {
+export class DatepickerComponent implements ControlValueAccessor, Validator {
   private static nextId = 0;
-  private readonly componentId = `mr-datepicker-${MrDatepickerComponent.nextId++}`;
+  private readonly componentId = `datepicker-${DatepickerComponent.nextId++}`;
   private lastFocusedTrigger: HTMLElement | null = null;
 
   readonly label = input<string>("Datum auswählen");
@@ -142,7 +142,7 @@ export class MrDatepickerComponent implements ControlValueAccessor, Validator {
 
   private readonly dateInput =
     viewChild<ElementRef<HTMLInputElement>>("dateInput");
-  private readonly calendarDialog = viewChild(MrDatepickerDialogComponent);
+  private readonly calendarDialog = viewChild(DatepickerDialogComponent);
 
   protected readonly overlayPositions: ConnectedPosition[] = [
     {

@@ -7,32 +7,32 @@ import {
 } from "@angular/core";
 import { DateTime } from "luxon";
 
-export type MrDatepickerWeekday = {
+export type DatepickerWeekday = {
   short: string;
   long: string;
   weekday: number;
 };
 
-export type MrDatepickerWeek = {
+export type DatepickerWeek = {
   weekNumber: number;
   days: (DateTime | null)[];
 };
 
-export type MrDatepickerGridKeydown = {
+export type DatepickerGridKeydown = {
   event: KeyboardEvent;
   date: DateTime;
 };
 
 @Component({
-  selector: "mr-datepicker-grid",
+  selector: "datepicker-grid",
   standalone: true,
-  templateUrl: "./mr-datepicker-grid.component.html",
-  styleUrl: "./mr-datepicker-grid.component.scss",
+  templateUrl: "./datepicker-grid.component.html",
+  styleUrl: "./datepicker-grid.component.scss",
 })
-export class MrDatepickerGridComponent {
+export class DatepickerGridComponent {
   readonly gridId = input.required<string>();
-  readonly daysOfWeek = input.required<readonly MrDatepickerWeekday[]>();
-  readonly weeks = input.required<readonly MrDatepickerWeek[]>();
+  readonly daysOfWeek = input.required<readonly DatepickerWeekday[]>();
+  readonly weeks = input.required<readonly DatepickerWeek[]>();
   readonly monthAbbreviation = input.required<string>();
   readonly selectedDate = input<DateTime | null>(null);
   readonly activeDate = input.required<DateTime>();
@@ -43,7 +43,7 @@ export class MrDatepickerGridComponent {
 
   readonly dateSelected = output<DateTime>();
   readonly dateFocused = output<DateTime>();
-  readonly dateKeydown = output<MrDatepickerGridKeydown>();
+  readonly dateKeydown = output<DatepickerGridKeydown>();
 
   private readonly calendarDayButtons =
     viewChildren<ElementRef<HTMLButtonElement>>("calendarDay");
@@ -84,7 +84,7 @@ export class MrDatepickerGridComponent {
     return this.activeDate().hasSame(date, "day");
   }
 
-  protected isCurrentWeek(week: MrDatepickerWeek): boolean {
+  protected isCurrentWeek(week: DatepickerWeek): boolean {
     return week.days.some((day) => this.isToday(day));
   }
 

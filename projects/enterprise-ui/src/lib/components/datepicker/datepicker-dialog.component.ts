@@ -3,22 +3,22 @@ import { NgTemplateOutlet } from "@angular/common";
 import { CdkTrapFocus } from "@angular/cdk/a11y";
 import { MatIconModule } from "@angular/material/icon";
 import { DateTime } from "luxon";
-import { MrDatepickerGridComponent, type MrDatepickerGridKeydown, type MrDatepickerWeek, type MrDatepickerWeekday } from "./mr-datepicker-grid.component";
-import { MrTimeWheelComponent, type TimeUnit } from "./mr-time-wheel.component";
+import { DatepickerGridComponent, type DatepickerGridKeydown, type DatepickerWeek, type DatepickerWeekday } from "./datepicker-grid.component";
+import { TimeWheelComponent, type TimeUnit } from "./time-wheel.component";
 
-export type MrDatepickerTimeChange = {
+export type DatepickerTimeChange = {
   unit: TimeUnit;
   value: number;
 };
 
 @Component({
-  selector: "mr-datepicker-dialog",
+  selector: "datepicker-dialog",
   standalone: true,
-  imports: [NgTemplateOutlet, CdkTrapFocus, MatIconModule, MrDatepickerGridComponent, MrTimeWheelComponent],
-  templateUrl: "./mr-datepicker-dialog.component.html",
-  styleUrl: "./mr-datepicker-dialog.component.scss",
+  imports: [NgTemplateOutlet, CdkTrapFocus, MatIconModule, DatepickerGridComponent, TimeWheelComponent],
+  templateUrl: "./datepicker-dialog.component.html",
+  styleUrl: "./datepicker-dialog.component.scss",
 })
-export class MrDatepickerDialogComponent {
+export class DatepickerDialogComponent {
   readonly dialogId = input.required<string>();
   readonly dialogTitleId = input.required<string>();
   readonly dialogDescriptionId = input.required<string>();
@@ -31,8 +31,8 @@ export class MrDatepickerDialogComponent {
   readonly secondLabelId = input.required<string>();
   readonly dialogTitle = input.required<string>();
   readonly formattedMonth = input.required<string>();
-  readonly daysOfWeek = input.required<readonly MrDatepickerWeekday[]>();
-  readonly weeks = input.required<readonly MrDatepickerWeek[]>();
+  readonly daysOfWeek = input.required<readonly DatepickerWeekday[]>();
+  readonly weeks = input.required<readonly DatepickerWeek[]>();
   readonly monthAbbreviation = input.required<string>();
   readonly selectedDate = input<DateTime | null>(null);
   readonly activeDate = input.required<DateTime>();
@@ -48,13 +48,13 @@ export class MrDatepickerDialogComponent {
   readonly nextMonth = output<void>();
   readonly dateSelected = output<DateTime>();
   readonly dateFocused = output<DateTime>();
-  readonly dateKeydown = output<MrDatepickerGridKeydown>();
-  readonly timeChanged = output<MrDatepickerTimeChange>();
+  readonly dateKeydown = output<DatepickerGridKeydown>();
+  readonly timeChanged = output<DatepickerTimeChange>();
   readonly nowSelected = output<void>();
   readonly confirmed = output<void>();
 
   protected readonly calendarGridId = computed(() => `${this.dialogId()}-grid`);
-  private readonly calendarGrid = viewChild.required(MrDatepickerGridComponent);
+  private readonly calendarGrid = viewChild.required(DatepickerGridComponent);
 
   focusDate(date: DateTime): void {
     this.calendarGrid().focusDate(date);
