@@ -27,4 +27,51 @@ The `MrDatepickerComponent` is a robust and accessible date/time selection compo
 
 <Canvas of={ReactiveFormStories.ReactiveForm} />
 
+## Accessibility
+
+The `MrDatepickerComponent` is engineered for high accessibility, adhering to WCAG 2.1 AA standards to ensure usability for all enterprise users, including those relying on assistive technologies.
+
+### Keyboard Navigation
+
+Full keyboard support is provided for efficient, mouse-free operation:
+
+| Key | Action |
+| :--- | :--- |
+| **Enter** / **ArrowDown** | Opens the calendar dialog when the input is focused. |
+| **Escape** | Closes the calendar and returns focus to the trigger element. |
+| **Arrow Keys** | Navigates between days in the calendar grid. |
+| **Home** / **End** | Moves focus to the first or last day of the current week. |
+| **PageUp** / **PageDown** | Switches to the previous or next month. |
+| **Shift + PageUp / PageDown** | Switches to the previous or next year. |
+| **Space** / **Enter** | Selects the currently focused date. |
+
+### Screen Reader Support
+
+- **ARIA Roles**: Utilizes appropriate ARIA roles including `combobox`, `grid`, `gridcell`, and `dialog` to convey component structure and state.
+- **Live Regions**: Employs `aria-live` regions to announce dynamic updates, such as date selection and time adjustments, providing immediate feedback to screen reader users.
+- **Descriptive Labels**: Every date button features a localized, descriptive label (e.g., "Montag, 12. Juli 2026, heute, ausgewählt") to provide full context.
+
+## Testability
+
+Designed with automated testing in mind, the component provides robust hooks for unit and End-to-End (E2E) testing.
+
+### Automated Testing Hooks
+
+The component exposes a `testId` input which generates stable `data-testid` attributes across the internal DOM structure. This ensures that test suites remain resilient to changes in the component's internal implementation.
+
+| Selector | Description |
+| :--- | :--- |
+| `[data-testid="your-id"]` | The root component element. |
+| `[data-testid="your-id-input"]` | The native input element for manual entry. |
+| `[data-testid="your-id-toggle"]` | The calendar trigger button. |
+| `[data-testid="your-id-dialog"]` | The calendar overlay/dialog container. |
+| `[data-testid="your-id-confirm"]` | The confirmation button in the dialog. |
+
+### Integration Testing
+
+As a native Angular component implementing `ControlValueAccessor` and `Validator`, it integrates seamlessly with:
+- **Reactive Forms**: Full support for `FormControl` and validation states.
+- **Template-driven Forms**: Supports `ngModel` and standard validation attributes.
+- **Signal-based state**: Compatible with modern Angular signal-based architectures.
+
 
