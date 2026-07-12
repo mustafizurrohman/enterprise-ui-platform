@@ -35,7 +35,6 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   private readonly componentId = `mr-datepicker-${MrDatepickerComponent.nextId++}`;
 
   readonly label = input<string>('Datum auswählen');
-  readonly placeholder = input<string>('Datum auswählen');
   readonly dateOnly = input(false, { transform: booleanAttribute });
   readonly showSeconds = input(false, { transform: booleanAttribute });
   readonly today = input<DateTime>(DateTime.now());
@@ -72,11 +71,9 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     return this.showSeconds() ? 'TT.MM.JJJJ HH:MM:SS Uhr' : 'TT.MM.JJJJ HH:MM Uhr';
   });
 
+
   protected readonly hours = Array.from({ length: 24 }, (_, index) => index);
-  protected readonly minutesAndSeconds = Array.from(
-    { length: 60 },
-    (_, index) => index
-  );
+  protected readonly minutesAndSeconds = Array.from({ length: 60 }, (_, index) => index);
 
   readonly selectedDate = signal<DateTime | null>(null);
   readonly viewDate = signal<DateTime>(DateTime.now());
@@ -92,29 +89,29 @@ export class MrDatepickerComponent implements ControlValueAccessor {
       originY: 'bottom',
       overlayX: 'start',
       overlayY: 'top',
-      offsetY: 8
+      offsetY: 8,
     },
     {
       originX: 'end',
       originY: 'bottom',
       overlayX: 'end',
       overlayY: 'top',
-      offsetY: 8
+      offsetY: 8,
     },
     {
       originX: 'start',
       originY: 'top',
       overlayX: 'start',
       overlayY: 'bottom',
-      offsetY: -8
+      offsetY: -8,
     },
     {
       originX: 'end',
       originY: 'top',
       overlayX: 'end',
       overlayY: 'bottom',
-      offsetY: -8
-    }
+      offsetY: -8,
+    },
   ];
 
   daysOfWeek = Info.weekdays('short', { locale: 'de' }).map((short, i) => ({
@@ -124,7 +121,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }));
 
   protected readonly monthAbbreviation = computed(() =>
-    this.viewDate().startOf('month').setLocale('de').toFormat('LLL').toUpperCase()
+    this.viewDate().startOf('month').setLocale('de').toFormat('LLL').toUpperCase(),
   );
 
   readonly grid = computed(() => {
@@ -138,13 +135,9 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     // The first cell is always reserved for the month abbreviation.
     // A month beginning on Monday therefore starts in the first column
     // of the following row; all other months keep day 1 in its weekday column.
-    const leadingCellCount =
-      mondayBasedFirstDayIndex === 0 ? 7 : mondayBasedFirstDayIndex;
+    const leadingCellCount = mondayBasedFirstDayIndex === 0 ? 7 : mondayBasedFirstDayIndex;
 
-    const cells: (DateTime | null)[] = Array.from(
-      { length: leadingCellCount },
-      () => null
-    );
+    const cells: (DateTime | null)[] = Array.from({ length: leadingCellCount }, () => null);
 
     for (let day = 1; day <= daysInMonth; day++) {
       cells.push(startOfMonth.set({ day }));
@@ -183,9 +176,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   protected onOverlayAttached(): void {
-    const initialDate =
-      this.selectedDate()?.startOf('day') ??
-      DateTime.local().startOf('day');
+    const initialDate = this.selectedDate()?.startOf('day') ?? DateTime.local().startOf('day');
 
     this.activeDate.set(initialDate as any);
 
@@ -206,8 +197,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     const isoDate = this.activeDate().toISODate();
 
     const activeButton = this.calendarDayButtons().find(
-      ({ nativeElement }) =>
-        nativeElement.dataset['date'] === isoDate
+      ({ nativeElement }) => nativeElement.dataset['date'] === isoDate,
     );
 
     activeButton?.nativeElement.focus();
@@ -221,7 +211,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     if (this.disabled()) {
       return;
     }
-    this.isOpen.update(isOpen => !isOpen);
+    this.isOpen.update((isOpen) => !isOpen);
     if (this.isOpen() && this.selectedDate()) {
       this.viewDate.set(this.selectedDate()!);
     }
@@ -234,10 +224,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     }
   }
 
-  protected handleCalendarKeydown(
-    event: KeyboardEvent,
-    date: DateTime
-  ): void {
+  protected handleCalendarKeydown(event: KeyboardEvent, date: DateTime): void {
     let nextDate: DateTime | null = null;
 
     switch (event.key) {
@@ -259,26 +246,22 @@ export class MrDatepickerComponent implements ControlValueAccessor {
 
       case 'Home':
         nextDate = date.minus({
-          days: date.weekday - 1
+          days: date.weekday - 1,
         });
         break;
 
       case 'End':
         nextDate = date.plus({
-          days: 7 - date.weekday
+          days: 7 - date.weekday,
         });
         break;
 
       case 'PageUp':
-        nextDate = event.shiftKey
-          ? date.minus({ years: 1 })
-          : date.minus({ months: 1 });
+        nextDate = event.shiftKey ? date.minus({ years: 1 }) : date.minus({ months: 1 });
         break;
 
       case 'PageDown':
-        nextDate = event.shiftKey
-          ? date.plus({ years: 1 })
-          : date.plus({ months: 1 });
+        nextDate = event.shiftKey ? date.plus({ years: 1 }) : date.plus({ months: 1 });
         break;
 
       case 'Escape':
@@ -317,11 +300,11 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   prevMonth(): void {
-    this.viewDate.update(d => d.minus({ months: 1 }));
+    this.viewDate.update((d) => d.minus({ months: 1 }));
   }
 
   nextMonth(): void {
-    this.viewDate.update(d => d.plus({ months: 1 }));
+    this.viewDate.update((d) => d.plus({ months: 1 }));
   }
 
   protected selectDate(date: DateTime): void {
@@ -333,7 +316,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
       newSelectedDate = date.set({
         hour: current.hour,
         minute: current.minute,
-        second: this.showSeconds() ? current.second : 0
+        second: this.showSeconds() ? current.second : 0,
       });
     } else {
       newSelectedDate = this.showSeconds() ? date : date.set({ second: 0 });
@@ -382,7 +365,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     const currentDate = this.selectedDate() ?? DateTime.local().startOf('day');
 
     const newDate = currentDate.set({
-      [unit]: normalizedValue
+      [unit]: normalizedValue,
     });
     this.selectedDate.set(newDate);
     this.onChange(newDate.toISO());
@@ -421,7 +404,8 @@ export class MrDatepickerComponent implements ControlValueAccessor {
       return;
     }
 
-    let announcement = `Uhrzeit ${this.formatTimeValue(date.hour)} Uhr, ` +
+    let announcement =
+      `Uhrzeit ${this.formatTimeValue(date.hour)} Uhr, ` +
       `${this.formatTimeValue(date.minute)} Minuten`;
 
     if (this.showSeconds()) {
@@ -440,15 +424,11 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   protected previousTimeValue(unit: TimeUnit): string {
-    return this.formatTimeValue(
-      this.normalizeTimeValue(unit, this.getTimeValue(unit) - 1)
-    );
+    return this.formatTimeValue(this.normalizeTimeValue(unit, this.getTimeValue(unit) - 1));
   }
 
   protected nextTimeValue(unit: TimeUnit): string {
-    return this.formatTimeValue(
-      this.normalizeTimeValue(unit, this.getTimeValue(unit) + 1)
-    );
+    return this.formatTimeValue(this.normalizeTimeValue(unit, this.getTimeValue(unit) + 1));
   }
 
   protected formatTimeValue(value: number): string {
@@ -456,10 +436,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   private changeTime(unit: TimeUnit, difference: number): void {
-    const nextValue = this.normalizeTimeValue(
-      unit,
-      this.getTimeValue(unit) + difference
-    );
+    const nextValue = this.normalizeTimeValue(unit, this.getTimeValue(unit) + difference);
 
     this.updateTime(unit, nextValue);
   }
@@ -521,26 +498,21 @@ export class MrDatepickerComponent implements ControlValueAccessor {
     return date.hasSame(this.today(), 'day');
   }
 
-  protected isCurrentWeek(weekInfo: {
-    weekNumber: number;
-    days: (DateTime | null)[];
-  }): boolean {
+  protected isCurrentWeek(weekInfo: { weekNumber: number; days: (DateTime | null)[] }): boolean {
     return weekInfo.days.some((day) => this.isToday(day));
   }
 
   protected isCurrentWeekday(weekday: number): boolean {
-    return this.today().weekday === weekday;
+    return this.today().weekday === weekday && this.today().hasSame(this.viewDate(), 'month');
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {
-    const formattedDate = date
-      .setLocale('de')
-      .toLocaleString({
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      });
+    const formattedDate = date.setLocale('de').toLocaleString({
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
 
     const states: string[] = [];
 
@@ -552,9 +524,7 @@ export class MrDatepickerComponent implements ControlValueAccessor {
       states.push('ausgewählt');
     }
 
-    return states.length > 0
-      ? `${formattedDate}, ${states.join(', ')}`
-      : formattedDate;
+    return states.length > 0 ? `${formattedDate}, ${states.join(', ')}` : formattedDate;
   }
 
   protected hasInputError(): boolean {
@@ -562,8 +532,6 @@ export class MrDatepickerComponent implements ControlValueAccessor {
   }
 
   protected readonly inputDescriptionIds = computed(() =>
-    this.hasInputError()
-      ? `${this.inputHintId} ${this.inputErrorId}`
-      : this.inputHintId
+    this.hasInputError() ? `${this.inputHintId} ${this.inputErrorId}` : this.inputHintId,
   );
 }

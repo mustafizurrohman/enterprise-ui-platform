@@ -23,7 +23,7 @@
       [attr.aria-describedby]="inputDescriptionIds()"
       [attr.aria-invalid]="hasInputError() ? 'true' : null"
       [value]="selectedDate() ? selectedDate()!.toFormat(dateFormat()) : ''"
-      [placeholder]="placeholder()"
+      [placeholder]="dateFormatDescription()"
       [disabled]="disabled()"
       (click)="openCalendar()"
       (keydown.enter)="openCalendar()"

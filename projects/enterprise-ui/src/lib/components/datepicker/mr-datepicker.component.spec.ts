@@ -611,5 +611,20 @@ describe('MrDatepickerComponent', () => {
       const kwCell = weekRow?.querySelector('.mr-datepicker-kw-value');
       expect(kwCell?.classList.contains('today')).toBeTruthy();
     });
+
+    it('should NOT highlight the weekday header if viewing a different month', async () => {
+      const specificToday = DateTime.fromISO('2026-07-20'); // Monday
+      fixture.componentRef.setInput('today', specificToday);
+      
+      // View June 2026 instead of July 2026
+      component.writeValue('2026-06-15');
+      (component as any).isOpen.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const weekdayHeaders = document.querySelectorAll('.mr-datepicker-day-name');
+      // Index 1 is Monday. It should NOT have 'today' class because we are in June.
+      expect(weekdayHeaders[1].classList.contains('today')).toBeFalsy();
+    });
   });
 });
