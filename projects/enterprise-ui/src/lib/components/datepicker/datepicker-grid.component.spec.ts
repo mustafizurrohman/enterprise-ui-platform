@@ -3,6 +3,7 @@ import { DateTime, Info } from "luxon";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DatepickerGridComponent,
+  type DatepickerGridContext,
   type DatepickerWeek,
 } from "./datepicker-grid.component";
 
@@ -39,6 +40,26 @@ describe("DatepickerGridComponent", () => {
     },
   ];
 
+  const context: DatepickerGridContext = {
+    gridId: "calendar-grid",
+    daysOfWeek: Info.weekdays("short", { locale: "de" }).map(
+      (short, index) => ({
+        short,
+        long:
+          Info.weekdays("long", { locale: "de" })[index] ?? short,
+        weekday: index + 1,
+      }),
+    ),
+    weeks,
+    monthAbbreviation: "JUL",
+    selectedDate,
+    activeDate: selectedDate,
+    today,
+    viewDate: selectedDate,
+    monthHeadingId: "month-heading",
+    testIdPrefix: "datepicker",
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DatepickerGridComponent],
@@ -46,23 +67,7 @@ describe("DatepickerGridComponent", () => {
 
     fixture = TestBed.createComponent(DatepickerGridComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput("gridId", "calendar-grid");
-    fixture.componentRef.setInput(
-      "daysOfWeek",
-      Info.weekdays("short", { locale: "de" }).map((short, index) => ({
-        short,
-        long: Info.weekdays("long", { locale: "de" })[index] ?? short,
-        weekday: index + 1,
-      })),
-    );
-    fixture.componentRef.setInput("weeks", weeks);
-    fixture.componentRef.setInput("monthAbbreviation", "JUL");
-    fixture.componentRef.setInput("selectedDate", selectedDate);
-    fixture.componentRef.setInput("activeDate", selectedDate);
-    fixture.componentRef.setInput("today", today);
-    fixture.componentRef.setInput("viewDate", selectedDate);
-    fixture.componentRef.setInput("monthHeadingId", "month-heading");
-    fixture.componentRef.setInput("testIdPrefix", "datepicker");
+    fixture.componentRef.setInput("context", context);
     fixture.detectChanges();
   });
 
@@ -132,6 +137,7 @@ describe("DatepickerGridComponent", () => {
       ),
     );
   });
+
   it("should render weekday names and calendar weeks in bold", () => {
     const weekday = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-weekday-1"] strong',
@@ -147,5 +153,4 @@ describe("DatepickerGridComponent", () => {
     expect(calendarWeekHeading.textContent?.trim()).toBe("KW");
     expect(weekNumber.textContent?.trim()).toBe("27");
   });
-
 });

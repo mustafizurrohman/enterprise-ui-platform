@@ -1,5 +1,6 @@
 import {
   Component,
+  computed,
   ElementRef,
   input,
   output,
@@ -23,6 +24,19 @@ export type DatepickerGridKeydown = {
   date: DateTime;
 };
 
+export type DatepickerGridContext = Readonly<{
+  gridId: string;
+  daysOfWeek: readonly DatepickerWeekday[];
+  weeks: readonly DatepickerWeek[];
+  monthAbbreviation: string;
+  selectedDate: DateTime | null;
+  activeDate: DateTime;
+  today: DateTime;
+  viewDate: DateTime;
+  monthHeadingId: string;
+  testIdPrefix: string;
+}>;
+
 @Component({
   selector: "datepicker-grid",
   standalone: true,
@@ -30,20 +44,28 @@ export type DatepickerGridKeydown = {
   styleUrl: "./datepicker-grid.component.scss",
 })
 export class DatepickerGridComponent {
-  readonly gridId = input.required<string>();
-  readonly daysOfWeek = input.required<readonly DatepickerWeekday[]>();
-  readonly weeks = input.required<readonly DatepickerWeek[]>();
-  readonly monthAbbreviation = input.required<string>();
-  readonly selectedDate = input<DateTime | null>(null);
-  readonly activeDate = input.required<DateTime>();
-  readonly today = input.required<DateTime>();
-  readonly viewDate = input.required<DateTime>();
-  readonly monthHeadingId = input.required<string>();
-  readonly testIdPrefix = input.required<string>();
+  readonly context = input.required<DatepickerGridContext>();
 
   readonly dateSelected = output<DateTime>();
   readonly dateFocused = output<DateTime>();
   readonly dateKeydown = output<DatepickerGridKeydown>();
+
+  protected readonly gridId = computed(() => this.context().gridId);
+  protected readonly daysOfWeek = computed(() => this.context().daysOfWeek);
+  protected readonly weeks = computed(() => this.context().weeks);
+  protected readonly monthAbbreviation = computed(
+    () => this.context().monthAbbreviation,
+  );
+  protected readonly selectedDate = computed(() => this.context().selectedDate);
+  protected readonly activeDate = computed(() => this.context().activeDate);
+  protected readonly today = computed(() => this.context().today);
+  protected readonly viewDate = computed(() => this.context().viewDate);
+  protected readonly monthHeadingId = computed(
+    () => this.context().monthHeadingId,
+  );
+  protected readonly testIdPrefix = computed(
+    () => this.context().testIdPrefix,
+  );
 
   private readonly calendarDayButtons =
     viewChildren<ElementRef<HTMLButtonElement>>("calendarDay");

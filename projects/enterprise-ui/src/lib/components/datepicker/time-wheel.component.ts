@@ -3,6 +3,14 @@ import { MatIconModule } from "@angular/material/icon";
 
 export type TimeUnit = "hour" | "minute" | "second";
 
+export type TimeWheelContext = Readonly<{
+  unit: TimeUnit;
+  value: number;
+  controlId: string;
+  labelId: string;
+  testIdPrefix: string;
+}>;
+
 type TimeUnitConfiguration = {
   label: string;
   singularLabel: string;
@@ -39,13 +47,17 @@ const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
   styleUrl: "./time-wheel.component.scss",
 })
 export class TimeWheelComponent {
-  readonly unit = input.required<TimeUnit>();
-  readonly value = input.required<number>();
-  readonly controlId = input.required<string>();
-  readonly labelId = input.required<string>();
-  readonly testIdPrefix = input.required<string>();
+  readonly context = input.required<TimeWheelContext>();
 
   readonly valueChange = output<number>();
+
+  protected readonly unit = computed(() => this.context().unit);
+  protected readonly value = computed(() => this.context().value);
+  protected readonly controlId = computed(() => this.context().controlId);
+  protected readonly labelId = computed(() => this.context().labelId);
+  protected readonly testIdPrefix = computed(
+    () => this.context().testIdPrefix,
+  );
 
   protected readonly configuration = computed(
     () => TIME_UNIT_CONFIGURATION[this.unit()],

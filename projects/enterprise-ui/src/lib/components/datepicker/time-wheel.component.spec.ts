@@ -1,10 +1,21 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { TimeWheelComponent } from "./time-wheel.component";
+import {
+  TimeWheelComponent,
+  type TimeWheelContext,
+} from "./time-wheel.component";
 
 describe("TimeWheelComponent", () => {
   let fixture: ComponentFixture<TimeWheelComponent>;
   let component: TimeWheelComponent;
+
+  const createContext = (value: number): TimeWheelContext => ({
+    unit: "hour",
+    value,
+    controlId: "hour-control",
+    labelId: "hour-label",
+    testIdPrefix: "datepicker",
+  });
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -13,11 +24,7 @@ describe("TimeWheelComponent", () => {
 
     fixture = TestBed.createComponent(TimeWheelComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput("unit", "hour");
-    fixture.componentRef.setInput("value", 10);
-    fixture.componentRef.setInput("controlId", "hour-control");
-    fixture.componentRef.setInput("labelId", "hour-label");
-    fixture.componentRef.setInput("testIdPrefix", "datepicker");
+    fixture.componentRef.setInput("context", createContext(10));
     fixture.detectChanges();
   });
 
@@ -37,7 +44,7 @@ describe("TimeWheelComponent", () => {
     const valueChangeSpy = vi.fn();
     component.valueChange.subscribe(valueChangeSpy);
 
-    fixture.componentRef.setInput("value", 23);
+    fixture.componentRef.setInput("context", createContext(23));
     fixture.detectChanges();
     (
       fixture.nativeElement.querySelector(
@@ -46,7 +53,7 @@ describe("TimeWheelComponent", () => {
     ).click();
     expect(valueChangeSpy).toHaveBeenLastCalledWith(0);
 
-    fixture.componentRef.setInput("value", 0);
+    fixture.componentRef.setInput("context", createContext(0));
     fixture.detectChanges();
     (
       fixture.nativeElement.querySelector(
@@ -77,7 +84,7 @@ describe("TimeWheelComponent", () => {
     ["PageDown", 0],
     ["Home", 0],
     ["End", 23],
-  ])("should handle %s keyboard input", (key, expectedValue) => {
+  ])("should handle %s keyboard input", (key: string, expectedValue: number) => {
     const valueChangeSpy = vi.fn();
     component.valueChange.subscribe(valueChangeSpy);
     const input = fixture.nativeElement.querySelector(
@@ -94,8 +101,8 @@ describe("TimeWheelComponent", () => {
       ".datepicker-time-preview",
     );
 
-    expect(previews[0].textContent.trim()).toBe("11");
-    expect(previews[1].textContent.trim()).toBe("09");
+    expect(previews[0]?.textContent?.trim()).toBe("11");
+    expect(previews[1]?.textContent?.trim()).toBe("09");
   });
 
   it("should render centered Material icons with stable test ids", () => {

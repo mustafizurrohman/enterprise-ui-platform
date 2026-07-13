@@ -31,7 +31,10 @@ import {
 } from "@angular/cdk/overlay";
 import { MatIconModule } from "@angular/material/icon";
 import { DateTime, Info } from "luxon";
-import { DatepickerDialogComponent } from "./datepicker-dialog.component";
+import {
+  DatepickerDialogComponent,
+  type DatepickerDialogContext,
+} from "./datepicker-dialog.component";
 import type { TimeUnit } from "./time-wheel.component";
 
 @Component({
@@ -78,19 +81,21 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     () => this.disabled() || this._disabledForm(),
   );
 
-  protected readonly inputId = `${this.componentId}-input`;
-  protected readonly inputHintId = `${this.componentId}-hint`;
-  protected readonly inputErrorId = `${this.componentId}-error`;
-  protected readonly dialogId = `${this.componentId}-dialog`;
-  protected readonly dialogTitleId = `${this.componentId}-dialog-title`;
-  protected readonly dialogDescriptionId = `${this.componentId}-dialog-description`;
-  protected readonly monthHeadingId = `${this.componentId}-month-heading`;
-  protected readonly hourSelectId = `${this.componentId}-hour`;
-  protected readonly minuteSelectId = `${this.componentId}-minute`;
-  protected readonly secondSelectId = `${this.componentId}-second`;
-  protected readonly hourLabelId = `${this.componentId}-hour-label`;
-  protected readonly minuteLabelId = `${this.componentId}-minute-label`;
-  protected readonly secondLabelId = `${this.componentId}-second-label`;
+  protected readonly ids = {
+    input: `${this.componentId}-input`,
+    inputHint: `${this.componentId}-hint`,
+    inputError: `${this.componentId}-error`,
+    dialog: `${this.componentId}-dialog`,
+    dialogTitle: `${this.componentId}-dialog-title`,
+    dialogDescription: `${this.componentId}-dialog-description`,
+    monthHeading: `${this.componentId}-month-heading`,
+    hourSelect: `${this.componentId}-hour`,
+    minuteSelect: `${this.componentId}-minute`,
+    secondSelect: `${this.componentId}-second`,
+    hourLabel: `${this.componentId}-hour-label`,
+    minuteLabel: `${this.componentId}-minute-label`,
+    secondLabel: `${this.componentId}-second-label`,
+  } as const;
   protected readonly testIdPrefix = computed(
     () => this.testId()?.trim() || this.componentId,
   );
@@ -228,6 +233,33 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     }
     return gridResult;
   });
+
+  protected readonly dialogContext = computed<DatepickerDialogContext>(() => ({
+    dialogId: this.ids.dialog,
+    dialogTitleId: this.ids.dialogTitle,
+    dialogDescriptionId: this.ids.dialogDescription,
+    monthHeadingId: this.ids.monthHeading,
+    hourSelectId: this.ids.hourSelect,
+    minuteSelectId: this.ids.minuteSelect,
+    secondSelectId: this.ids.secondSelect,
+    hourLabelId: this.ids.hourLabel,
+    minuteLabelId: this.ids.minuteLabel,
+    secondLabelId: this.ids.secondLabel,
+    dialogTitle: this.dialogTitle(),
+    formattedMonth: this.formattedMonth(),
+    daysOfWeek: this.daysOfWeek,
+    weeks: this.grid(),
+    monthAbbreviation: this.monthAbbreviation(),
+    selectedDate: this.selectedDate(),
+    activeDate: this.activeDate(),
+    today: this.today(),
+    viewDate: this.viewDate(),
+    testIdPrefix: this.testIdPrefix(),
+    dateOnly: this.dateOnly(),
+    showSeconds: this.showSeconds(),
+    dateAnnouncement: this.dateAnnouncement(),
+    timeAnnouncement: this.timeAnnouncement(),
+  }));
 
   onChange: (value: Date | null) => void = () => {};
   onTouched: () => void = () => {};
@@ -704,8 +736,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
   protected inputDescriptionIds(): string {
     return this.hasInputError()
-      ? `${this.inputHintId} ${this.inputErrorId}`
-      : this.inputHintId;
+      ? `${this.ids.inputHint} ${this.ids.inputError}`
+      : this.ids.inputHint;
   }
 
   protected testIdFor(part?: string): string {

@@ -1,6 +1,5 @@
 @let disabled = computedDisabled();
 @let open = isOpen();
-@let isDateOnly = dateOnly();
 @let invalid = hasInputError();
 @let currentDate = selectedDate();
 
@@ -8,7 +7,7 @@
   <label
     class="datepicker-label"
     [class.datepicker-label--disabled]="disabled"
-    [for]="inputId"
+    [for]="ids.input"
     [attr.data-testid]="testIdFor('label')"
   >
     {{ label() }}
@@ -23,14 +22,14 @@
   >
     <input
       #dateInput
-      [id]="inputId"
+      [id]="ids.input"
       type="text"
       role="combobox"
       aria-autocomplete="none"
       aria-haspopup="dialog"
       aria-keyshortcuts="Enter ArrowDown Alt+ArrowDown"
       [attr.aria-expanded]="open"
-      [attr.aria-controls]="open ? dialogId : null"
+      [attr.aria-controls]="open ? ids.dialog : null"
       [attr.aria-describedby]="inputDescriptionIds()"
       [attr.aria-invalid]="invalid"
       [attr.data-testid]="testIdFor('input')"
@@ -65,7 +64,7 @@
       [disabled]="disabled"
       [attr.aria-label]="calendarToggleLabel()"
       aria-haspopup="dialog"
-      [attr.aria-controls]="open ? dialogId : null"
+      [attr.aria-controls]="open ? ids.dialog : null"
       [attr.aria-expanded]="open"
       [attr.data-testid]="testIdFor('toggle')"
       (click)="toggleCalendar(calendarToggle)"
@@ -75,7 +74,7 @@
   </div>
 
   <div
-    [id]="inputHintId"
+    [id]="ids.inputHint"
     class="visually-hidden"
     [attr.data-testid]="testIdFor('hint')"
   >
@@ -85,7 +84,7 @@
 
   @if (invalid) {
     <div
-      [id]="inputErrorId"
+      [id]="ids.inputError"
       class="datepicker-error"
       role="alert"
       [attr.data-testid]="testIdFor('error')"
@@ -112,30 +111,7 @@
     (detach)="onOverlayDetached()"
   >
     <datepicker-dialog
-      [dialogId]="dialogId"
-      [dialogTitleId]="dialogTitleId"
-      [dialogDescriptionId]="dialogDescriptionId"
-      [monthHeadingId]="monthHeadingId"
-      [hourSelectId]="hourSelectId"
-      [minuteSelectId]="minuteSelectId"
-      [secondSelectId]="secondSelectId"
-      [hourLabelId]="hourLabelId"
-      [minuteLabelId]="minuteLabelId"
-      [secondLabelId]="secondLabelId"
-      [dialogTitle]="dialogTitle()"
-      [formattedMonth]="formattedMonth()"
-      [daysOfWeek]="daysOfWeek"
-      [weeks]="grid()"
-      [monthAbbreviation]="monthAbbreviation()"
-      [selectedDate]="currentDate"
-      [activeDate]="activeDate()"
-      [today]="today()"
-      [viewDate]="viewDate()"
-      [testIdPrefix]="testIdPrefix()"
-      [dateOnly]="isDateOnly"
-      [showSeconds]="showSeconds()"
-      [dateAnnouncement]="dateAnnouncement()"
-      [timeAnnouncement]="timeAnnouncement()"
+      [context]="dialogContext()"
       (previousMonth)="prevMonth()"
       (nextMonth)="nextMonth()"
       (dateSelected)="selectDate($event)"

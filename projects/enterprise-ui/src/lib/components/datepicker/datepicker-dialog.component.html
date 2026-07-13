@@ -55,16 +55,7 @@
   </div>
 
   <datepicker-grid
-    [gridId]="calendarGridId()"
-    [daysOfWeek]="daysOfWeek()"
-    [weeks]="weeks()"
-    [monthAbbreviation]="monthAbbreviation()"
-    [selectedDate]="selectedDate()"
-    [activeDate]="activeDate()"
-    [today]="today()"
-    [viewDate]="viewDate()"
-    [monthHeadingId]="monthHeadingId()"
-    [testIdPrefix]="testIdPrefix()"
+    [context]="gridContext()"
     (dateSelected)="dateSelected.emit($event)"
     (dateFocused)="dateFocused.emit($event)"
     (dateKeydown)="dateKeydown.emit($event)"
@@ -79,13 +70,22 @@
       <legend class="visually-hidden">Uhrzeit auswählen</legend>
 
       <div class="datepicker-time-wheels" role="group" aria-label="Zeit-Einsteller" [attr.data-testid]="testIdFor('time-wheels')">
-        <time-wheel unit="hour" [value]="selectedDate()?.hour ?? 0" [controlId]="hourSelectId()" [labelId]="hourLabelId()" [testIdPrefix]="testIdPrefix()" (valueChange)="emitTimeChange('hour', $event)" />
+        <time-wheel
+          [context]="hourWheelContext()"
+          (valueChange)="emitTimeChange('hour', $event)"
+        />
         <span class="datepicker-time-separator" aria-hidden="true">:</span>
-        <time-wheel unit="minute" [value]="selectedDate()?.minute ?? 0" [controlId]="minuteSelectId()" [labelId]="minuteLabelId()" [testIdPrefix]="testIdPrefix()" (valueChange)="emitTimeChange('minute', $event)" />
+        <time-wheel
+          [context]="minuteWheelContext()"
+          (valueChange)="emitTimeChange('minute', $event)"
+        />
 
         @if (showSeconds()) {
           <span class="datepicker-time-separator" aria-hidden="true">:</span>
-          <time-wheel unit="second" [value]="selectedDate()?.second ?? 0" [controlId]="secondSelectId()" [labelId]="secondLabelId()" [testIdPrefix]="testIdPrefix()" (valueChange)="emitTimeChange('second', $event)" />
+          <time-wheel
+            [context]="secondWheelContext()"
+            (valueChange)="emitTimeChange('second', $event)"
+          />
         }
       </div>
 
