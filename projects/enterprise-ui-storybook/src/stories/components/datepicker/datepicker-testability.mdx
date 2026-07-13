@@ -1,0 +1,27 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import * as DateTimeStories from './date-time/date-time.stories';
+
+<Meta of={DateTimeStories} name="Testability" />
+
+# Testability
+
+Designed with automated testing in mind, the component provides robust hooks for unit and End-to-End (E2E) testing.
+
+## Automated Testing Hooks
+
+The component exposes a `testId` input which generates stable `data-testid` attributes across the internal DOM structure. This ensures that test suites remain resilient to changes in the component's internal implementation.
+
+| Selector | Description |
+| :--- | :--- |
+| `[data-testid="your-id"]` | The root component element. |
+| `[data-testid="your-id-input"]` | The native input element for manual entry. |
+| `[data-testid="your-id-toggle"]` | The calendar trigger button. |
+| `[data-testid="your-id-dialog"]` | The calendar overlay/dialog container. |
+| `[data-testid="your-id-confirm"]` | The confirmation button in the dialog. |
+
+## Integration Testing
+
+As a native Angular component implementing `ControlValueAccessor` and `Validator`, it integrates seamlessly with:
+- **Reactive Forms**: Full support for `FormControl` and validation states.
+- **Template-driven Forms**: Supports `ngModel` and standard validation attributes.
+- **Signal-based state**: Compatible with modern Angular signal-based architectures.

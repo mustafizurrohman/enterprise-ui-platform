@@ -76,6 +76,37 @@ describe("DatepickerComponent", () => {
         document.querySelector('[data-testid="datepicker-confirm"]'),
       ).toBeTruthy();
     });
+
+    it("should have all documented test IDs from MDX", async () => {
+      fixture.componentRef.setInput("testId", "your-id");
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="your-id"]'),
+      ).toBeTruthy();
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="your-id-input"]'),
+      ).toBeTruthy();
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="your-id-toggle"]'),
+      ).toBeTruthy();
+
+      (
+        fixture.nativeElement.querySelector(
+          '[data-testid="your-id-toggle"]',
+        ) as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(
+        document.querySelector('[data-testid="your-id-dialog"]'),
+      ).toBeTruthy();
+      expect(
+        document.querySelector('[data-testid="your-id-confirm"]'),
+      ).toBeTruthy();
+    });
   });
 
   describe("dateOnly", () => {
@@ -612,6 +643,41 @@ describe("DatepickerComponent", () => {
         ).toBeTruthy();
       },
     );
+
+    it("should navigate the grid with Arrow Keys", async () => {
+      component.writeValue("2026-07-15T10:30:00");
+      const toggle = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-toggle"]',
+      ) as HTMLButtonElement;
+      toggle.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      let activeDay = document.querySelector(
+        '[data-testid="datepicker-day-2026-07-15"]',
+      ) as HTMLButtonElement;
+
+      dispatchKey(activeDay, "ArrowRight");
+      expect((component as any).activeDate().toISODate()).toBe("2026-07-16");
+
+      activeDay = document.querySelector(
+        '[data-testid="datepicker-day-2026-07-16"]',
+      ) as HTMLButtonElement;
+      dispatchKey(activeDay, "ArrowLeft");
+      expect((component as any).activeDate().toISODate()).toBe("2026-07-15");
+
+      activeDay = document.querySelector(
+        '[data-testid="datepicker-day-2026-07-15"]',
+      ) as HTMLButtonElement;
+      dispatchKey(activeDay, "ArrowDown");
+      expect((component as any).activeDate().toISODate()).toBe("2026-07-22");
+
+      activeDay = document.querySelector(
+        '[data-testid="datepicker-day-2026-07-22"]',
+      ) as HTMLButtonElement;
+      dispatchKey(activeDay, "ArrowUp");
+      expect((component as any).activeDate().toISODate()).toBe("2026-07-15");
+    });
 
     it("should support Home, End, PageUp, PageDown and shifted year navigation", async () => {
       component.writeValue("2026-07-15T10:30:00");
