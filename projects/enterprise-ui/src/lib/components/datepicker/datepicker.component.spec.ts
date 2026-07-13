@@ -919,7 +919,7 @@ describe("DatepickerComponent", () => {
       await fixture.whenStable();
 
       expect(
-        document.querySelector("#" + (component as any).secondSelectId),
+        document.querySelector("#" + (component as any).ids.secondSelect),
       ).toBeNull();
       expect(
         document.querySelectorAll(".datepicker-time-wheel"),
@@ -936,7 +936,7 @@ describe("DatepickerComponent", () => {
       await fixture.whenStable();
 
       expect(
-        document.querySelector("#" + (component as any).secondSelectId),
+        document.querySelector("#" + (component as any).ids.secondSelect),
       ).toBeTruthy();
       expect(
         document.querySelectorAll(".datepicker-time-wheel"),
