@@ -8,7 +8,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "storybook": "ng run enterprise-ui-storybook:storybook -- --host 0.0.0.0",
+    "storybook": "ng run enterprise-ui-storybook:storybook",
     "build-storybook": "ng run enterprise-ui-storybook:build-storybook",
     "build-library": "ng build enterprise-ui",
     "test-library": "ng test enterprise-ui",
