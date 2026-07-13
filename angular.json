@@ -111,9 +111,9 @@
           "builder": "@storybook/angular-vite:start-storybook",
           "options": {
             "configDir": "projects/enterprise-ui-storybook/.storybook",
-            "tsConfig": "C:/dev/enterprise-ui-platform/projects/enterprise-ui-storybook/.storybook/tsconfig.json",
+            "tsConfig": "projects/enterprise-ui-storybook/.storybook/tsconfig.json",
             "styles": [
-              "src/styles.scss"
+              "projects/enterprise-ui-storybook/src/styles.scss"
             ],
             "zoneless": false,
             "compodoc": true,
@@ -128,9 +128,9 @@
           "builder": "@storybook/angular-vite:build-storybook",
           "options": {
             "configDir": "projects/enterprise-ui-storybook/.storybook",
-            "tsConfig": "C:/dev/enterprise-ui-platform/projects/enterprise-ui-storybook/.storybook/tsconfig.json",
+            "tsConfig": "projects/enterprise-ui-storybook/.storybook/tsconfig.json",
             "styles": [
-              "src/styles.scss"
+              "projects/enterprise-ui-storybook/src/styles.scss"
             ],
             "zoneless": false,
             "compodoc": true,
