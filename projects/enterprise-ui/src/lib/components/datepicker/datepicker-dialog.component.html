@@ -104,7 +104,7 @@
 
 <ng-template #actions let-withoutTime="withoutTime">
   <div class="datepicker-actions" [class.datepicker-actions--without-time]="withoutTime">
-    <button type="button" class="datepicker-now" [attr.data-testid]="testIdFor('now')" (click)="nowSelected.emit()">Jetzt</button>
+    <button type="button" class="datepicker-now" [attr.data-testid]="testIdFor('now')" (click)="nowSelected.emit()">{{ dateOnly() ? 'Heute' : 'Jetzt' }}</button>
     <button type="button" class="datepicker-confirm" aria-label="Auswahl übernehmen und Kalender schließen" [attr.data-testid]="testIdFor('confirm')" (click)="confirmed.emit()">OK</button>
   </div>
 </ng-template>
