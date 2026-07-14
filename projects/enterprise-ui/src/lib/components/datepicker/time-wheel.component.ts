@@ -1,4 +1,4 @@
-import { Component, computed, input, output } from "@angular/core";
+import { Component, computed, input, output, signal } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 
 export type TimeUnit = "hour" | "minute" | "second";
@@ -17,6 +17,17 @@ type TimeUnitConfiguration = {
   valueTextSuffix: string;
   maximum: number;
 };
+
+type TimeWheelAnimationDirection = "increment" | "decrement";
+type TimeWheelAnimationPhase = "a" | "b";
+
+type TimeWheelAnimationState = Readonly<{
+  direction: TimeWheelAnimationDirection;
+  phase: TimeWheelAnimationPhase;
+  rapid: boolean;
+}>;
+
+const RAPID_CHANGE_THRESHOLD_MS = 180;
 
 const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
   hour: {
@@ -71,12 +82,29 @@ export class TimeWheelComponent {
     this.formatValue(this.normalize(this.value() + 1)),
   );
 
+  protected readonly animationName = computed(() => {
+    const state = this.animationState();
+
+    return state ? `${state.direction}-${state.phase}` : null;
+  });
+
+  protected readonly isRapidChange = computed(
+    () => this.animationState()?.rapid ?? false,
+  );
+
+  private readonly animationState = signal<TimeWheelAnimationState | null>(
+    null,
+  );
+
+  private animationPhase: TimeWheelAnimationPhase = "b";
+  private lastButtonChangeTimestamp: number | null = null;
+
   protected increment(): void {
-    this.changeBy(1);
+    this.changeBy(1, "increment", true);
   }
 
   protected decrement(): void {
-    this.changeBy(-1);
+    this.changeBy(-1, "decrement", true);
   }
 
   protected onInput(event: Event): void {
@@ -103,32 +131,32 @@ export class TimeWheelComponent {
     switch (event.key) {
       case "ArrowUp":
         event.preventDefault();
-        this.increment();
+        this.changeBy(1, "increment");
         break;
 
       case "ArrowDown":
         event.preventDefault();
-        this.decrement();
+        this.changeBy(-1, "decrement");
         break;
 
       case "PageUp":
         event.preventDefault();
-        this.changeBy(10);
+        this.changeBy(10, "increment");
         break;
 
       case "PageDown":
         event.preventDefault();
-        this.changeBy(-10);
+        this.changeBy(-10, "decrement");
         break;
 
       case "Home":
         event.preventDefault();
-        this.valueChange.emit(0);
+        this.emitAnimatedValue(0, "decrement");
         break;
 
       case "End":
         event.preventDefault();
-        this.valueChange.emit(this.configuration().maximum);
+        this.emitAnimatedValue(this.configuration().maximum, "increment");
         break;
     }
   }
@@ -153,8 +181,51 @@ export class TimeWheelComponent {
     return `${this.testIdPrefix()}-${this.unit()}-${part}`;
   }
 
-  private changeBy(difference: number): void {
-    this.valueChange.emit(this.normalize(this.value() + difference));
+  private changeBy(
+    difference: number,
+    direction: TimeWheelAnimationDirection,
+    isButtonInteraction = false,
+  ): void {
+    this.emitAnimatedValue(
+      this.normalize(this.value() + difference),
+      direction,
+      isButtonInteraction,
+    );
+  }
+
+  private emitAnimatedValue(
+    value: number,
+    direction: TimeWheelAnimationDirection,
+    isButtonInteraction = false,
+  ): void {
+    if (value !== this.value()) {
+      this.startCssAnimation(direction, isButtonInteraction);
+    }
+
+    this.valueChange.emit(value);
+  }
+
+  private startCssAnimation(
+    direction: TimeWheelAnimationDirection,
+    isButtonInteraction: boolean,
+  ): void {
+    const currentTimestamp = Date.now();
+    const rapid =
+      isButtonInteraction &&
+      this.lastButtonChangeTimestamp !== null &&
+      currentTimestamp - this.lastButtonChangeTimestamp <=
+        RAPID_CHANGE_THRESHOLD_MS;
+
+    this.lastButtonChangeTimestamp = isButtonInteraction
+      ? currentTimestamp
+      : null;
+
+    this.animationPhase = this.animationPhase === "a" ? "b" : "a";
+    this.animationState.set({
+      direction,
+      phase: this.animationPhase,
+      rapid,
+    });
   }
 
   private normalize(value: number): number {

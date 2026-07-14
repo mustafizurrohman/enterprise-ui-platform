@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   TimeWheelComponent,
   type TimeWheelContext,
@@ -17,6 +17,21 @@ describe("TimeWheelComponent", () => {
     testIdPrefix: "datepicker",
   });
 
+  const getValueContainer = (): HTMLElement =>
+    fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-value"]',
+    ) as HTMLElement;
+
+  const getIncrementButton = (): HTMLButtonElement =>
+    fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-increment"]',
+    ) as HTMLButtonElement;
+
+  const getDecrementButton = (): HTMLButtonElement =>
+    fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-decrement"]',
+    ) as HTMLButtonElement;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TimeWheelComponent],
@@ -26,6 +41,10 @@ describe("TimeWheelComponent", () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput("context", createContext(10));
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("should render the same accessible spinbutton contract", () => {
@@ -46,20 +65,12 @@ describe("TimeWheelComponent", () => {
 
     fixture.componentRef.setInput("context", createContext(23));
     fixture.detectChanges();
-    (
-      fixture.nativeElement.querySelector(
-        '[data-testid="datepicker-hour-increment"]',
-      ) as HTMLButtonElement
-    ).click();
+    getIncrementButton().click();
     expect(valueChangeSpy).toHaveBeenLastCalledWith(0);
 
     fixture.componentRef.setInput("context", createContext(0));
     fixture.detectChanges();
-    (
-      fixture.nativeElement.querySelector(
-        '[data-testid="datepicker-hour-decrement"]',
-      ) as HTMLButtonElement
-    ).click();
+    getDecrementButton().click();
     expect(valueChangeSpy).toHaveBeenLastCalledWith(23);
   });
 
@@ -94,6 +105,113 @@ describe("TimeWheelComponent", () => {
     input.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
 
     expect(valueChangeSpy).toHaveBeenLastCalledWith(expectedValue);
+  });
+
+  it("should set the increment CSS animation on an increment", () => {
+    vi.spyOn(Date, "now").mockReturnValue(1_000);
+
+    getIncrementButton().click();
+    fixture.detectChanges();
+
+    expect(getValueContainer().getAttribute("data-animation")).toBe(
+      "increment-a",
+    );
+    expect(
+      getValueContainer().classList.contains(
+        "datepicker-time-value--rapid",
+      ),
+    ).toBeFalsy();
+  });
+
+  it("should set the decrement CSS animation on a decrement", () => {
+    vi.spyOn(Date, "now").mockReturnValue(1_000);
+
+    getDecrementButton().click();
+    fixture.detectChanges();
+
+    expect(getValueContainer().getAttribute("data-animation")).toBe(
+      "decrement-a",
+    );
+  });
+
+  it("should alternate CSS animation names so rapid changes restart", () => {
+    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(1_000);
+
+    getIncrementButton().click();
+    fixture.detectChanges();
+
+    expect(getValueContainer().getAttribute("data-animation")).toBe(
+      "increment-a",
+    );
+
+    fixture.componentRef.setInput("context", createContext(11));
+    fixture.detectChanges();
+    nowSpy.mockReturnValue(1_100);
+    getIncrementButton().click();
+    fixture.detectChanges();
+
+    expect(getValueContainer().getAttribute("data-animation")).toBe(
+      "increment-b",
+    );
+  });
+
+  it("should use the rapid CSS duration class for fast button presses", () => {
+    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(1_000);
+
+    getIncrementButton().click();
+    fixture.componentRef.setInput("context", createContext(11));
+    fixture.detectChanges();
+
+    nowSpy.mockReturnValue(1_100);
+    getIncrementButton().click();
+    fixture.detectChanges();
+
+    expect(
+      getValueContainer().classList.contains(
+        "datepicker-time-value--rapid",
+      ),
+    ).toBeTruthy();
+  });
+
+  it("should keep the normal CSS duration for slower button presses", () => {
+    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(1_000);
+
+    getIncrementButton().click();
+    fixture.componentRef.setInput("context", createContext(11));
+    fixture.detectChanges();
+
+    nowSpy.mockReturnValue(1_181);
+    getIncrementButton().click();
+    fixture.detectChanges();
+
+    expect(
+      getValueContainer().classList.contains(
+        "datepicker-time-value--rapid",
+      ),
+    ).toBeFalsy();
+  });
+
+  it("should not treat keyboard changes as rapid button presses", () => {
+    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(1_000);
+    const input = fixture.nativeElement.querySelector(
+      "input",
+    ) as HTMLInputElement;
+
+    getIncrementButton().click();
+    fixture.componentRef.setInput("context", createContext(11));
+    fixture.detectChanges();
+
+    nowSpy.mockReturnValue(1_050);
+    input.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }),
+    );
+    fixture.detectChanges();
+
+    expect(
+      getValueContainer().classList.contains(
+        "datepicker-time-value--rapid",
+      ),
+    ).toBeFalsy();
   });
 
   it("should render previous and next preview values", () => {

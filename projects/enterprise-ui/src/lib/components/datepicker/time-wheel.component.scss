@@ -24,9 +24,6 @@
   cursor: pointer;
   font-size: 22px;
   line-height: 1;
-  transition:
-    background-color 150ms ease,
-    transform 100ms ease;
 
   &:hover {
     background: rgb(0 122 255 / 10%);
@@ -54,6 +51,8 @@
 }
 
 .datepicker-time-value {
+  --time-wheel-animation-duration: 180ms;
+
   position: relative;
   display: grid;
   width: 64px;
@@ -61,6 +60,10 @@
   align-items: center;
   justify-items: center;
   overflow: hidden;
+
+  &--rapid {
+    --time-wheel-animation-duration: 70ms;
+  }
 
   &::before {
     position: absolute;
@@ -124,6 +127,89 @@
   margin-top: 4px;
   color: rgb(60 60 67 / 60%);
   font-size: 12px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .datepicker-time-button {
+    transition:
+      background-color 150ms ease,
+      transform 100ms ease;
+  }
+
+  .datepicker-time-value[data-animation] .datepicker-time-select {
+    animation-duration: var(--time-wheel-animation-duration);
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+    animation-fill-mode: both;
+    will-change: opacity, transform;
+  }
+
+  .datepicker-time-value[data-animation="increment-a"]
+    .datepicker-time-select {
+    animation-name: datepicker-time-increment-a;
+  }
+
+  .datepicker-time-value[data-animation="increment-b"]
+    .datepicker-time-select {
+    animation-name: datepicker-time-increment-b;
+  }
+
+  .datepicker-time-value[data-animation="decrement-a"]
+    .datepicker-time-select {
+    animation-name: datepicker-time-decrement-a;
+  }
+
+  .datepicker-time-value[data-animation="decrement-b"]
+    .datepicker-time-select {
+    animation-name: datepicker-time-decrement-b;
+  }
+}
+
+@keyframes datepicker-time-increment-a {
+  from {
+    opacity: 0.35;
+    transform: translateY(-14px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes datepicker-time-increment-b {
+  from {
+    opacity: 0.35;
+    transform: translateY(-14px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes datepicker-time-decrement-a {
+  from {
+    opacity: 0.35;
+    transform: translateY(14px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes datepicker-time-decrement-b {
+  from {
+    opacity: 0.35;
+    transform: translateY(14px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (forced-colors: active) {

@@ -20,7 +20,12 @@
     </mat-icon>
   </button>
 
-  <div class="datepicker-time-value" [attr.data-testid]="testIdFor('value')">
+  <div
+    class="datepicker-time-value"
+    [class.datepicker-time-value--rapid]="isRapidChange()"
+    [attr.data-animation]="animationName()"
+    [attr.data-testid]="testIdFor('value')"
+  >
     <span
       class="datepicker-time-preview"
       aria-hidden="true"
