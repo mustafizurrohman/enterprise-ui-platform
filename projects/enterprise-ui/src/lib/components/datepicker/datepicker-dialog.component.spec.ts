@@ -54,7 +54,6 @@ describe("DatepickerDialogComponent", () => {
           ],
         },
       ],
-      monthAbbreviation: "JUL",
       selectedDate: date,
       activeDate: date,
       today: date,

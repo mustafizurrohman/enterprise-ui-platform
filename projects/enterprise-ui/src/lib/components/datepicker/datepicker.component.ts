@@ -202,13 +202,6 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     weekday: i + 1,
   }));
 
-  protected readonly monthAbbreviation = computed(() =>
-    this.viewDate()
-      .startOf("month")
-      .setLocale("de")
-      .toFormat("LLL")
-      .toUpperCase(),
-  );
 
   readonly grid = computed(() => {
     const startOfMonth = this.viewDate().startOf("month");
@@ -218,11 +211,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     // Monday-based index: 0 = Mon, 6 = Sun
     const mondayBasedFirstDayIndex = firstDayWeekday - 1;
 
-    // The first cell is always reserved for the month abbreviation.
-    // A month beginning on Monday therefore starts in the first column
-    // of the following row; all other months keep day 1 in its weekday column.
-    const leadingCellCount =
-      mondayBasedFirstDayIndex === 0 ? 7 : mondayBasedFirstDayIndex;
+    // Align the first day of the month to its correct weekday column.
+    const leadingCellCount = mondayBasedFirstDayIndex;
 
     const cells: (DateTime | null)[] = Array.from(
       { length: leadingCellCount },
@@ -265,7 +255,6 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     formattedMonth: this.formattedMonth(),
     daysOfWeek: this.daysOfWeek,
     weeks: this.grid(),
-    monthAbbreviation: this.monthAbbreviation(),
     selectedDate: this.selectedDate(),
     activeDate: this.activeDate(),
     today: this.today(),

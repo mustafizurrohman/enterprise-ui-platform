@@ -28,7 +28,6 @@ export type DatepickerGridContext = Readonly<{
   gridId: string;
   daysOfWeek: readonly DatepickerWeekday[];
   weeks: readonly DatepickerWeek[];
-  monthAbbreviation: string;
   selectedDate: DateTime | null;
   activeDate: DateTime;
   today: DateTime;

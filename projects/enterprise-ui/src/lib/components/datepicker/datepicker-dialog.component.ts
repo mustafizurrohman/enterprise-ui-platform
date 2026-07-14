@@ -36,7 +36,6 @@ export type DatepickerDialogContext = Readonly<{
   formattedMonth: string;
   daysOfWeek: readonly DatepickerWeekday[];
   weeks: readonly DatepickerWeek[];
-  monthAbbreviation: string;
   selectedDate: DateTime | null;
   activeDate: DateTime;
   today: DateTime;
@@ -113,7 +112,6 @@ export class DatepickerDialogComponent {
       gridId: this.calendarGridId(),
       daysOfWeek: context.daysOfWeek,
       weeks: context.weeks,
-      monthAbbreviation: context.monthAbbreviation,
       selectedDate: context.selectedDate,
       activeDate: context.activeDate,
       today: context.today,

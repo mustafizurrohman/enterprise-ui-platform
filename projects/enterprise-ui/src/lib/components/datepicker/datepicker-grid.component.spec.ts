@@ -55,7 +55,6 @@ describe("DatepickerGridComponent", () => {
       }),
     ),
     weeks,
-    monthAbbreviation: "JUL",
     selectedDate,
     activeDate: selectedDate,
     today,

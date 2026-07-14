@@ -183,18 +183,12 @@ describe("DatepickerComponent", () => {
   });
 
   describe("calendar day arrangement", () => {
-    it("should render July 2026 with the month label in the first cell and day 1 on Wednesday", async () => {
+    it("should render July 2026 with day 1 on Wednesday", async () => {
       component.writeValue("2026-07-15T00:00:00");
       (component as any).isOpen.set(true);
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect((component as any).monthAbbreviation()).toBe(
-        DateTime.fromISO("2026-07-01")
-          .setLocale("de")
-          .toFormat("LLL")
-          .toUpperCase(),
-      );
       expect(component.grid()[0].days.map((date) => date?.day ?? null)).toEqual(
         [null, null, 1, 2, 3, 4, 5],
       );
@@ -227,10 +221,11 @@ describe("DatepickerComponent", () => {
     });
 
     const monthStartCases: Array<[string, number, number]> = [
-      ["2026-06-15T00:00:00", 0, 1], // Monday
+      ["2026-06-15T00:00:00", 0, 0], // Monday
       ["2026-09-15T00:00:00", 1, 0], // Tuesday
       ["2026-08-15T00:00:00", 5, 0], // Saturday
       ["2026-11-15T00:00:00", 6, 0], // Sunday
+      ["2027-02-15T00:00:00", 0, 0], // Monday (Feb 2027)
     ];
 
     it.each(monthStartCases)(
