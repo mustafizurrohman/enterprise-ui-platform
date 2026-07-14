@@ -88,14 +88,6 @@
             >
               {{ calendarDate.day }}
             </button>
-          } @else if (weekIndex === 0 && cellIndex === 0) {
-            <div
-              class="datepicker-month-abbreviation"
-              aria-hidden="true"
-              [attr.data-testid]="testIdFor('month-abbreviation')"
-            >
-              {{ monthAbbreviation() }}
-            </div>
           }
         </div>
       }
