@@ -3,5 +3,11 @@
   "buildCommand": "npm run build-storybook",
   "outputDirectory": "dist/storybook/enterprise-ui-storybook",
   "installCommand": "npm ci",
-  "framework": null
+  "framework": null,
+  "git": {
+    "deploymentEnabled": {
+      "*": false,
+      "main": true
+    }
+  }
 }
