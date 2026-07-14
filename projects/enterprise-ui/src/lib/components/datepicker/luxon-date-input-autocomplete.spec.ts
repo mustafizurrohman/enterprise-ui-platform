@@ -62,4 +62,19 @@ describe("LuxonDateInputAutocomplete", () => {
 
     expect(result.suggestedValue).toBe("2026-07-14 18:30:45");
   });
+
+  it("provides default formats and descriptions", () => {
+    expect(LuxonDateInputAutocomplete.getFormat({ dateOnly: true })).toBe(
+      "dd.MM.yyyy",
+    );
+    expect(
+      LuxonDateInputAutocomplete.getFormatDescription({ dateOnly: true }),
+    ).toBe("TT.MM.JJJJ");
+    expect(LuxonDateInputAutocomplete.getFormat({ showSeconds: true })).toBe(
+      "dd.MM.yyyy HH:mm:ss 'Uhr'",
+    );
+    expect(
+      LuxonDateInputAutocomplete.getFormatDescription({ showSeconds: true }),
+    ).toBe("TT.MM.JJJJ HH:mm:ss Uhr");
+  });
 });

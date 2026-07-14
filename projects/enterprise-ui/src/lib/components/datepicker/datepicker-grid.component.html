@@ -66,6 +66,13 @@
           [attr.aria-disabled]="date ? null : 'true'"
           [attr.data-testid]="testIdFor('cell-' + weekIndex + '-' + cellIndex)"
         >
+          @if (!date && weekIndex === 0 && cellIndex === 0) {
+            <span
+              [attr.data-testid]="testIdFor('month-abbreviation')"
+              aria-hidden="true"
+              >{{ monthAbbreviation() }}</span
+            >
+          }
           @if (date; as calendarDate) {
             <button
               #calendarDay

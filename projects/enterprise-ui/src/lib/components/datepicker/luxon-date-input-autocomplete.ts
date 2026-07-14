@@ -65,14 +65,42 @@ const ORDERED_FIELD_TOKENS = Object.keys(FIELD_TOKENS).sort(
 );
 
 export class LuxonDateInputAutocomplete {
+  public static readonly DEFAULT_FORMAT = "dd.MM.yyyy";
+  public static readonly DEFAULT_DATETIME_FORMAT = "dd.MM.yyyy HH:mm 'Uhr'";
+  public static readonly DEFAULT_DATETIME_SECONDS_FORMAT = "dd.MM.yyyy HH:mm:ss 'Uhr'";
+
   private readonly tokens: readonly FormatToken[];
 
-  constructor(private readonly format: string) {
-    this.tokens = tokenizeFormat(format);
+  constructor(protected readonly dateFormat: string) {
+    this.tokens = tokenizeFormat(dateFormat);
 
     if (!this.tokens.some((token) => token.type === "field")) {
-      throw new Error(`Unsupported Luxon date format: ${format}`);
+      throw new Error(`Unsupported Luxon date format: ${dateFormat}`);
     }
+  }
+
+  public static getFormat(options: {
+    dateOnly?: boolean;
+    showSeconds?: boolean;
+  }): string {
+    if (options.dateOnly) {
+      return this.DEFAULT_FORMAT;
+    }
+    return options.showSeconds
+      ? this.DEFAULT_DATETIME_SECONDS_FORMAT
+      : this.DEFAULT_DATETIME_FORMAT;
+  }
+
+  public static getFormatDescription(options: {
+    dateOnly?: boolean;
+    showSeconds?: boolean;
+  }): string {
+    if (options.dateOnly) {
+      return "TT.MM.JJJJ";
+    }
+    return options.showSeconds
+      ? "TT.MM.JJJJ HH:mm:ss Uhr"
+      : "TT.MM.JJJJ HH:mm Uhr";
   }
 
   process(
@@ -88,7 +116,7 @@ export class LuxonDateInputAutocomplete {
     let parseError = error;
 
     if (!parseError && complete) {
-      const parsed = DateTime.fromFormat(normalized.value, this.format, {
+      const parsed = DateTime.fromFormat(normalized.value, this.dateFormat, {
         locale,
         setZone: true,
       });

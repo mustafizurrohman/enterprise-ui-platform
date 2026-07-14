@@ -66,7 +66,7 @@ import { LuxonDateInputAutocomplete } from "./luxon-date-input-autocomplete";
 })
 export class DatepickerComponent implements ControlValueAccessor, Validator {
   private static nextId = 0;
-  private readonly componentId = `datepicker-${DatepickerComponent.nextId++}`;
+  private readonly componentId = signal(`datepicker-${DatepickerComponent.nextId++}`);
   private lastFocusedTrigger: HTMLElement | null = null;
 
   readonly label = input<string>("Datum auswählen");
@@ -83,23 +83,26 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     () => this.disabled() || this._disabledForm(),
   );
 
-  protected readonly ids = {
-    input: `${this.componentId}-input`,
-    inputHint: `${this.componentId}-hint`,
-    inputError: `${this.componentId}-error`,
-    dialog: `${this.componentId}-dialog`,
-    dialogTitle: `${this.componentId}-dialog-title`,
-    dialogDescription: `${this.componentId}-dialog-description`,
-    monthHeading: `${this.componentId}-month-heading`,
-    hourSelect: `${this.componentId}-hour`,
-    minuteSelect: `${this.componentId}-minute`,
-    secondSelect: `${this.componentId}-second`,
-    hourLabel: `${this.componentId}-hour-label`,
-    minuteLabel: `${this.componentId}-minute-label`,
-    secondLabel: `${this.componentId}-second-label`,
-  } as const;
+  protected readonly ids = computed(
+    () =>
+      ({
+        input: `${this.componentId()}-input`,
+        inputHint: `${this.componentId()}-hint`,
+        inputError: `${this.componentId()}-error`,
+        dialog: `${this.componentId()}-dialog`,
+        dialogTitle: `${this.componentId()}-dialog-title`,
+        dialogDescription: `${this.componentId()}-dialog-description`,
+        monthHeading: `${this.componentId()}-month-heading`,
+        hourSelect: `${this.componentId()}-hour`,
+        minuteSelect: `${this.componentId()}-minute`,
+        secondSelect: `${this.componentId()}-second`,
+        hourLabel: `${this.componentId()}-hour-label`,
+        minuteLabel: `${this.componentId()}-minute-label`,
+        secondLabel: `${this.componentId()}-second-label`,
+      }) as const,
+  );
   protected readonly testIdPrefix = computed(
-    () => this.testId()?.trim() || this.componentId,
+    () => this.testId()?.trim() || this.componentId(),
   );
 
   protected readonly dateFormat = computed(() => {
@@ -108,12 +111,10 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       return configuredFormat;
     }
 
-    if (this.dateOnly()) {
-      return "dd.MM.yyyy";
-    }
-    return this.showSeconds()
-      ? "dd.MM.yyyy HH:mm:ss 'Uhr'"
-      : "dd.MM.yyyy HH:mm 'Uhr'";
+    return LuxonDateInputAutocomplete.getFormat({
+      dateOnly: this.dateOnly(),
+      showSeconds: this.showSeconds(),
+    });
   });
 
   protected readonly dateFormatDescription = computed(() => {
@@ -122,12 +123,10 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       return configuredFormat;
     }
 
-    if (this.dateOnly()) {
-      return "TT.MM.JJJJ";
-    }
-    return this.showSeconds()
-      ? "TT.MM.JJJJ HH:mm:ss Uhr"
-      : "TT.MM.JJJJ HH:mm Uhr";
+    return LuxonDateInputAutocomplete.getFormatDescription({
+      dateOnly: this.dateOnly(),
+      showSeconds: this.showSeconds(),
+    });
   });
 
   protected readonly calendarToggleLabel = computed(() => {
@@ -252,16 +251,16 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   });
 
   protected readonly dialogContext = computed<DatepickerDialogContext>(() => ({
-    dialogId: this.ids.dialog,
-    dialogTitleId: this.ids.dialogTitle,
-    dialogDescriptionId: this.ids.dialogDescription,
-    monthHeadingId: this.ids.monthHeading,
-    hourSelectId: this.ids.hourSelect,
-    minuteSelectId: this.ids.minuteSelect,
-    secondSelectId: this.ids.secondSelect,
-    hourLabelId: this.ids.hourLabel,
-    minuteLabelId: this.ids.minuteLabel,
-    secondLabelId: this.ids.secondLabel,
+    dialogId: this.ids().dialog,
+    dialogTitleId: this.ids().dialogTitle,
+    dialogDescriptionId: this.ids().dialogDescription,
+    monthHeadingId: this.ids().monthHeading,
+    hourSelectId: this.ids().hourSelect,
+    minuteSelectId: this.ids().minuteSelect,
+    secondSelectId: this.ids().secondSelect,
+    hourLabelId: this.ids().hourLabel,
+    minuteLabelId: this.ids().minuteLabel,
+    secondLabelId: this.ids().secondLabel,
     dialogTitle: this.dialogTitle(),
     formattedMonth: this.formattedMonth(),
     daysOfWeek: this.daysOfWeek,
@@ -815,8 +814,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
   protected inputDescriptionIds(): string {
     return this.hasInputError()
-      ? `${this.ids.inputHint} ${this.ids.inputError}`
-      : this.ids.inputHint;
+      ? `${this.ids().inputHint} ${this.ids().inputError}`
+      : this.ids().inputHint;
   }
 
   protected testIdFor(part?: string): string {

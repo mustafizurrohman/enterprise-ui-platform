@@ -7,7 +7,7 @@
   <label
     class="datepicker-label"
     [class.datepicker-label--disabled]="disabled"
-    [for]="ids.input"
+    [for]="ids().input"
     [attr.data-testid]="testIdFor('label')"
   >
     {{ label() }}
@@ -22,14 +22,14 @@
   >
     <input
       #dateInput
-      [id]="ids.input"
+      [id]="ids().input"
       type="text"
       role="combobox"
       aria-autocomplete="none"
       aria-haspopup="dialog"
       aria-keyshortcuts="Enter ArrowDown Alt+ArrowDown"
       [attr.aria-expanded]="open"
-      [attr.aria-controls]="open ? ids.dialog : null"
+      [attr.aria-controls]="open ? ids().dialog : null"
       [attr.aria-describedby]="inputDescriptionIds()"
       [attr.aria-invalid]="invalid"
       [attr.data-testid]="testIdFor('input')"
@@ -64,7 +64,7 @@
       [disabled]="disabled"
       [attr.aria-label]="calendarToggleLabel()"
       aria-haspopup="dialog"
-      [attr.aria-controls]="open ? ids.dialog : null"
+      [attr.aria-controls]="open ? ids().dialog : null"
       [attr.aria-expanded]="open"
       [attr.data-testid]="testIdFor('toggle')"
       (click)="toggleCalendar(calendarToggle)"
@@ -74,7 +74,7 @@
   </div>
 
   <div
-    [id]="ids.inputHint"
+    [id]="ids().inputHint"
     class="visually-hidden"
     [attr.data-testid]="testIdFor('hint')"
   >
@@ -84,7 +84,7 @@
 
   @if (invalid) {
     <div
-      [id]="ids.inputError"
+      [id]="ids().inputError"
       class="datepicker-error"
       role="alert"
       [attr.data-testid]="testIdFor('error')"
