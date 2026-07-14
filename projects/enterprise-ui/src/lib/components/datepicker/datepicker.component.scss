@@ -100,10 +100,6 @@ $divider: rgba(0, 0, 0, 0.12);
       justify-content: center;
       transition: color 0.3s;
 
-      &:hover {
-        color: $foreground;
-      }
-
       &:disabled,
       &--disabled,
       &:disabled:hover,
