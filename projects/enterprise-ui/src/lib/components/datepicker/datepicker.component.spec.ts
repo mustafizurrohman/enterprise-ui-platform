@@ -160,21 +160,21 @@ describe("DatepickerComponent", () => {
     });
   });
 
-  it("should toggle calendar when input is clicked", () => {
+  it("should NOT open calendar when input is clicked", () => {
     const input = fixture.nativeElement.querySelector("input");
     input.click();
     fixture.detectChanges();
-    expect((component as any).isOpen()).toBeTruthy();
+    expect((component as any).isOpen()).toBeFalsy();
     let calendar = document.querySelector(".datepicker-calendar");
-    expect(calendar).toBeTruthy();
-
-    input.click();
-    fixture.detectChanges();
-    // Since input.click() calls openCalendar(), it will remain open.
-    // If we want to test toggling, we should click the button.
-    expect((component as any).isOpen()).toBeTruthy();
+    expect(calendar).toBeNull();
 
     const button = fixture.nativeElement.querySelector(".datepicker-icon");
+    button.click();
+    fixture.detectChanges();
+    expect((component as any).isOpen()).toBeTruthy();
+    calendar = document.querySelector(".datepicker-calendar");
+    expect(calendar).toBeTruthy();
+
     button.click();
     fixture.detectChanges();
     expect((component as any).isOpen()).toBeFalsy();
@@ -519,7 +519,7 @@ describe("DatepickerComponent", () => {
       expect(input.value).toBe("2026-03-");
     });
 
-    it("should open calendar on enter and commit the current input", () => {
+    it("should NOT open calendar on enter and should commit the current input", () => {
       fixture.componentRef.setInput("showSeconds", true);
       const input = fixture.nativeElement.querySelector("input") as HTMLInputElement;
       const testDateStr = "24.12.2023 18:00:00 Uhr";
@@ -530,7 +530,7 @@ describe("DatepickerComponent", () => {
       );
       fixture.detectChanges();
 
-      expect((component as any).isOpen()).toBeTruthy();
+      expect((component as any).isOpen()).toBeFalsy();
       expect(component.selectedDate()?.toISODate()).toBe("2023-12-24");
     });
   });
@@ -545,9 +545,6 @@ describe("DatepickerComponent", () => {
     expect(input.getAttribute("role")).toBe("combobox");
     expect(input.getAttribute("aria-autocomplete")).toBe("none");
     expect(input.getAttribute("aria-haspopup")).toBe("dialog");
-    expect(input.getAttribute("aria-keyshortcuts")).toBe(
-      "Enter ArrowDown Alt+ArrowDown",
-    );
     expect(input.getAttribute("aria-invalid")).toBe("false");
     expect(button.getAttribute("aria-label")).toContain("Kalender");
     expect(button.getAttribute("aria-haspopup")).toBe("dialog");
@@ -596,8 +593,8 @@ describe("DatepickerComponent", () => {
   });
 
   it("should navigate calendar with keyboard", async () => {
-    const input = fixture.nativeElement.querySelector("input");
-    input.click();
+    const button = fixture.nativeElement.querySelector(".datepicker-icon");
+    button.click();
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -653,7 +650,7 @@ describe("DatepickerComponent", () => {
     };
 
     it.each(["Enter", "ArrowDown"])(
-      "should open the calendar from the input with %s",
+      "should NOT open the calendar from the input with %s",
       async (key) => {
         const input = fixture.nativeElement.querySelector(
           '[data-testid="datepicker-input"]',
@@ -662,12 +659,29 @@ describe("DatepickerComponent", () => {
         dispatchKey(input, key);
         await fixture.whenStable();
 
-        expect((component as any).isOpen()).toBeTruthy();
+        expect((component as any).isOpen()).toBeFalsy();
         expect(
           document.querySelector('[data-testid="datepicker-dialog"]'),
-        ).toBeTruthy();
+        ).toBeNull();
       },
     );
+
+    it("should open the calendar from the button with Enter", async () => {
+      const button = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-toggle"]',
+      ) as HTMLButtonElement;
+      button.focus();
+
+      // Native buttons trigger click on Enter
+      button.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect((component as any).isOpen()).toBeTruthy();
+      expect(
+        document.querySelector('[data-testid="datepicker-dialog"]'),
+      ).toBeTruthy();
+    });
 
     it("should navigate the grid with Arrow Keys", async () => {
       component.writeValue("2026-07-15T10:30:00");
@@ -815,18 +829,19 @@ describe("DatepickerComponent", () => {
           callback(0);
           return 1;
         });
-      const input = fixture.nativeElement.querySelector(
-        '[data-testid="datepicker-input"]',
-      ) as HTMLInputElement;
-      input.focus();
+      const button = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-toggle"]',
+      ) as HTMLButtonElement;
+      button.focus();
 
-      dispatchKey(input, "Enter");
+      button.click();
       await fixture.whenStable();
       fixture.detectChanges();
 
       const activeDay = document.querySelector(
         '.datepicker-day[tabindex="0"]',
       ) as HTMLButtonElement;
+      expect(activeDay).toBeTruthy();
       expect(document.activeElement).toBe(activeDay);
 
       dispatchKey(activeDay, "Escape");
@@ -837,7 +852,7 @@ describe("DatepickerComponent", () => {
       expect(
         document.querySelector('[data-testid="datepicker-dialog"]'),
       ).toBeNull();
-      expect(document.activeElement).toBe(input);
+      expect(document.activeElement).toBe(button);
 
       animationFrameSpy.mockRestore();
     });

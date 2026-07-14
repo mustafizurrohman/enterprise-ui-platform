@@ -333,13 +333,6 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     if (event.key === "Enter") {
       event.preventDefault();
       this.commitManualInput(input);
-      this.openCalendar(input);
-      return;
-    }
-
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      this.openCalendar(input);
       return;
     }
 

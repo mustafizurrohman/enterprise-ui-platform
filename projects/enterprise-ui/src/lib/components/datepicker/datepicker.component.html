@@ -28,7 +28,6 @@
       role="combobox"
       aria-autocomplete="none"
       aria-haspopup="dialog"
-      aria-keyshortcuts="Enter ArrowDown Alt+ArrowDown"
       [attr.aria-expanded]="open"
       [attr.aria-controls]="open ? ids().dialog : null"
       [attr.aria-describedby]="inputDescriptionIds()"
@@ -37,7 +36,6 @@
       [value]="inputDisplayValue()"
       [placeholder]="dateFormatDescription()"
       [disabled]="disabled"
-      (click)="openCalendar(dateInput)"
       (keydown)="handleInputKeydown($event, dateInput)"
       (input)="onManualInput(dateInput)"
       (blur)="commitManualInput(dateInput)"
@@ -79,8 +77,7 @@
     class="visually-hidden"
     [attr.data-testid]="testIdFor('hint')"
   >
-    Erwartetes Format: {{ dateFormatDescription() }}. Zum Öffnen des Kalenders
-    Enter oder Pfeil nach unten drücken.
+    Erwartetes Format: {{ dateFormatDescription() }}.
   </div>
 
   @if (invalid) {
