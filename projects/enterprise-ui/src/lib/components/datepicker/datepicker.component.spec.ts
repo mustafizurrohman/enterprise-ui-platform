@@ -486,7 +486,7 @@ describe("DatepickerComponent", () => {
       ).toBeTruthy();
     });
 
-    it("should append separators and pad an unambiguous month", () => {
+    it("should proactively append separators and pad an unambiguous month", () => {
       fixture.componentRef.setInput("dateFormat", "MM-dd-yyyy");
       const input = fixture.nativeElement.querySelector("input") as HTMLInputElement;
 
@@ -508,7 +508,7 @@ describe("DatepickerComponent", () => {
       expect(input.value).toBe("03-");
     });
 
-    it("should support a year-first Luxon format", () => {
+    it("should support a year-first Luxon format and proactively append separators", () => {
       fixture.componentRef.setInput("dateFormat", "yyyy-MM-dd");
       const input = fixture.nativeElement.querySelector("input") as HTMLInputElement;
 
@@ -532,6 +532,23 @@ describe("DatepickerComponent", () => {
 
       expect((component as any).isOpen()).toBeFalsy();
       expect(component.selectedDate()?.toISODate()).toBe("2023-12-24");
+    });
+
+    it("should allow deleting the separator via backspace", () => {
+      fixture.componentRef.setInput("dateFormat", "dd.MM.yyyy");
+      const input = fixture.nativeElement.querySelector("input") as HTMLInputElement;
+
+      // Simulate typing "15" -> becomes "15."
+      input.value = "15";
+      input.dispatchEvent(new Event("input"));
+      fixture.detectChanges();
+      expect(input.value).toBe("15.");
+
+      // Simulate backspace -> "15." becomes "15"
+      input.value = "15";
+      input.dispatchEvent(new Event("input"));
+      fixture.detectChanges();
+      expect(input.value).toBe("15");
     });
   });
 

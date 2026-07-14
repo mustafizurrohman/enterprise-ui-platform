@@ -43,6 +43,7 @@ export type DateInputAutocompleteOptions = Readonly<{
   commit?: boolean;
   now?: DateTime;
   locale?: string;
+  isDeletion?: boolean;
 }>;
 
 const FIELD_TOKENS: Readonly<Record<string, Omit<FieldToken, "type" | "token">>> = {
@@ -109,7 +110,7 @@ export class LuxonDateInputAutocomplete {
   ): DateInputAutocompleteResult {
     const now = options.now ?? DateTime.now();
     const locale = options.locale ?? "de-DE";
-    const normalized = this.normalize(rawValue, options.commit === true);
+    const normalized = this.normalize(rawValue, options);
     const error = normalized.error ?? this.validateKnownFields(normalized.fields);
     const complete = this.isComplete(normalized.fields);
     let date: DateTime | null = null;
@@ -148,13 +149,15 @@ export class LuxonDateInputAutocomplete {
 
   private normalize(
     rawValue: string,
-    commit: boolean,
+    options: DateInputAutocompleteOptions,
   ): {
     value: string;
     fields: Partial<Record<LuxonDateField, string>>;
     error: DateInputError | null;
   } {
     const fields: Partial<Record<LuxonDateField, string>> = {};
+    const commit = options.commit === true;
+    const isDeletion = options.isDeletion === true;
     let sourceIndex = 0;
     let value = "";
 
@@ -170,7 +173,20 @@ export class LuxonDateInputAutocomplete {
         if (consumed > 0) {
           sourceIndex += consumed;
         }
-        value += token.value;
+
+        const noMoreFields = this.tokens
+          .slice(tokenIndex + 1)
+          .every((t) => t.type === "literal");
+
+        if (
+          consumed > 0 ||
+          sourceIndex < rawValue.length ||
+          commit ||
+          !isDeletion ||
+          (noMoreFields && this.isComplete(fields))
+        ) {
+          value += token.value;
+        }
         continue;
       }
 

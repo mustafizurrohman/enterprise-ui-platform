@@ -605,7 +605,9 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   protected onManualInput(input: HTMLInputElement): void {
+    const isDeletion = input.value.length < this.inputDisplayValue().length;
     const result = this.inputAutocomplete().process(input.value, {
+      isDeletion,
       now: this.today(),
     });
 
