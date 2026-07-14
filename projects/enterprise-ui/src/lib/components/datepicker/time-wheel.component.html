@@ -7,10 +7,15 @@
   <button
     type="button"
     class="datepicker-time-button"
+    [class.datepicker-time-button--pressed]="pressedDirection() === 'increment'"
     [attr.aria-controls]="controlId()"
     [attr.aria-label]="configuration().singularLabel + ' um eins erhöhen'"
     [attr.data-testid]="testIdFor('increment')"
-    (click)="increment()"
+    (pointerdown)="startPress($event, 1, 'increment')"
+    (pointerup)="stopPress($event)"
+    (pointercancel)="stopPress($event)"
+    (pointerleave)="stopPress($event)"
+    (click)="onButtonClick($event, 1, 'increment')"
   >
     <mat-icon
       aria-hidden="true"
@@ -22,7 +27,6 @@
 
   <div
     class="datepicker-time-value"
-    [class.datepicker-time-value--rapid]="isRapidChange()"
     [attr.data-animation]="animationName()"
     [attr.data-testid]="testIdFor('value')"
   >
@@ -72,10 +76,15 @@
   <button
     type="button"
     class="datepicker-time-button"
+    [class.datepicker-time-button--pressed]="pressedDirection() === 'decrement'"
     [attr.aria-controls]="controlId()"
     [attr.aria-label]="configuration().singularLabel + ' um eins verringern'"
     [attr.data-testid]="testIdFor('decrement')"
-    (click)="decrement()"
+    (pointerdown)="startPress($event, -1, 'decrement')"
+    (pointerup)="stopPress($event)"
+    (pointercancel)="stopPress($event)"
+    (pointerleave)="stopPress($event)"
+    (click)="onButtonClick($event, -1, 'decrement')"
   >
     <mat-icon
       aria-hidden="true"

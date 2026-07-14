@@ -1,4 +1,12 @@
-import { Component, computed, input, output, signal } from "@angular/core";
+import {
+  Component,
+  computed,
+  HostListener,
+  input,
+  OnDestroy,
+  output,
+  signal,
+} from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 
 export type TimeUnit = "hour" | "minute" | "second";
@@ -20,14 +28,14 @@ type TimeUnitConfiguration = {
 
 type TimeWheelAnimationDirection = "increment" | "decrement";
 type TimeWheelAnimationPhase = "a" | "b";
+type TimeWheelStep = 1 | -1;
 
 type TimeWheelAnimationState = Readonly<{
   direction: TimeWheelAnimationDirection;
   phase: TimeWheelAnimationPhase;
-  rapid: boolean;
 }>;
 
-const RAPID_CHANGE_THRESHOLD_MS = 180;
+const PRESS_REPEAT_INTERVAL_MS = 70;
 
 const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
   hour: {
@@ -57,7 +65,7 @@ const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
   templateUrl: "./time-wheel.component.html",
   styleUrl: "./time-wheel.component.scss",
 })
-export class TimeWheelComponent {
+export class TimeWheelComponent implements OnDestroy {
   readonly context = input.required<TimeWheelContext>();
 
   readonly valueChange = output<number>();
@@ -88,23 +96,94 @@ export class TimeWheelComponent {
     return state ? `${state.direction}-${state.phase}` : null;
   });
 
-  protected readonly isRapidChange = computed(
-    () => this.animationState()?.rapid ?? false,
-  );
+  protected readonly pressedDirection =
+    signal<TimeWheelAnimationDirection | null>(null);
 
   private readonly animationState = signal<TimeWheelAnimationState | null>(
     null,
   );
 
   private animationPhase: TimeWheelAnimationPhase = "b";
-  private lastButtonChangeTimestamp: number | null = null;
+  private pressIntervalId: ReturnType<typeof setInterval> | null = null;
+  private pressedValue: number | null = null;
+  private activePointerId: number | null = null;
+
+  ngOnDestroy(): void {
+    this.stopPress();
+  }
 
   protected increment(): void {
-    this.changeBy(1, "increment", true);
+    this.changeBy(1, "increment");
   }
 
   protected decrement(): void {
-    this.changeBy(-1, "decrement", true);
+    this.changeBy(-1, "decrement");
+  }
+
+  protected onButtonClick(
+    event: MouseEvent,
+    difference: TimeWheelStep,
+    direction: TimeWheelAnimationDirection,
+  ): void {
+    // Pointer interactions are handled on pointerdown so holding the button can
+    // repeat every 70 ms. A click with detail 0 is keyboard/assistive input.
+    if (event.detail !== 0) {
+      return;
+    }
+
+    this.changeBy(difference, direction);
+  }
+
+  protected startPress(
+    event: PointerEvent,
+    difference: TimeWheelStep,
+    direction: TimeWheelAnimationDirection,
+  ): void {
+    if (event.button !== 0 || event.isPrimary === false) {
+      return;
+    }
+
+    this.stopPress();
+
+    this.activePointerId = event.pointerId;
+    this.pressedValue = this.value();
+    this.pressedDirection.set(direction);
+
+    const button = event.currentTarget;
+
+    if (button instanceof HTMLButtonElement) {
+      button.setPointerCapture?.(event.pointerId);
+    }
+
+    this.emitPressedStep(difference, direction);
+    this.pressIntervalId = setInterval(
+      () => this.emitPressedStep(difference, direction),
+      PRESS_REPEAT_INTERVAL_MS,
+    );
+  }
+
+  protected stopPress(event?: PointerEvent): void {
+    if (
+      event &&
+      this.activePointerId !== null &&
+      event.pointerId !== this.activePointerId
+    ) {
+      return;
+    }
+
+    if (this.pressIntervalId !== null) {
+      clearInterval(this.pressIntervalId);
+      this.pressIntervalId = null;
+    }
+
+    this.pressedValue = null;
+    this.activePointerId = null;
+    this.pressedDirection.set(null);
+  }
+
+  @HostListener("window:blur")
+  protected onWindowBlur(): void {
+    this.stopPress();
   }
 
   protected onInput(event: Event): void {
@@ -131,12 +210,12 @@ export class TimeWheelComponent {
     switch (event.key) {
       case "ArrowUp":
         event.preventDefault();
-        this.changeBy(1, "increment");
+        this.increment();
         break;
 
       case "ArrowDown":
         event.preventDefault();
-        this.changeBy(-1, "decrement");
+        this.decrement();
         break;
 
       case "PageUp":
@@ -181,50 +260,43 @@ export class TimeWheelComponent {
     return `${this.testIdPrefix()}-${this.unit()}-${part}`;
   }
 
+  private emitPressedStep(
+    difference: TimeWheelStep,
+    direction: TimeWheelAnimationDirection,
+  ): void {
+    const currentValue = this.pressedValue ?? this.value();
+    const nextValue = this.normalize(currentValue + difference);
+
+    this.pressedValue = nextValue;
+    this.emitAnimatedValue(nextValue, direction);
+  }
+
   private changeBy(
     difference: number,
     direction: TimeWheelAnimationDirection,
-    isButtonInteraction = false,
   ): void {
     this.emitAnimatedValue(
       this.normalize(this.value() + difference),
       direction,
-      isButtonInteraction,
     );
   }
 
   private emitAnimatedValue(
     value: number,
     direction: TimeWheelAnimationDirection,
-    isButtonInteraction = false,
   ): void {
     if (value !== this.value()) {
-      this.startCssAnimation(direction, isButtonInteraction);
+      this.startCssAnimation(direction);
     }
 
     this.valueChange.emit(value);
   }
 
-  private startCssAnimation(
-    direction: TimeWheelAnimationDirection,
-    isButtonInteraction: boolean,
-  ): void {
-    const currentTimestamp = Date.now();
-    const rapid =
-      isButtonInteraction &&
-      this.lastButtonChangeTimestamp !== null &&
-      currentTimestamp - this.lastButtonChangeTimestamp <=
-        RAPID_CHANGE_THRESHOLD_MS;
-
-    this.lastButtonChangeTimestamp = isButtonInteraction
-      ? currentTimestamp
-      : null;
-
+  private startCssAnimation(direction: TimeWheelAnimationDirection): void {
     this.animationPhase = this.animationPhase === "a" ? "b" : "a";
     this.animationState.set({
       direction,
       phase: this.animationPhase,
-      rapid,
     });
   }
 

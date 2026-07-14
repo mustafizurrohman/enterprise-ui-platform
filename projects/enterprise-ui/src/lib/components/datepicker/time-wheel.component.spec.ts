@@ -32,6 +32,27 @@ describe("TimeWheelComponent", () => {
       '[data-testid="datepicker-hour-decrement"]',
     ) as HTMLButtonElement;
 
+  const dispatchPointerEvent = (
+    element: HTMLElement,
+    type: "pointerdown" | "pointerup" | "pointercancel" | "pointerleave",
+    pointerId = 1,
+    button = 0,
+    isPrimary = true,
+  ): void => {
+    const event = new Event(type, {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    Object.defineProperties(event, {
+      button: { value: button },
+      isPrimary: { value: isPrimary },
+      pointerId: { value: pointerId },
+    });
+
+    element.dispatchEvent(event);
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TimeWheelComponent],
@@ -44,10 +65,13 @@ describe("TimeWheelComponent", () => {
   });
 
   afterEach(() => {
+    fixture.destroy();
+    vi.clearAllTimers();
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
-  it("should render the same accessible spinbutton contract", () => {
+  it("should render the accessible spinbutton contract", () => {
     const input = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-hour-input"]',
     ) as HTMLInputElement;
@@ -59,19 +83,162 @@ describe("TimeWheelComponent", () => {
     expect(input.getAttribute("aria-valuetext")).toBe("10 Uhr");
   });
 
-  it("should emit incremented and decremented values with wrap-around", () => {
+  it("should emit one change for a keyboard or assistive click", () => {
     const valueChangeSpy = vi.fn();
     component.valueChange.subscribe(valueChangeSpy);
 
-    fixture.componentRef.setInput("context", createContext(23));
-    fixture.detectChanges();
     getIncrementButton().click();
-    expect(valueChangeSpy).toHaveBeenLastCalledWith(0);
 
+    expect(valueChangeSpy).toHaveBeenCalledOnce();
+    expect(valueChangeSpy).toHaveBeenLastCalledWith(11);
+  });
+
+  it("should change immediately and then every 70 ms while increment is pressed", () => {
+    vi.useFakeTimers();
+    const valueChangeSpy = vi.fn();
+    component.valueChange.subscribe(valueChangeSpy);
+
+    dispatchPointerEvent(getIncrementButton(), "pointerdown");
+
+    expect(valueChangeSpy.mock.calls.map(([value]) => value)).toEqual([11]);
+
+    vi.advanceTimersByTime(69);
+    expect(valueChangeSpy).toHaveBeenCalledOnce();
+
+    vi.advanceTimersByTime(1);
+    expect(valueChangeSpy.mock.calls.map(([value]) => value)).toEqual([
+      11, 12,
+    ]);
+
+    vi.advanceTimersByTime(140);
+    expect(valueChangeSpy.mock.calls.map(([value]) => value)).toEqual([
+      11, 12, 13, 14,
+    ]);
+  });
+
+  it("should decrement every 70 ms with wrap-around while pressed", () => {
+    vi.useFakeTimers();
+    const valueChangeSpy = vi.fn();
+    component.valueChange.subscribe(valueChangeSpy);
     fixture.componentRef.setInput("context", createContext(0));
     fixture.detectChanges();
-    getDecrementButton().click();
-    expect(valueChangeSpy).toHaveBeenLastCalledWith(23);
+
+    dispatchPointerEvent(getDecrementButton(), "pointerdown");
+    vi.advanceTimersByTime(140);
+
+    expect(valueChangeSpy.mock.calls.map(([value]) => value)).toEqual([
+      23, 22, 21,
+    ]);
+  });
+
+  it("should stop changing immediately when the pointer is released", () => {
+    vi.useFakeTimers();
+    const valueChangeSpy = vi.fn();
+    component.valueChange.subscribe(valueChangeSpy);
+
+    dispatchPointerEvent(getIncrementButton(), "pointerdown");
+    vi.advanceTimersByTime(70);
+    dispatchPointerEvent(getIncrementButton(), "pointerup");
+    vi.advanceTimersByTime(280);
+
+    expect(valueChangeSpy.mock.calls.map(([value]) => value)).toEqual([
+      11, 12,
+    ]);
+  });
+
+  it("should stop changing when the pointer is cancelled", () => {
+    vi.useFakeTimers();
+    const valueChangeSpy = vi.fn();
+    component.valueChange.subscribe(valueChangeSpy);
+
+    dispatchPointerEvent(getIncrementButton(), "pointerdown");
+    dispatchPointerEvent(getIncrementButton(), "pointercancel");
+    vi.advanceTimersByTime(210);
+
+    expect(valueChangeSpy).toHaveBeenCalledOnce();
+  });
+
+  it("should stop changing when the window loses focus", () => {
+    vi.useFakeTimers();
+    const valueChangeSpy = vi.fn();
+    component.valueChange.subscribe(valueChangeSpy);
+
+    dispatchPointerEvent(getIncrementButton(), "pointerdown");
+    window.dispatchEvent(new Event("blur"));
+    vi.advanceTimersByTime(210);
+
+    expect(valueChangeSpy).toHaveBeenCalledOnce();
+  });
+
+  it("should ignore the pointer-generated click after pointerdown", () => {
+    vi.useFakeTimers();
+    const valueChangeSpy = vi.fn();
+    component.valueChange.subscribe(valueChangeSpy);
+    const button = getIncrementButton();
+
+    dispatchPointerEvent(button, "pointerdown");
+    dispatchPointerEvent(button, "pointerup");
+    button.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true, detail: 1 }),
+    );
+
+    expect(valueChangeSpy).toHaveBeenCalledOnce();
+    expect(valueChangeSpy).toHaveBeenLastCalledWith(11);
+  });
+
+  it("should ignore non-primary and non-left-button pointer presses", () => {
+    vi.useFakeTimers();
+    const valueChangeSpy = vi.fn();
+    component.valueChange.subscribe(valueChangeSpy);
+
+    dispatchPointerEvent(getIncrementButton(), "pointerdown", 1, 1);
+    dispatchPointerEvent(getIncrementButton(), "pointerdown", 2, 0, false);
+    vi.advanceTimersByTime(210);
+
+    expect(valueChangeSpy).not.toHaveBeenCalled();
+  });
+
+  it("should apply the pressed class only to the active button", () => {
+    vi.useFakeTimers();
+
+    dispatchPointerEvent(getIncrementButton(), "pointerdown");
+    fixture.detectChanges();
+
+    expect(
+      getIncrementButton().classList.contains(
+        "datepicker-time-button--pressed",
+      ),
+    ).toBeTruthy();
+    expect(
+      getDecrementButton().classList.contains(
+        "datepicker-time-button--pressed",
+      ),
+    ).toBeFalsy();
+
+    dispatchPointerEvent(getIncrementButton(), "pointerup");
+    fixture.detectChanges();
+
+    expect(
+      getIncrementButton().classList.contains(
+        "datepicker-time-button--pressed",
+      ),
+    ).toBeFalsy();
+  });
+
+  it("should alternate CSS animation names on each repeated change", () => {
+    vi.useFakeTimers();
+
+    dispatchPointerEvent(getIncrementButton(), "pointerdown");
+    fixture.detectChanges();
+    expect(getValueContainer().getAttribute("data-animation")).toBe(
+      "increment-a",
+    );
+
+    vi.advanceTimersByTime(70);
+    fixture.detectChanges();
+    expect(getValueContainer().getAttribute("data-animation")).toBe(
+      "increment-b",
+    );
   });
 
   it("should sanitize typed input and clamp it to the unit maximum", () => {
@@ -105,113 +272,6 @@ describe("TimeWheelComponent", () => {
     input.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
 
     expect(valueChangeSpy).toHaveBeenLastCalledWith(expectedValue);
-  });
-
-  it("should set the increment CSS animation on an increment", () => {
-    vi.spyOn(Date, "now").mockReturnValue(1_000);
-
-    getIncrementButton().click();
-    fixture.detectChanges();
-
-    expect(getValueContainer().getAttribute("data-animation")).toBe(
-      "increment-a",
-    );
-    expect(
-      getValueContainer().classList.contains(
-        "datepicker-time-value--rapid",
-      ),
-    ).toBeFalsy();
-  });
-
-  it("should set the decrement CSS animation on a decrement", () => {
-    vi.spyOn(Date, "now").mockReturnValue(1_000);
-
-    getDecrementButton().click();
-    fixture.detectChanges();
-
-    expect(getValueContainer().getAttribute("data-animation")).toBe(
-      "decrement-a",
-    );
-  });
-
-  it("should alternate CSS animation names so rapid changes restart", () => {
-    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(1_000);
-
-    getIncrementButton().click();
-    fixture.detectChanges();
-
-    expect(getValueContainer().getAttribute("data-animation")).toBe(
-      "increment-a",
-    );
-
-    fixture.componentRef.setInput("context", createContext(11));
-    fixture.detectChanges();
-    nowSpy.mockReturnValue(1_100);
-    getIncrementButton().click();
-    fixture.detectChanges();
-
-    expect(getValueContainer().getAttribute("data-animation")).toBe(
-      "increment-b",
-    );
-  });
-
-  it("should use the rapid CSS duration class for fast button presses", () => {
-    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(1_000);
-
-    getIncrementButton().click();
-    fixture.componentRef.setInput("context", createContext(11));
-    fixture.detectChanges();
-
-    nowSpy.mockReturnValue(1_100);
-    getIncrementButton().click();
-    fixture.detectChanges();
-
-    expect(
-      getValueContainer().classList.contains(
-        "datepicker-time-value--rapid",
-      ),
-    ).toBeTruthy();
-  });
-
-  it("should keep the normal CSS duration for slower button presses", () => {
-    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(1_000);
-
-    getIncrementButton().click();
-    fixture.componentRef.setInput("context", createContext(11));
-    fixture.detectChanges();
-
-    nowSpy.mockReturnValue(1_181);
-    getIncrementButton().click();
-    fixture.detectChanges();
-
-    expect(
-      getValueContainer().classList.contains(
-        "datepicker-time-value--rapid",
-      ),
-    ).toBeFalsy();
-  });
-
-  it("should not treat keyboard changes as rapid button presses", () => {
-    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(1_000);
-    const input = fixture.nativeElement.querySelector(
-      "input",
-    ) as HTMLInputElement;
-
-    getIncrementButton().click();
-    fixture.componentRef.setInput("context", createContext(11));
-    fixture.detectChanges();
-
-    nowSpy.mockReturnValue(1_050);
-    input.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }),
-    );
-    fixture.detectChanges();
-
-    expect(
-      getValueContainer().classList.contains(
-        "datepicker-time-value--rapid",
-      ),
-    ).toBeFalsy();
   });
 
   it("should render previous and next preview values", () => {
