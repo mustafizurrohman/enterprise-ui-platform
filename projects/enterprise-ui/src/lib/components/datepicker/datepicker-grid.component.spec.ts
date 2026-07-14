@@ -38,6 +38,10 @@ describe("DatepickerGridComponent", () => {
         DateTime.fromISO("2026-07-19"),
       ],
     },
+    {
+      weekNumber: 30,
+      days: [null, null, null, null, null, null, null],
+    },
   ];
 
   const context: DatepickerGridContext = {
@@ -82,7 +86,7 @@ describe("DatepickerGridComponent", () => {
     expect(grid.id).toBe("calendar-grid");
     expect(grid.getAttribute("role")).toBe("grid");
     expect(grid.getAttribute("aria-labelledby")).toBe("month-heading");
-    expect(grid.getAttribute("aria-rowcount")).toBe("3");
+    expect(grid.getAttribute("aria-rowcount")).toBe("4");
     expect(grid.getAttribute("aria-colcount")).toBe("8");
     expect(selectedDay.getAttribute("role")).toBe("gridcell");
     expect(selectedDay.getAttribute("aria-colindex")).toBe("4");
@@ -90,18 +94,12 @@ describe("DatepickerGridComponent", () => {
     expect(selectedDay.getAttribute("tabindex")).toBe("0");
   });
 
-  it("should expose the month abbreviation as an inaccessible visual label and an accessible empty cell label", () => {
-    const firstCell = fixture.nativeElement.querySelector(
-      '[data-testid="datepicker-cell-0-0"]',
-    ) as HTMLElement;
-    const abbreviation = fixture.nativeElement.querySelector(
-      '[data-testid="datepicker-month-abbreviation"]',
+  it("should not display calendar week numbers for weeks without dates", () => {
+    const emptyWeekNumber = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-week-number-2"] strong',
     ) as HTMLElement;
 
-    expect(firstCell.getAttribute("role")).toBe("gridcell");
-    expect(firstCell.getAttribute("aria-label")).toBe("JUL");
-    expect(firstCell.getAttribute("aria-disabled")).toBe("true");
-    expect(abbreviation.getAttribute("aria-hidden")).toBe("true");
+    expect(emptyWeekNumber).toBeNull();
   });
 
   it("should emit selection, focus and keyboard events", () => {

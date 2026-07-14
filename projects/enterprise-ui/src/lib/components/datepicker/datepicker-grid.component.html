@@ -46,11 +46,15 @@
         class="datepicker-kw-value"
         role="rowheader"
         aria-colindex="1"
-        [attr.aria-label]="'Kalenderwoche ' + weekInfo.weekNumber"
+        [attr.aria-label]="
+          hasDates(weekInfo) ? 'Kalenderwoche ' + weekInfo.weekNumber : null
+        "
         [class.today]="isCurrentWeek(weekInfo)"
         [attr.data-testid]="testIdFor('week-number-' + weekIndex)"
       >
-        <strong>{{ weekInfo.weekNumber }}</strong>
+        @if (hasDates(weekInfo)) {
+          <strong>{{ weekInfo.weekNumber }}</strong>
+        }
       </div>
 
       @for (date of weekInfo.days; track $index; let cellIndex = $index) {
@@ -58,21 +62,10 @@
           class="datepicker-gridcell"
           [attr.role]="date ? 'presentation' : 'gridcell'"
           [attr.aria-colindex]="date ? null : cellIndex + 2"
-          [attr.aria-label]="
-            !date && weekIndex === 0 && cellIndex === 0
-              ? monthAbbreviation()
-              : null
-          "
+          [attr.aria-label]="null"
           [attr.aria-disabled]="date ? null : 'true'"
           [attr.data-testid]="testIdFor('cell-' + weekIndex + '-' + cellIndex)"
         >
-          @if (!date && weekIndex === 0 && cellIndex === 0) {
-            <span
-              [attr.data-testid]="testIdFor('month-abbreviation')"
-              aria-hidden="true"
-              >{{ monthAbbreviation() }}</span
-            >
-          }
           @if (date; as calendarDate) {
             <button
               #calendarDay

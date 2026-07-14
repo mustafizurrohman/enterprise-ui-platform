@@ -53,9 +53,6 @@ export class DatepickerGridComponent {
   protected readonly gridId = computed(() => this.context().gridId);
   protected readonly daysOfWeek = computed(() => this.context().daysOfWeek);
   protected readonly weeks = computed(() => this.context().weeks);
-  protected readonly monthAbbreviation = computed(
-    () => this.context().monthAbbreviation,
-  );
   protected readonly selectedDate = computed(() => this.context().selectedDate);
   protected readonly activeDate = computed(() => this.context().activeDate);
   protected readonly today = computed(() => this.context().today);
@@ -108,6 +105,10 @@ export class DatepickerGridComponent {
 
   protected isCurrentWeek(week: DatepickerWeek): boolean {
     return week.days.some((day) => this.isToday(day));
+  }
+
+  protected hasDates(week: DatepickerWeek): boolean {
+    return week.days.some((day) => day !== null);
   }
 
   protected isCurrentWeekday(weekday: number): boolean {

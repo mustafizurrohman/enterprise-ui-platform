@@ -210,9 +210,7 @@ describe("DatepickerComponent", () => {
       expect(weekdayCells).toHaveLength(8);
       expect(firstRowCells).toHaveLength(8);
       expect(firstRowCells[0].textContent?.trim()).toBe("27"); // KW for July 1, 2026
-      expect(firstRowCells[1].textContent?.trim()).toBe(
-        (component as any).monthAbbreviation(),
-      );
+      expect(firstRowCells[1].textContent?.trim()).toBe("");
       expect(firstRowCells[2].textContent?.trim()).toBe("");
       expect(firstRowCells[3].textContent?.trim()).toBe("1");
 
