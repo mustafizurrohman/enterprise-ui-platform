@@ -33,13 +33,13 @@
       [attr.aria-describedby]="inputDescriptionIds()"
       [attr.aria-invalid]="invalid"
       [attr.data-testid]="testIdFor('input')"
-      [value]="currentDate?.toFormat(dateFormat()) ?? ''"
+      [value]="inputDisplayValue()"
       [placeholder]="dateFormatDescription()"
       [disabled]="disabled"
       (click)="openCalendar(dateInput)"
       (keydown)="handleInputKeydown($event, dateInput)"
-      (blur)="onTouched()"
-      (change)="onManualInput(dateInput)"
+      (input)="onManualInput(dateInput)"
+      (blur)="commitManualInput(dateInput)"
     />
 
     @if (currentDate) {

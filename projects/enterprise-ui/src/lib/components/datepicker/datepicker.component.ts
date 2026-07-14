@@ -36,6 +36,7 @@ import {
   type DatepickerDialogContext,
 } from "./datepicker-dialog.component";
 import type { TimeUnit } from "./time-wheel.component";
+import { LuxonDateInputAutocomplete } from "./luxon-date-input-autocomplete";
 
 @Component({
   selector: "datepicker",
@@ -74,6 +75,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   readonly showSeconds = input(false, { transform: booleanAttribute });
   readonly today = input<DateTime>(DateTime.now());
   readonly testId = input<string | null>(null);
+  readonly luxonDateFormat = input<string | null>(null, { alias: "dateFormat" });
 
   readonly disabled = input(false, { transform: booleanAttribute });
   private readonly _disabledForm = signal(false);
@@ -101,6 +103,11 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   );
 
   protected readonly dateFormat = computed(() => {
+    const configuredFormat = this.luxonDateFormat()?.trim();
+    if (configuredFormat) {
+      return configuredFormat;
+    }
+
     if (this.dateOnly()) {
       return "dd.MM.yyyy";
     }
@@ -110,6 +117,11 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   });
 
   protected readonly dateFormatDescription = computed(() => {
+    const configuredFormat = this.luxonDateFormat()?.trim();
+    if (configuredFormat) {
+      return configuredFormat;
+    }
+
     if (this.dateOnly()) {
       return "TT.MM.JJJJ";
     }
@@ -137,6 +149,11 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   );
 
   readonly selectedDate = signal<DateTime | null>(null);
+  protected readonly inputDisplayValue = signal("");
+  private readonly manualInputError = signal(false);
+  private readonly inputAutocomplete = computed(
+    () => new LuxonDateInputAutocomplete(this.dateFormat()),
+  );
   readonly viewDate = signal<DateTime>(DateTime.now());
   protected readonly isOpen = signal(false);
   protected readonly activeDate = signal<DateTime>(
@@ -295,6 +312,17 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
         }
       });
     });
+
+
+    effect(() => {
+      const format = this.dateFormat();
+      const selectedDate = this.selectedDate();
+      untracked(() => {
+        if (selectedDate && !this.manualInputError()) {
+          this.inputDisplayValue.set(selectedDate.toFormat(format));
+        }
+      });
+    });
   }
 
   protected openCalendar(trigger?: HTMLElement): void {
@@ -314,7 +342,14 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     event: KeyboardEvent,
     input: HTMLInputElement,
   ): void {
-    if (event.key === "Enter" || event.key === "ArrowDown") {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      this.commitManualInput(input);
+      this.openCalendar(input);
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
       event.preventDefault();
       this.openCalendar(input);
       return;
@@ -522,6 +557,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
     const jsDate = newSelectedDate.toJSDate();
     this.selectedDate.set(newSelectedDate);
+    this.inputDisplayValue.set(newSelectedDate.toFormat(this.dateFormat()));
+    this.manualInputError.set(false);
     this.value.set(jsDate);
     this.onChange(jsDate);
     this.dateAnnouncement.set(
@@ -538,6 +575,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     }
     const jsDate = now.toJSDate();
     this.selectedDate.set(now);
+    this.inputDisplayValue.set(now.toFormat(this.dateFormat()));
+    this.manualInputError.set(false);
     this.value.set(jsDate);
     this.onChange(jsDate);
     this.closeCalendar();
@@ -550,6 +589,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     event.stopPropagation();
 
     this.selectedDate.set(null);
+    this.inputDisplayValue.set("");
+    this.manualInputError.set(false);
     this.value.set(null);
     this.viewDate.set(DateTime.now());
     this.dateAnnouncement.set("Datum gelöscht.");
@@ -562,21 +603,50 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   protected onManualInput(input: HTMLInputElement): void {
-    const value = input.value;
-    const parsedDate = DateTime.fromFormat(value, this.dateFormat());
+    const result = this.inputAutocomplete().process(input.value, {
+      now: this.today(),
+    });
 
-    if (parsedDate.isValid) {
-      const jsDate = parsedDate.toJSDate();
-      this.selectedDate.set(parsedDate);
-      this.viewDate.set(parsedDate);
-      this.value.set(jsDate);
-      this.onChange(jsDate);
-    } else {
-      input.value = this.selectedDate()
-        ? this.selectedDate()!.toFormat(this.dateFormat())
-        : "";
+    input.value = result.value;
+    this.inputDisplayValue.set(result.value);
+    this.manualInputError.set(!result.valid);
+
+    if (result.date) {
+      this.applyManualDate(result.date);
     }
+  }
+
+  protected commitManualInput(input: HTMLInputElement): void {
+    const result = this.inputAutocomplete().process(input.value, {
+      commit: true,
+      now: this.today(),
+    });
+
+    input.value = result.value;
+    this.inputDisplayValue.set(result.value);
+    this.manualInputError.set(!result.valid || !result.complete);
+
+    if (result.date) {
+      this.applyManualDate(result.date);
+    }
+
     this.onTouched();
+  }
+
+  private applyManualDate(parsedDate: DateTime): void {
+    const normalizedDate = this.dateOnly()
+      ? parsedDate.startOf("day")
+      : this.showSeconds()
+        ? parsedDate
+        : parsedDate.set({ second: 0, millisecond: 0 });
+    const jsDate = normalizedDate.toJSDate();
+
+    this.selectedDate.set(normalizedDate);
+    this.viewDate.set(normalizedDate);
+    this.inputDisplayValue.set(normalizedDate.toFormat(this.dateFormat()));
+    this.manualInputError.set(false);
+    this.value.set(jsDate);
+    this.onChange(jsDate);
   }
 
   protected updateTime(unit: TimeUnit, rawValue: string | number): void {
@@ -596,6 +666,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     });
     const jsDate = newDate.toJSDate();
     this.selectedDate.set(newDate);
+    this.inputDisplayValue.set(newDate.toFormat(this.dateFormat()));
+    this.manualInputError.set(false);
     this.value.set(jsDate);
     this.onChange(jsDate);
     this.announceTime();
@@ -640,13 +712,19 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
         }
 
         this.selectedDate.set(date);
+        this.inputDisplayValue.set(date.toFormat(this.dateFormat()));
+        this.manualInputError.set(false);
         this.viewDate.set(date);
       } else {
         this.selectedDate.set(null);
+        this.inputDisplayValue.set("");
+        this.manualInputError.set(true);
         this.viewDate.set(DateTime.now());
       }
     } else {
       this.selectedDate.set(null);
+      this.inputDisplayValue.set("");
+      this.manualInputError.set(false);
       this.viewDate.set(DateTime.now());
     }
   }
@@ -729,8 +807,9 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
   protected hasInputError(): boolean {
     return (
-      !!this.ngControl?.invalid &&
-      (!!this.ngControl?.touched || !!this.ngControl?.dirty)
+      this.manualInputError() ||
+      (!!this.ngControl?.invalid &&
+        (!!this.ngControl?.touched || !!this.ngControl?.dirty))
     );
   }
 
