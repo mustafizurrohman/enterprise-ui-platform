@@ -65,6 +65,8 @@ export class DatepickerDialogComponent {
 
   readonly previousMonth = output<void>();
   readonly nextMonth = output<void>();
+  readonly previousYear = output<void>();
+  readonly nextYear = output<void>();
   readonly dateSelected = output<DateTime>();
   readonly dateFocused = output<DateTime>();
   readonly dateKeydown = output<DatepickerGridKeydown>();

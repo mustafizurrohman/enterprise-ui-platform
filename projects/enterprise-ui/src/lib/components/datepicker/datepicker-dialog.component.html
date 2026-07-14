@@ -29,11 +29,24 @@
       {{ formattedMonth() }}
     </div>
 
-    <div class="datepicker-navigation-wrapper" role="group" aria-label="Monat wechseln">
+    <div class="datepicker-navigation-wrapper" role="group" aria-label="Datum wechseln">
+      <button
+        type="button"
+        class="datepicker-navigation"
+        aria-label="Vorheriges Jahr anzeigen"
+        aria-keyshortcuts="Shift+PageUp"
+        [attr.aria-controls]="calendarGridId()"
+        [attr.data-testid]="testIdFor('previous-year')"
+        (click)="previousYear.emit()"
+      >
+        <mat-icon aria-hidden="true">keyboard_double_arrow_left</mat-icon>
+      </button>
+
       <button
         type="button"
         class="datepicker-navigation"
         aria-label="Vorherigen Monat anzeigen"
+        aria-keyshortcuts="PageUp"
         [attr.aria-controls]="calendarGridId()"
         [attr.data-testid]="testIdFor('previous-month')"
         (click)="previousMonth.emit()"
@@ -45,11 +58,24 @@
         type="button"
         class="datepicker-navigation"
         aria-label="Nächsten Monat anzeigen"
+        aria-keyshortcuts="PageDown"
         [attr.aria-controls]="calendarGridId()"
         [attr.data-testid]="testIdFor('next-month')"
         (click)="nextMonth.emit()"
       >
         <mat-icon aria-hidden="true">chevron_right</mat-icon>
+      </button>
+
+      <button
+        type="button"
+        class="datepicker-navigation"
+        aria-label="Nächstes Jahr anzeigen"
+        aria-keyshortcuts="Shift+PageDown"
+        [attr.aria-controls]="calendarGridId()"
+        [attr.data-testid]="testIdFor('next-year')"
+        (click)="nextYear.emit()"
+      >
+        <mat-icon aria-hidden="true">keyboard_double_arrow_right</mat-icon>
       </button>
     </div>
   </div>

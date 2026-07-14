@@ -515,9 +515,30 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     this.changeViewMonth(1);
   }
 
+  prevYear(): void {
+    this.changeViewYear(-1);
+  }
+
+  nextYear(): void {
+    this.changeViewYear(1);
+  }
+
   private changeViewMonth(monthDifference: number): void {
     const nextViewDate = this.viewDate()
       .plus({ months: monthDifference })
+      .startOf("month");
+    const targetDay = Math.min(
+      this.activeDate().day,
+      nextViewDate.daysInMonth ?? 1,
+    );
+
+    this.viewDate.set(nextViewDate);
+    this.activeDate.set(nextViewDate.set({ day: targetDay }));
+  }
+
+  private changeViewYear(yearDifference: number): void {
+    const nextViewDate = this.viewDate()
+      .plus({ years: yearDifference })
       .startOf("month");
     const targetDay = Math.min(
       this.activeDate().day,

@@ -114,6 +114,8 @@
       [context]="dialogContext()"
       (previousMonth)="prevMonth()"
       (nextMonth)="nextMonth()"
+      (previousYear)="prevYear()"
+      (nextYear)="nextYear()"
       (dateSelected)="selectDate($event)"
       (dateFocused)="setActiveDate($event)"
       (dateKeydown)="handleCalendarKeydown($event.event, $event.date)"

@@ -105,4 +105,26 @@ describe("DatepickerDialogComponent", () => {
     expect(previousSpy).toHaveBeenCalledOnce();
     expect(timeSpy).toHaveBeenCalledWith({ unit: "hour", value: 1 });
   });
+
+  it("should forward year navigation events", () => {
+    const prevYearSpy = vi.fn();
+    const nextYearSpy = vi.fn();
+    component.previousYear.subscribe(prevYearSpy);
+    component.nextYear.subscribe(nextYearSpy);
+
+    const prevButton = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-previous-year"]',
+    ) as HTMLButtonElement;
+    const nextButton = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-next-year"]',
+    ) as HTMLButtonElement;
+
+    prevButton.click();
+    nextButton.click();
+
+    expect(prevYearSpy).toHaveBeenCalledOnce();
+    expect(nextYearSpy).toHaveBeenCalledOnce();
+    expect(prevButton.getAttribute("aria-keyshortcuts")).toBe("Shift+PageUp");
+    expect(nextButton.getAttribute("aria-keyshortcuts")).toBe("Shift+PageDown");
+  });
 });

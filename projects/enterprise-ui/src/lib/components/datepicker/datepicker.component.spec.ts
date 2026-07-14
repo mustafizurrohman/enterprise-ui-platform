@@ -264,6 +264,19 @@ describe("DatepickerComponent", () => {
     expect(component.viewDate().month).toBe(initialMonth);
   });
 
+  it("should navigate to previous and next year", () => {
+    (component as any).isOpen.set(true);
+    fixture.detectChanges();
+
+    const initialYear = component.viewDate().year;
+
+    component.prevYear();
+    expect(component.viewDate().year).toBe(initialYear - 1);
+
+    component.nextYear();
+    expect(component.viewDate().year).toBe(initialYear);
+  });
+
   it("should keep one tabbable calendar day after month navigation", async () => {
     component.writeValue("2026-07-31T10:00:00");
     const toggle = fixture.nativeElement.querySelector(
