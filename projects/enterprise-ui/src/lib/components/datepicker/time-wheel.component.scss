@@ -29,8 +29,7 @@
     background: rgb(0 122 255 / 10%);
   }
 
-  &:active,
-  &--pressed {
+  &:active {
     transform: scale(0.92);
     background: rgb(0 122 255 / 16%);
   }
@@ -52,7 +51,7 @@
 }
 
 .datepicker-time-value {
-  --time-wheel-animation-duration: 70ms;
+  --time-wheel-animation-duration: 180ms;
 
   position: relative;
   display: grid;
@@ -62,6 +61,9 @@
   justify-items: center;
   overflow: hidden;
 
+  &--rapid {
+    --time-wheel-animation-duration: 70ms;
+  }
 
   &::before {
     position: absolute;
