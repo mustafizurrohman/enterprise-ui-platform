@@ -174,19 +174,15 @@ export class LuxonDateInputAutocomplete {
           sourceIndex += consumed;
         }
 
-        const noMoreFields = this.tokens
-          .slice(tokenIndex + 1)
-          .every((t) => t.type === "literal");
+        const isTrailing = sourceIndex === rawValue.length;
 
-        const fullyMatched = consumed === token.value.length;
         if (
           !isDeletion ||
-          fullyMatched ||
-          (consumed > 0 && sourceIndex < rawValue.length) ||
+          (consumed === token.value.length && !isTrailing) ||
           commit
         ) {
           value += token.value;
-        } else if (isDeletion && consumed > 0) {
+        } else if (isDeletion && consumed > 0 && !isTrailing) {
           value += rawValue.slice(sourceIndex - consumed, sourceIndex);
         }
         continue;

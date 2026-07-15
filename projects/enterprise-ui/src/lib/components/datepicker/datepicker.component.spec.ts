@@ -552,26 +552,59 @@ describe("DatepickerComponent", () => {
     });
 
     it("should follow the smart backspace example sequence from the issue description", () => {
+      fixture.componentRef.setInput("showSeconds", true);
       const input = fixture.nativeElement.querySelector(
         "input",
       ) as HTMLInputElement;
 
       // Initialize
-      input.value = "15.09.2026 20:26 Uhr";
+      input.value = "15.07.2026 16:59:11 Uhr";
       input.dispatchEvent(new Event("input"));
       fixture.detectChanges();
+      expect(input.value).toBe("15.07.2026 16:59:11 Uhr");
 
-      // Press Backspace once
-      input.setSelectionRange(input.value.length, input.value.length);
-      const backspaceEvent = new KeyboardEvent("keydown", {
-        key: "Backspace",
-        bubbles: true,
-        cancelable: true,
-      });
-      input.dispatchEvent(backspaceEvent);
-      fixture.detectChanges();
+      const backspace = () => {
+        input.setSelectionRange(input.value.length, input.value.length);
+        const event = new KeyboardEvent("keydown", {
+          key: "Backspace",
+          bubbles: true,
+          cancelable: true,
+        });
+        input.dispatchEvent(event);
+        if (!event.defaultPrevented) {
+          input.value = input.value.slice(0, -1);
+          input.dispatchEvent(new Event("input"));
+        }
+        fixture.detectChanges();
+      };
 
-      expect(input.value).toBe("15.09.2026 20:2");
+      // 1. 15.07.2026 16:59:11 Uhr -> Backspace -> 15.07.2026 16:59:1
+      backspace();
+      expect(input.value).toBe("15.07.2026 16:59:1");
+
+      // 2. 15.07.2026 16:59:1 -> Backspace -> 15.07.2026 16:59
+      backspace();
+      expect(input.value).toBe("15.07.2026 16:59");
+
+      // 3. 15.07.2026 16:59 -> Backspace -> 15.07.2026 16:5
+      backspace();
+      expect(input.value).toBe("15.07.2026 16:5");
+
+      // 4. 15.07.2026 16:5 -> Backspace -> 15.07.2026 16
+      backspace();
+      expect(input.value).toBe("15.07.2026 16");
+
+      // 5. 15.07.2026 16 -> Backspace -> 15.07.2026 1
+      backspace();
+      expect(input.value).toBe("15.07.2026 1");
+
+      // 6. 15.07.2026 1 -> Backspace -> 15.07.2026
+      backspace();
+      expect(input.value).toBe("15.07.2026");
+
+      // 7. 15.07.2026 -> Backspace -> 15.07.202
+      backspace();
+      expect(input.value).toBe("15.07.202");
     });
 
     it("should support backspace deletion when 'Uhr' is absent", () => {
