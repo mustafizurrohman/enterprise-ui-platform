@@ -550,6 +550,84 @@ describe("DatepickerComponent", () => {
       fixture.detectChanges();
       expect(input.value).toBe("15");
     });
+
+    it("should follow the complete backspace example sequence from the issue description", () => {
+      const input = fixture.nativeElement.querySelector(
+        "input",
+      ) as HTMLInputElement;
+
+      const steps = [
+        { input: "15.09.2026 20:26 Uh", expected: "15.09.2026 20:26 Uh" },
+        { input: "15.09.2026 20:26 U", expected: "15.09.2026 20:26 U" },
+        { input: "15.09.2026 20:26 ", expected: "15.09.2026 20:26 " },
+        { input: "15.09.2026 20:26", expected: "15.09.2026 20:26" },
+        { input: "15.09.2026 20:2", expected: "15.09.2026 20:2" },
+        { input: "15.09.2026 20:", expected: "15.09.2026 20:" },
+        { input: "15.09.2026 20", expected: "15.09.2026 20" },
+        { input: "15.09.2026 2", expected: "15.09.2026 2" },
+        { input: "15.09.2026 ", expected: "15.09.2026 " },
+        { input: "15.09.2026", expected: "15.09.2026" },
+        { input: "15.09.202", expected: "15.09.202" },
+        { input: "15.09.20", expected: "15.09.20" },
+        { input: "15.09.2", expected: "15.09.2" },
+        { input: "15.09.", expected: "15.09." },
+        { input: "15.09", expected: "15.09" },
+        { input: "15.0", expected: "15.0" },
+        { input: "15.", expected: "15." },
+        { input: "15", expected: "15" },
+        { input: "1", expected: "1" },
+      ];
+
+      // Initialize
+      input.value = "15.09.2026 20:26 Uhr";
+      input.dispatchEvent(new Event("input"));
+      fixture.detectChanges();
+
+      for (const step of steps) {
+        input.value = step.input;
+        input.dispatchEvent(new Event("input"));
+        fixture.detectChanges();
+        expect(input.value).toBe(step.expected);
+      }
+    });
+
+    it("should support backspace deletion when 'Uhr' is absent", () => {
+      fixture.componentRef.setInput("dateFormat", "dd.MM.yyyy HH:mm");
+      const input = fixture.nativeElement.querySelector(
+        "input",
+      ) as HTMLInputElement;
+
+      // Set initial value
+      input.value = "15.09.2026 20:26";
+      input.dispatchEvent(new Event("input"));
+      fixture.detectChanges();
+      expect(input.value).toBe("15.09.2026 20:26");
+
+      // Backspace on '6'
+      input.value = "15.09.2026 20:2";
+      input.dispatchEvent(new Event("input"));
+      fixture.detectChanges();
+      expect(input.value).toBe("15.09.2026 20:2");
+    });
+
+    it("should support backspace deletion for a date-only value", () => {
+      fixture.componentRef.setInput("dateOnly", true);
+      const input = fixture.nativeElement.querySelector(
+        "input",
+      ) as HTMLInputElement;
+
+      // Set initial value
+      input.value = "15.09.2026";
+      input.dispatchEvent(new Event("input"));
+      fixture.detectChanges();
+      expect(input.value).toBe("15.09.2026");
+
+      // Backspace on '6'
+      input.value = "15.09.202";
+      input.dispatchEvent(new Event("input"));
+      fixture.detectChanges();
+      expect(input.value).toBe("15.09.202");
+    });
   });
 
   it("should have correct accessibility attributes", () => {
