@@ -245,4 +245,40 @@ describe("DatepickerDialogComponent", () => {
     expect(yearGroup.querySelector('[data-testid="datepicker-year-display"]')).toBeTruthy();
     expect(yearGroup.querySelector('[data-testid="datepicker-next-year"]')).toBeTruthy();
   });
+
+  it("should forward time adjustment events", () => {
+    const adjustSpy = vi.fn();
+    component.timeAdjusted.subscribe(adjustSpy);
+
+    const testCases = [
+      { id: "add-15-mins", expected: { minutes: 15 } },
+      { id: "subtract-15-mins", expected: { minutes: -15 } },
+      { id: "add-30-mins", expected: { minutes: 30 } },
+      { id: "subtract-30-mins", expected: { minutes: -30 } },
+      { id: "add-12-hrs", expected: { hours: 12 } },
+      { id: "subtract-12-hrs", expected: { hours: -12 } },
+    ];
+
+    for (const testCase of testCases) {
+      const button = fixture.nativeElement.querySelector(
+        `[data-testid="datepicker-${testCase.id}"]`,
+      ) as HTMLButtonElement;
+      button.click();
+      expect(adjustSpy).toHaveBeenLastCalledWith(testCase.expected);
+    }
+  });
+
+  it("should not show time adjustments when dateOnly is true", () => {
+    const context: DatepickerDialogContext = {
+      ...component.context(),
+      dateOnly: true,
+    };
+    fixture.componentRef.setInput("context", context);
+    fixture.detectChanges();
+
+    const adjustments = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-time-adjustments"]',
+    );
+    expect(adjustments).toBeNull();
+  });
 });

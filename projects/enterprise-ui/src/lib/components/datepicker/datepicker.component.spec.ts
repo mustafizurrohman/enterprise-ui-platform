@@ -367,6 +367,23 @@ describe("DatepickerComponent", () => {
     );
   });
 
+  it("should adjust time correctly", () => {
+    const onChangeSpy = vi.fn();
+    component.registerOnChange(onChangeSpy);
+
+    const baseDate = DateTime.fromISO("2026-07-15T10:30:00");
+    component.writeValue(baseDate.toISO());
+
+    (component as any).adjustTime({ minutes: 15 });
+    expect(component.selectedDate()?.toISO()).toBe(baseDate.plus({ minutes: 15 }).toISO());
+
+    (component as any).adjustTime({ minutes: -30 });
+    expect(component.selectedDate()?.toISO()).toBe(baseDate.minus({ minutes: 15 }).toISO());
+
+    (component as any).adjustTime({ hours: 12 });
+    expect(component.selectedDate()?.toISO()).toBe(baseDate.plus({ hours: 12, minutes: -15 }).toISO());
+  });
+
   it("should increment and decrement time through the reusable wheel", async () => {
     component.writeValue("2026-07-12T10:30:30");
     const toggle = fixture.nativeElement.querySelector(

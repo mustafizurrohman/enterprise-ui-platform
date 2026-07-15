@@ -715,6 +715,19 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     this.announceTime();
   }
 
+  protected adjustTime(adjustment: { hours?: number; minutes?: number }): void {
+    const currentDate = this.selectedDate() ?? DateTime.local().startOf("day");
+    const newDate = currentDate.plus(adjustment);
+
+    const jsDate = newDate.toJSDate();
+    this.selectedDate.set(newDate);
+    this.inputDisplayValue.set(newDate.toFormat(this.dateFormat()));
+    this.manualInputError.set(false);
+    this.value.set(jsDate);
+    this.onChange(jsDate);
+    this.announceTime();
+  }
+
   private announceTime(): void {
     const date = this.selectedDate();
 

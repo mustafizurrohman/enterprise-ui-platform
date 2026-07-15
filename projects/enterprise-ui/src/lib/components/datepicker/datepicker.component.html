@@ -120,6 +120,7 @@
       (dateFocused)="setActiveDate($event)"
       (dateKeydown)="handleCalendarKeydown($event.event, $event.date)"
       (timeChanged)="updateTime($event.unit, $event.value)"
+      (timeAdjusted)="adjustTime($event)"
       (nowSelected)="selectNow()"
       (confirmed)="closeCalendar()"
     />
