@@ -26,18 +26,45 @@
       aria-atomic="true"
       [attr.data-testid]="testIdFor('month-heading')"
     >
-      <select
-        class="datepicker-month-select"
-        [value]="context().viewDate.month"
-        (change)="onMonthChange($event)"
-        aria-label="Monat auswählen"
-        [attr.data-testid]="testIdFor('month-select')"
-      >
-        @for (month of context().months; track month; let i = $index) {
-          <option [value]="i + 1">{{ month }}</option>
-        }
-      </select>
-      <span class="datepicker-year-display" [attr.data-testid]="testIdFor('year-display')">{{ context().viewDate.year }}</span>
+      <mat-form-field class="datepicker-month-field" subscriptSizing="dynamic">
+        <input
+          matInput
+          type="text"
+          [formControl]="monthControl"
+          [matAutocomplete]="monthAuto"
+          [matAutocompleteDisabled]="monthControl.pristine"
+          (mousedown)="monthControl.markAsDirty()"
+          (keydown)="monthControl.markAsDirty()"
+          (blur)="onMonthBlur()"
+          aria-label="Monat auswählen"
+          [attr.data-testid]="testIdFor('month-select')"
+        />
+        <mat-autocomplete #monthAuto="matAutocomplete" panelClass="datepicker-autocomplete-panel" (optionSelected)="onMonthOptionSelected($event)">
+          @for (month of filteredMonths$ | async; track month.index) {
+            <mat-option [value]="month.name">{{ month.name }}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <mat-form-field class="datepicker-year-field" subscriptSizing="dynamic">
+        <input
+          matInput
+          type="text"
+          [formControl]="yearControl"
+          [matAutocomplete]="yearAuto"
+          [matAutocompleteDisabled]="yearControl.pristine"
+          (mousedown)="yearControl.markAsDirty()"
+          (keydown)="yearControl.markAsDirty()"
+          (blur)="onYearBlur()"
+          aria-label="Jahr auswählen"
+          [attr.data-testid]="testIdFor('year-display')"
+        />
+        <mat-autocomplete #yearAuto="matAutocomplete" panelClass="datepicker-autocomplete-panel" (optionSelected)="onYearOptionSelected($event)">
+          @for (year of filteredYears$ | async; track year) {
+            <mat-option [value]="year">{{ year }}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
     </div>
 
     <div class="datepicker-navigation-wrapper" role="group" aria-label="Datum wechseln">

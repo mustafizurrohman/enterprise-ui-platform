@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { DateTime, Info } from "luxon";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -12,7 +13,7 @@ describe("DatepickerDialogComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DatepickerDialogComponent],
+      imports: [DatepickerDialogComponent, NoopAnimationsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DatepickerDialogComponent);
@@ -133,12 +134,67 @@ describe("DatepickerDialogComponent", () => {
     const monthSpy = vi.fn();
     component.monthSelected.subscribe(monthSpy);
 
-    const select = fixture.nativeElement.querySelector(
+    const input = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-month-select"]',
-    ) as HTMLSelectElement;
-    select.value = "5"; // May
-    select.dispatchEvent(new Event("change"));
+    ) as HTMLInputElement;
+
+    input.value = "Mai";
+    input.dispatchEvent(new Event("input"));
+    input.dispatchEvent(new Event("blur"));
+    fixture.detectChanges();
 
     expect(monthSpy).toHaveBeenCalledWith(5);
+  });
+
+  it("should reject arbitrary month values and restore previous month", () => {
+    const monthSpy = vi.fn();
+    component.monthSelected.subscribe(monthSpy);
+
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-month-select"]',
+    ) as HTMLInputElement;
+
+    const originalValue = input.value; // "Juli"
+    input.value = "InvalidMonth";
+    input.dispatchEvent(new Event("input"));
+    input.dispatchEvent(new Event("blur"));
+    fixture.detectChanges();
+
+    expect(monthSpy).not.toHaveBeenCalled();
+    expect(input.value).toBe(originalValue);
+  });
+
+  it("should generate year suggestions around current year", () => {
+    const currentYear = DateTime.now().year;
+    // @ts-ignore
+    const suggestions = component._filterYears("");
+    expect(suggestions).toContain(currentYear - 50);
+    expect(suggestions).toContain(currentYear + 50);
+    expect(suggestions.length).toBe(101);
+  });
+
+  it("should filter year suggestions based on input", () => {
+    // @ts-ignore
+    const suggestions = component._filterYears("202");
+    expect(suggestions.every((y: number) => y.toString().includes("202"))).toBe(
+      true,
+    );
+  });
+
+  it("should accept and retain custom year entry", () => {
+    const yearSpy = vi.fn();
+    component.yearSelected.subscribe(yearSpy);
+
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-year-display"]',
+    ) as HTMLInputElement;
+
+    input.value = "2099";
+    input.dispatchEvent(new Event("input"));
+    input.dispatchEvent(new Event("blur"));
+    fixture.detectChanges();
+
+    expect(yearSpy).toHaveBeenCalledWith(2099);
+    expect(input.value).toBe("2099");
   });
 });
