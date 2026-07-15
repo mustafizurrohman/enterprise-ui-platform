@@ -94,13 +94,21 @@ $divider: rgba(0, 0, 0, 0.12);
     .datepicker-icon {
       background: none;
       border: none;
+      padding: 0;
+      flex-shrink: 0;
       cursor: pointer;
       color: $primary;
-      padding: 0 4px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: color 0.3s;
+      transition: color 0.3s, background-color 0.3s;
+
+      &:hover:not(:disabled):not(.datepicker-icon--disabled) {
+        background-color: $hover-background;
+      }
 
       &:disabled,
       &--disabled,
@@ -124,6 +132,12 @@ $divider: rgba(0, 0, 0, 0.12);
       svg,
       mat-icon {
         fill: currentColor;
+        width: 24px;
+        height: 24px;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
     }
   }

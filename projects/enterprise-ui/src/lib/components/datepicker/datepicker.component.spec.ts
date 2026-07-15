@@ -1148,7 +1148,9 @@ describe("DatepickerComponent", () => {
   });
 
   describe("disabled", () => {
-    it("should disable the input and icon button when disabled is true", () => {
+    it("should disable the input and hide 'clear' and 'now' buttons when disabled is true", () => {
+      // Set a date so clear button would normally appear
+      component.writeValue("2026-07-15T10:00:00");
       fixture.componentRef.setInput("disabled", true);
       fixture.detectChanges();
 
@@ -1160,17 +1162,18 @@ describe("DatepickerComponent", () => {
       ) as HTMLButtonElement;
       const nowButton = fixture.nativeElement.querySelector(
         '[data-testid$="now-input"]',
-      ) as HTMLButtonElement;
+      );
+      const clearButton = fixture.nativeElement.querySelector(
+        '[data-testid$="clear"]',
+      );
 
       expect(input.disabled).toBeTruthy();
       expect(toggleButton.disabled).toBeTruthy();
-      expect(nowButton.disabled).toBeTruthy();
       expect(
         toggleButton.classList.contains("datepicker-icon--disabled"),
       ).toBeTruthy();
-      expect(
-        nowButton.classList.contains("datepicker-icon--disabled"),
-      ).toBeTruthy();
+      expect(nowButton).toBeNull();
+      expect(clearButton).toBeNull();
     });
 
     it("should not open calendar when disabled is true", () => {

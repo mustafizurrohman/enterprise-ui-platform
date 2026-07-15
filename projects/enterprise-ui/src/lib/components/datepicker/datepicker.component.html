@@ -41,7 +41,7 @@
       (blur)="commitManualInput(dateInput)"
     />
 
-    @if (currentDate) {
+    @if (currentDate && !disabled) {
       <button
         type="button"
         class="datepicker-icon datepicker-clear"
@@ -55,17 +55,19 @@
       </button>
     }
 
-    <button
-      type="button"
-      class="datepicker-icon"
-      [class.datepicker-icon--disabled]="disabled"
-      [disabled]="disabled"
-      aria-label="Aktuelle Zeit auswählen"
-      [attr.data-testid]="testIdFor('now-input')"
-      (click)="selectNow()"
-    >
-      <mat-icon aria-hidden="true">access_time</mat-icon>
-    </button>
+    @if (!disabled) {
+      <button
+        type="button"
+        class="datepicker-icon"
+        [class.datepicker-icon--disabled]="disabled"
+        [disabled]="disabled"
+        aria-label="Aktuelle Zeit auswählen"
+        [attr.data-testid]="testIdFor('now-input')"
+        (click)="selectNow()"
+      >
+        <mat-icon aria-hidden="true">access_time</mat-icon>
+      </button>
+    }
 
     <button
       #calendarToggle
