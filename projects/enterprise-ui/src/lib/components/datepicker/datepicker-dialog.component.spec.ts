@@ -246,6 +246,29 @@ describe("DatepickerDialogComponent", () => {
     expect(yearGroup.querySelector('[data-testid="datepicker-next-year"]')).toBeTruthy();
   });
 
+  it("should navigate to current month and year when reset buttons are clicked", () => {
+    const monthSpy = vi.fn();
+    const yearSpy = vi.fn();
+    component.monthSelected.subscribe(monthSpy);
+    component.yearSelected.subscribe(yearSpy);
+
+    const monthReset = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-month-reset"]',
+    ) as HTMLButtonElement;
+    const yearReset = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-year-reset"]',
+    ) as HTMLButtonElement;
+
+    expect(monthReset).toBeTruthy();
+    expect(yearReset).toBeTruthy();
+
+    monthReset.click();
+    yearReset.click();
+
+    expect(monthSpy).toHaveBeenCalledWith(component.context().today.month);
+    expect(yearSpy).toHaveBeenCalledWith(component.context().today.year);
+  });
+
   it("should forward time adjustment events", () => {
     const adjustSpy = vi.fn();
     component.timeAdjusted.subscribe(adjustSpy);

@@ -72,6 +72,15 @@
       <div class="datepicker-navigation-label" aria-hidden="true">
         <span></span>
         <strong id="datepicker-month-navigation-label">Monat</strong>
+        <button
+          type="button"
+          class="datepicker-navigation-reset"
+          aria-label="Zum aktuellen Monat springen"
+          [attr.data-testid]="testIdFor('month-reset')"
+          (click)="monthSelected.emit(context().today.month)"
+        >
+          <mat-icon aria-hidden="true">today</mat-icon>
+        </button>
         <span></span>
       </div>
     </div>
@@ -133,6 +142,15 @@
       <div class="datepicker-navigation-label" aria-hidden="true">
         <span></span>
         <strong id="datepicker-year-navigation-label">Jahr</strong>
+        <button
+          type="button"
+          class="datepicker-navigation-reset"
+          aria-label="Zum aktuellen Jahr springen"
+          [attr.data-testid]="testIdFor('year-reset')"
+          (click)="yearSelected.emit(context().today.year)"
+        >
+          <mat-icon aria-hidden="true">today</mat-icon>
+        </button>
         <span></span>
       </div>
     </div>
