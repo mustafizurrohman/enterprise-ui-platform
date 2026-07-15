@@ -1,9 +1,20 @@
 import { CommonModule, NgTemplateOutlet } from "@angular/common";
 import { CdkTrapFocus } from "@angular/cdk/a11y";
 import { MatIconModule } from "@angular/material/icon";
-import { Component, computed, effect, input, output, untracked, viewChild } from "@angular/core";
+import {
+  Component,
+  computed,
+  effect,
+  input,
+  output,
+  untracked,
+  viewChild,
+} from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from "@angular/material/autocomplete";
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from "@angular/material/autocomplete";
 import { MatInputModule } from "@angular/material/input";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { DateTime } from "luxon";
@@ -87,10 +98,10 @@ export class DatepickerDialogComponent {
   readonly monthSelected = output<number>();
   readonly yearSelected = output<number>();
 
-  protected readonly monthControl = new FormControl<string>("", { nonNullable: true });
-  protected readonly yearControl = new FormControl<string>("", { nonNullable: true });
+  protected readonly yearControl = new FormControl<string>("", {
+    nonNullable: true,
+  });
 
-  protected filteredMonths$!: Observable<{ name: string; index: number }[]>;
   protected filteredYears$!: Observable<number[]>;
 
   protected readonly dialogId = computed(() => this.context().dialogId);
@@ -109,6 +120,10 @@ export class DatepickerDialogComponent {
   );
   protected readonly selectedDate = computed(
     () => this.context().selectedDate,
+  );
+  protected readonly months = computed(() => this.context().months);
+  protected readonly selectedMonth = computed(
+    () => this.context().viewDate.month,
   );
   protected readonly testIdPrefix = computed(
     () => this.context().testIdPrefix,
@@ -155,11 +170,6 @@ export class DatepickerDialogComponent {
   private readonly calendarGrid = viewChild.required(DatepickerGridComponent);
 
   constructor() {
-    this.filteredMonths$ = this.monthControl.valueChanges.pipe(
-      startWith(""),
-      map((value) => this._filterMonths(value || "")),
-    );
-
     this.filteredYears$ = this.yearControl.valueChanges.pipe(
       startWith(""),
       map((value) => this._filterYears(value || "")),
@@ -168,10 +178,6 @@ export class DatepickerDialogComponent {
     effect(() => {
       const context = this.context();
       untracked(() => {
-        const monthName = context.months[context.viewDate.month - 1];
-        if (this.monthControl.value !== monthName) {
-          this.monthControl.setValue(monthName, { emitEvent: false });
-        }
         const yearStr = context.viewDate.year.toString();
         if (this.yearControl.value !== yearStr) {
           this.yearControl.setValue(yearStr, { emitEvent: false });
@@ -189,15 +195,13 @@ export class DatepickerDialogComponent {
   }
 
   protected onMonthChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.monthSelected.emit(Number(target.value));
-  }
+    const month = Number.parseInt(
+      (event.target as HTMLSelectElement).value,
+      10,
+    );
 
-  protected onMonthOptionSelected(event: MatAutocompleteSelectedEvent): void {
-    const monthName = event.option.viewValue;
-    const monthIndex = this.context().months.indexOf(monthName) + 1;
-    if (monthIndex > 0) {
-      this.monthSelected.emit(monthIndex);
+    if (Number.isInteger(month) && month >= 1 && month <= 12) {
+      this.monthSelected.emit(month);
     }
   }
 
@@ -205,25 +209,6 @@ export class DatepickerDialogComponent {
     const year = Number(event.option.value);
     if (!isNaN(year)) {
       this.yearSelected.emit(year);
-    }
-  }
-
-  protected onMonthBlur(): void {
-    const value = this.monthControl.value;
-    const monthIndex = this.context().months.findIndex(
-      (m) => m.toLowerCase() === value.toLowerCase(),
-    );
-
-    if (monthIndex !== -1) {
-      const monthName = this.context().months[monthIndex];
-      this.monthControl.setValue(monthName, { emitEvent: false });
-      this.monthSelected.emit(monthIndex + 1);
-    } else {
-      // Restore original value
-      this.monthControl.setValue(
-        this.context().months[this.context().viewDate.month - 1],
-        { emitEvent: false },
-      );
     }
   }
 
@@ -242,13 +227,6 @@ export class DatepickerDialogComponent {
 
   protected testIdFor(part: string): string {
     return `${this.testIdPrefix()}-${part}`;
-  }
-
-  private _filterMonths(value: string): { name: string; index: number }[] {
-    const filterValue = value.toLowerCase();
-    return this.context()
-      .months.map((name, index) => ({ name, index: index + 1 }))
-      .filter((month) => month.name.toLowerCase().includes(filterValue));
   }
 
   private _filterYears(value: string): number[] {

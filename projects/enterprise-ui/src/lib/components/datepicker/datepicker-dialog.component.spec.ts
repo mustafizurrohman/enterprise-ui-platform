@@ -130,38 +130,29 @@ describe("DatepickerDialogComponent", () => {
     expect(nextButton.getAttribute("aria-keyshortcuts")).toBe("Shift+PageDown");
   });
 
+  it("should indicate the currently selected month", () => {
+    const select = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-month-select"]',
+    ) as HTMLSelectElement;
+
+    expect(select.value).toBe("7");
+    expect(select.selectedOptions[0]?.textContent?.trim()).toBe("Juli");
+    expect(select.options).toHaveLength(12);
+  });
+
   it("should forward month selection event", () => {
     const monthSpy = vi.fn();
     component.monthSelected.subscribe(monthSpy);
 
-    const input = fixture.nativeElement.querySelector(
+    const select = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-month-select"]',
-    ) as HTMLInputElement;
+    ) as HTMLSelectElement;
 
-    input.value = "Mai";
-    input.dispatchEvent(new Event("input"));
-    input.dispatchEvent(new Event("blur"));
+    select.value = "5";
+    select.dispatchEvent(new Event("change"));
     fixture.detectChanges();
 
     expect(monthSpy).toHaveBeenCalledWith(5);
-  });
-
-  it("should reject arbitrary month values and restore previous month", () => {
-    const monthSpy = vi.fn();
-    component.monthSelected.subscribe(monthSpy);
-
-    const input = fixture.nativeElement.querySelector(
-      '[data-testid="datepicker-month-select"]',
-    ) as HTMLInputElement;
-
-    const originalValue = input.value; // "Juli"
-    input.value = "InvalidMonth";
-    input.dispatchEvent(new Event("input"));
-    input.dispatchEvent(new Event("blur"));
-    fixture.detectChanges();
-
-    expect(monthSpy).not.toHaveBeenCalled();
-    expect(input.value).toBe(originalValue);
   });
 
   it("should generate year suggestions around current year", () => {

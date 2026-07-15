@@ -26,25 +26,17 @@
       aria-atomic="true"
       [attr.data-testid]="testIdFor('month-heading')"
     >
-      <mat-form-field class="datepicker-month-field" subscriptSizing="dynamic">
-        <input
-          matInput
-          type="text"
-          [formControl]="monthControl"
-          [matAutocomplete]="monthAuto"
-          [matAutocompleteDisabled]="monthControl.pristine"
-          (mousedown)="monthControl.markAsDirty()"
-          (keydown)="monthControl.markAsDirty()"
-          (blur)="onMonthBlur()"
-          aria-label="Monat auswählen"
-          [attr.data-testid]="testIdFor('month-select')"
-        />
-        <mat-autocomplete #monthAuto="matAutocomplete" class="datepicker-autocomplete-panel" (optionSelected)="onMonthOptionSelected($event)">
-          @for (month of (filteredMonths$ | async) ?? []; track month.index) {
-            <mat-option [value]="month.name">{{ month.name }}</mat-option>
-          }
-        </mat-autocomplete>
-      </mat-form-field>
+      <select
+        class="datepicker-month-select"
+        [value]="selectedMonth()"
+        aria-label="Monat auswählen"
+        [attr.data-testid]="testIdFor('month-select')"
+        (change)="onMonthChange($event)"
+      >
+        @for (month of months(); track $index) {
+          <option [value]="$index + 1">{{ month }}</option>
+        }
+      </select>
 
       <mat-form-field class="datepicker-year-field" subscriptSizing="dynamic">
         <input
