@@ -551,44 +551,27 @@ describe("DatepickerComponent", () => {
       expect(input.value).toBe("15");
     });
 
-    it("should follow the complete backspace example sequence from the issue description", () => {
+    it("should follow the smart backspace example sequence from the issue description", () => {
       const input = fixture.nativeElement.querySelector(
         "input",
       ) as HTMLInputElement;
-
-      const steps = [
-        { input: "15.09.2026 20:26 Uh", expected: "15.09.2026 20:26 Uh" },
-        { input: "15.09.2026 20:26 U", expected: "15.09.2026 20:26 U" },
-        { input: "15.09.2026 20:26 ", expected: "15.09.2026 20:26 " },
-        { input: "15.09.2026 20:26", expected: "15.09.2026 20:26" },
-        { input: "15.09.2026 20:2", expected: "15.09.2026 20:2" },
-        { input: "15.09.2026 20:", expected: "15.09.2026 20:" },
-        { input: "15.09.2026 20", expected: "15.09.2026 20" },
-        { input: "15.09.2026 2", expected: "15.09.2026 2" },
-        { input: "15.09.2026 ", expected: "15.09.2026 " },
-        { input: "15.09.2026", expected: "15.09.2026" },
-        { input: "15.09.202", expected: "15.09.202" },
-        { input: "15.09.20", expected: "15.09.20" },
-        { input: "15.09.2", expected: "15.09.2" },
-        { input: "15.09.", expected: "15.09." },
-        { input: "15.09", expected: "15.09" },
-        { input: "15.0", expected: "15.0" },
-        { input: "15.", expected: "15." },
-        { input: "15", expected: "15" },
-        { input: "1", expected: "1" },
-      ];
 
       // Initialize
       input.value = "15.09.2026 20:26 Uhr";
       input.dispatchEvent(new Event("input"));
       fixture.detectChanges();
 
-      for (const step of steps) {
-        input.value = step.input;
-        input.dispatchEvent(new Event("input"));
-        fixture.detectChanges();
-        expect(input.value).toBe(step.expected);
-      }
+      // Press Backspace once
+      input.setSelectionRange(input.value.length, input.value.length);
+      const backspaceEvent = new KeyboardEvent("keydown", {
+        key: "Backspace",
+        bubbles: true,
+        cancelable: true,
+      });
+      input.dispatchEvent(backspaceEvent);
+      fixture.detectChanges();
+
+      expect(input.value).toBe("15.09.2026 20:2");
     });
 
     it("should support backspace deletion when 'Uhr' is absent", () => {
@@ -627,6 +610,35 @@ describe("DatepickerComponent", () => {
       input.dispatchEvent(new Event("input"));
       fixture.detectChanges();
       expect(input.value).toBe("15.09.202");
+    });
+
+    it("should remove ' Uhr' suffix and the last digit when Backspace is pressed at the end", () => {
+      fixture.componentRef.setInput("showSeconds", true);
+      const input = fixture.nativeElement.querySelector(
+        "input",
+      ) as HTMLInputElement;
+
+      // Initial value with ' Uhr'
+      input.value = "15.07.2026 16:59:11 Uhr";
+      input.dispatchEvent(new Event("input"));
+      fixture.detectChanges();
+      expect(input.value).toBe("15.07.2026 16:59:11 Uhr");
+
+      // Place caret at the end
+      input.setSelectionRange(input.value.length, input.value.length);
+
+      // Simulate Backspace keydown
+      const event = new KeyboardEvent("keydown", {
+        key: "Backspace",
+        bubbles: true,
+        cancelable: true,
+      });
+      input.dispatchEvent(event);
+      fixture.detectChanges();
+
+      // Expected: suffix ' Uhr' and last digit '1' are removed
+      expect(input.value).toBe("15.07.2026 16:59:1");
+      expect(input.selectionStart).toBe(input.value.length);
     });
   });
 

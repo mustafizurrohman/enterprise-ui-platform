@@ -339,6 +339,19 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     if (event.key === "Escape" && this.isOpen()) {
       event.preventDefault();
       this.closeCalendar();
+      return;
+    }
+
+    if (
+      event.key === "Backspace" &&
+      input.selectionStart === input.selectionEnd &&
+      input.selectionStart === input.value.length
+    ) {
+      if (input.value.endsWith(" Uhr")) {
+        event.preventDefault();
+        input.value = input.value.slice(0, -4).slice(0, -1);
+        this.onManualInput(input);
+      }
     }
   }
 
