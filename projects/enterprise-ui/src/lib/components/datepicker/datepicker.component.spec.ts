@@ -168,7 +168,7 @@ describe("DatepickerComponent", () => {
     let calendar = document.querySelector(".datepicker-calendar");
     expect(calendar).toBeNull();
 
-    const button = fixture.nativeElement.querySelector(".datepicker-icon");
+    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     expect((component as any).isOpen()).toBeTruthy();
@@ -318,7 +318,7 @@ describe("DatepickerComponent", () => {
     fixture.componentRef.setInput("showSeconds", true);
     const onChangeSpy = vi.fn();
     component.registerOnChange(onChangeSpy);
-    const button = fixture.nativeElement.querySelector(".datepicker-icon");
+    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -346,6 +346,52 @@ describe("DatepickerComponent", () => {
 
     expect(onChangeSpy).toHaveBeenCalled();
     expect((component as any).isOpen()).toBeFalsy();
+  });
+
+  it("should select now from the input-adjacent button", async () => {
+    fixture.componentRef.setInput("showSeconds", true);
+    const onChangeSpy = vi.fn();
+    component.registerOnChange(onChangeSpy);
+
+    const nowButton = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-now-input"]',
+    ) as HTMLButtonElement;
+    expect(nowButton).toBeTruthy();
+
+    const before = DateTime.now();
+    nowButton.click();
+    fixture.detectChanges();
+    const after = DateTime.now();
+
+    expect(component.selectedDate()).toBeTruthy();
+    const selectedDate = component.selectedDate()!;
+    expect(selectedDate.toMillis()).toBeGreaterThanOrEqual(
+      before.toMillis() - 1000,
+    );
+    expect(selectedDate.toMillis()).toBeLessThanOrEqual(
+      after.toMillis() + 1000,
+    );
+
+    expect(onChangeSpy).toHaveBeenCalled();
+  });
+
+  it("should place the 'now' button between 'clear' and 'toggle' buttons", async () => {
+    // Set a date so clear button appears
+    component.writeValue("2026-07-15T10:00:00");
+    fixture.detectChanges();
+
+    const wrapper = fixture.nativeElement.querySelector('[data-testid="datepicker-input-wrapper"]');
+    const buttons = Array.from(wrapper.querySelectorAll('button')) as HTMLButtonElement[];
+
+    const clearIndex = buttons.findIndex(b => b.getAttribute('data-testid')?.endsWith('-clear'));
+    const nowIndex = buttons.findIndex(b => b.getAttribute('data-testid')?.endsWith('-now-input'));
+    const toggleIndex = buttons.findIndex(b => b.getAttribute('data-testid')?.endsWith('-toggle'));
+
+    expect(clearIndex).not.toBe(-1);
+    expect(nowIndex).not.toBe(-1);
+    expect(toggleIndex).not.toBe(-1);
+    expect(clearIndex).toBeLessThan(nowIndex);
+    expect(nowIndex).toBeLessThan(toggleIndex);
   });
 
   it("should update time", () => {
@@ -695,7 +741,7 @@ describe("DatepickerComponent", () => {
   it("should have correct accessibility attributes", () => {
     const label = fixture.nativeElement.querySelector(".datepicker-label");
     const input = fixture.nativeElement.querySelector("input");
-    const button = fixture.nativeElement.querySelector(".datepicker-icon");
+    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
 
     expect(label.textContent).toContain(component.label());
     expect(label.getAttribute("for")).toBe(input.id);
@@ -707,7 +753,8 @@ describe("DatepickerComponent", () => {
     expect(button.getAttribute("aria-haspopup")).toBe("dialog");
 
     const icon = button.querySelector("mat-icon");
-    expect(icon.getAttribute("aria-hidden")).toBe("true");
+    expect(icon).toBeTruthy();
+    expect(icon?.getAttribute("aria-hidden")).toBe("true");
   });
 
   it("should expose selection on the focusable calendar gridcell", async () => {
@@ -732,7 +779,7 @@ describe("DatepickerComponent", () => {
   });
 
   it("should trap focus and have dialog attributes when calendar is open", async () => {
-    const button = fixture.nativeElement.querySelector(".datepicker-icon");
+    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -750,7 +797,7 @@ describe("DatepickerComponent", () => {
   });
 
   it("should navigate calendar with keyboard", async () => {
-    const button = fixture.nativeElement.querySelector(".datepicker-icon");
+    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1040,7 +1087,7 @@ describe("DatepickerComponent", () => {
 
   it("should allow typing time in time picker", async () => {
     component.registerOnChange(vi.fn());
-    const button = fixture.nativeElement.querySelector(".datepicker-icon");
+    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1060,7 +1107,7 @@ describe("DatepickerComponent", () => {
   });
 
   it("should validate time typing", async () => {
-    const button = fixture.nativeElement.querySelector(".datepicker-icon");
+    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1085,7 +1132,7 @@ describe("DatepickerComponent", () => {
   });
 
   it("should announce time changes", async () => {
-    const button = fixture.nativeElement.querySelector(".datepicker-icon");
+    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1108,16 +1155,22 @@ describe("DatepickerComponent", () => {
       const input = fixture.nativeElement.querySelector(
         "input",
       ) as HTMLInputElement;
-      const button = fixture.nativeElement.querySelector(
-        ".datepicker-icon",
+      const toggleButton = fixture.nativeElement.querySelector(
+        '[data-testid$="toggle"]',
+      ) as HTMLButtonElement;
+      const nowButton = fixture.nativeElement.querySelector(
+        '[data-testid$="now-input"]',
       ) as HTMLButtonElement;
 
       expect(input.disabled).toBeTruthy();
-      expect(button.disabled).toBeTruthy();
+      expect(toggleButton.disabled).toBeTruthy();
+      expect(nowButton.disabled).toBeTruthy();
       expect(
-        button.classList.contains("datepicker-icon--disabled"),
+        toggleButton.classList.contains("datepicker-icon--disabled"),
       ).toBeTruthy();
-      expect(button.querySelector("mat-icon")).toBeTruthy();
+      expect(
+        nowButton.classList.contains("datepicker-icon--disabled"),
+      ).toBeTruthy();
     });
 
     it("should not open calendar when disabled is true", () => {
@@ -1132,7 +1185,7 @@ describe("DatepickerComponent", () => {
       expect((component as any).isOpen()).toBeFalsy();
 
       const button = fixture.nativeElement.querySelector(
-        ".datepicker-icon",
+        '[data-testid$="toggle"]',
       ) as HTMLButtonElement;
       button.click();
       fixture.detectChanges();
@@ -1176,7 +1229,7 @@ describe("DatepickerComponent", () => {
     });
 
     it("should hide seconds wheel by default", async () => {
-      const button = fixture.nativeElement.querySelector(".datepicker-icon");
+      const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
       button.click();
       fixture.detectChanges();
       await fixture.whenStable();
@@ -1193,7 +1246,7 @@ describe("DatepickerComponent", () => {
       fixture.componentRef.setInput("showSeconds", true);
       fixture.detectChanges();
 
-      const button = fixture.nativeElement.querySelector(".datepicker-icon");
+      const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
       button.click();
       fixture.detectChanges();
       await fixture.whenStable();
@@ -1415,7 +1468,7 @@ describe("DatepickerComponent Forms Compatibility", () => {
     const datepickerElement = fixture.nativeElement.querySelector("#signal");
 
     const button = datepickerElement.querySelector(
-      ".datepicker-icon",
+      '[data-testid$="toggle"]',
     ) as HTMLButtonElement;
     button.click();
     fixture.detectChanges();

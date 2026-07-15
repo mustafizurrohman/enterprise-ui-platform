@@ -17,6 +17,12 @@ $divider: rgba(0, 0, 0, 0.12);
     grid-template-columns: 32px repeat(7, minmax(0, 1fr));
   }
 
+  .datepicker-gridcell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .datepicker-kw,
   .datepicker-kw-value {
     color: $foreground-disabled;

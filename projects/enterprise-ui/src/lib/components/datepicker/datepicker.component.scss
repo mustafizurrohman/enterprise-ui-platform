@@ -25,7 +25,7 @@ $divider: rgba(0, 0, 0, 0.12);
 .datepicker {
   display: inline-block;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  width: 250px;
+  width: 300px;
 
   .datepicker-label {
     display: block;
@@ -43,6 +43,7 @@ $divider: rgba(0, 0, 0, 0.12);
     align-items: center;
     border-bottom: 1px solid $primary;
     padding: 4px 0;
+    gap: 8px;
     transition: border-color 0.3s;
     cursor: pointer;
 
@@ -80,7 +81,8 @@ $divider: rgba(0, 0, 0, 0.12);
       font-size: 16px;
       padding: 4px 0;
       color: $foreground;
-      width: 100%;
+      flex: 1;
+      min-width: 0;
       background: transparent;
       cursor: pointer;
 

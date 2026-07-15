@@ -56,6 +56,18 @@
     }
 
     <button
+      type="button"
+      class="datepicker-icon"
+      [class.datepicker-icon--disabled]="disabled"
+      [disabled]="disabled"
+      aria-label="Aktuelle Zeit auswählen"
+      [attr.data-testid]="testIdFor('now-input')"
+      (click)="selectNow()"
+    >
+      <mat-icon aria-hidden="true">access_time</mat-icon>
+    </button>
+
+    <button
       #calendarToggle
       type="button"
       class="datepicker-icon"
