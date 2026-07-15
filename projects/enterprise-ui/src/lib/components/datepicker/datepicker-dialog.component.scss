@@ -237,17 +237,9 @@ $hover-background: rgba(0, 0, 0, 0.04);
   }
 }
 
-
-::ng-deep .datepicker-autocomplete-panel {
-  background-color: #ffffff !important;
-  background: #ffffff !important;
-}
-
+// mat-autocomplete is rendered in the global CDK overlay container.
+// The class on <mat-autocomplete> is copied to the opened panel.
 ::ng-deep .mat-mdc-autocomplete-panel.datepicker-autocomplete-panel {
-  background-color: #ffffff !important;
-  background: #ffffff !important;
-}
-
-::ng-deep .datepicker-autocomplete-panel .mat-mdc-option {
-  background-color: #ffffff !important;
+  --mat-autocomplete-background-color: #{$background-card};
+  background-color: $background-card !important;
 }
