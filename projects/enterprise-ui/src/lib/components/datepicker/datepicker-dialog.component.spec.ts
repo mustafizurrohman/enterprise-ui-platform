@@ -136,7 +136,9 @@ describe("DatepickerDialogComponent", () => {
     ) as HTMLSelectElement;
 
     expect(select.value).toBe("7");
-    expect(select.selectedOptions[0]?.textContent?.trim()).toBe("Juli");
+    expect(select.selectedOptions[0]?.textContent?.trim()).toBe(
+      Info.months("short", { locale: "de" })[6],
+    );
     expect(select.options).toHaveLength(12);
   });
 
@@ -155,23 +157,6 @@ describe("DatepickerDialogComponent", () => {
     expect(monthSpy).toHaveBeenCalledWith(5);
   });
 
-  it("should generate year suggestions around current year", () => {
-    const currentYear = DateTime.now().year;
-    // @ts-ignore
-    const suggestions = component._filterYears("");
-    expect(suggestions).toContain(currentYear - 50);
-    expect(suggestions).toContain(currentYear + 50);
-    expect(suggestions.length).toBe(101);
-  });
-
-  it("should filter year suggestions based on input", () => {
-    // @ts-ignore
-    const suggestions = component._filterYears("202");
-    expect(suggestions.every((y: number) => y.toString().includes("202"))).toBe(
-      true,
-    );
-  });
-
   it("should accept and retain custom year entry", () => {
     const yearSpy = vi.fn();
     component.yearSelected.subscribe(yearSpy);
@@ -187,5 +172,77 @@ describe("DatepickerDialogComponent", () => {
 
     expect(yearSpy).toHaveBeenCalledWith(2099);
     expect(input.value).toBe("2099");
+  });
+  it("should place the month and year navigation groups next to each other without a spacer", () => {
+    const currentPeriod = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-current-period"]',
+    );
+    const spacer = fixture.nativeElement.querySelector(
+      ".datepicker-navigation-spacer",
+    );
+    const header = fixture.nativeElement.querySelector(
+      ".datepicker-header",
+    ) as HTMLElement;
+    const navigationGroups = header.querySelectorAll(
+      ".datepicker-navigation-group",
+    );
+
+    expect(currentPeriod).toBeNull();
+    expect(spacer).toBeNull();
+    expect(navigationGroups).toHaveLength(2);
+  });
+
+  it("should remove year autocomplete and restrict the input to four digits", () => {
+    const yearSpy = vi.fn();
+    component.yearSelected.subscribe(yearSpy);
+
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-year-display"]',
+    ) as HTMLInputElement;
+
+    expect(input.getAttribute("maxlength")).toBe("4");
+    expect(input.getAttribute("pattern")).toBe("[0-9]{4}");
+    expect(input.getAttribute("aria-autocomplete")).toBeNull();
+
+    input.value = "20a267";
+    input.dispatchEvent(new Event("input"));
+    expect(input.value).toBe("2026");
+
+    input.dispatchEvent(new Event("blur"));
+    expect(yearSpy).toHaveBeenCalledWith(2026);
+  });
+
+  it("should restore the current year when fewer than four digits are entered", () => {
+    const yearSpy = vi.fn();
+    component.yearSelected.subscribe(yearSpy);
+
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-year-display"]',
+    ) as HTMLInputElement;
+
+    input.value = "999";
+    input.dispatchEvent(new Event("input"));
+    input.dispatchEvent(new Event("blur"));
+    fixture.detectChanges();
+
+    expect(yearSpy).not.toHaveBeenCalled();
+    expect(input.value).toBe("2026");
+  });
+
+  it("should group month and year navigation with their related controls", () => {
+    const monthGroup = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-month-navigation"]',
+    ) as HTMLElement;
+    const yearGroup = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-year-navigation"]',
+    ) as HTMLElement;
+
+    expect(monthGroup.querySelector('[data-testid="datepicker-previous-month"]')).toBeTruthy();
+    expect(monthGroup.querySelector('[data-testid="datepicker-month-select"]')).toBeTruthy();
+    expect(monthGroup.querySelector('[data-testid="datepicker-next-month"]')).toBeTruthy();
+
+    expect(yearGroup.querySelector('[data-testid="datepicker-previous-year"]')).toBeTruthy();
+    expect(yearGroup.querySelector('[data-testid="datepicker-year-display"]')).toBeTruthy();
+    expect(yearGroup.querySelector('[data-testid="datepicker-next-year"]')).toBeTruthy();
   });
 });

@@ -1,4 +1,4 @@
-import { CommonModule, NgTemplateOutlet } from "@angular/common";
+import { NgTemplateOutlet } from "@angular/common";
 import { CdkTrapFocus } from "@angular/cdk/a11y";
 import { MatIconModule } from "@angular/material/icon";
 import {
@@ -11,14 +11,9 @@ import {
   viewChild,
 } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
-import {
-  MatAutocompleteModule,
-  MatAutocompleteSelectedEvent,
-} from "@angular/material/autocomplete";
 import { MatInputModule } from "@angular/material/input";
 import { MatFormFieldModule } from "@angular/material/form-field";
-import { DateTime } from "luxon";
-import { startWith, map, Observable } from "rxjs";
+import { DateTime, Info } from "luxon";
 import {
   DatepickerGridComponent,
   type DatepickerGridContext,
@@ -68,11 +63,9 @@ export type DatepickerDialogContext = Readonly<{
   selector: "datepicker-dialog",
   standalone: true,
   imports: [
-    CommonModule,
     NgTemplateOutlet,
     CdkTrapFocus,
     MatIconModule,
-    MatAutocompleteModule,
     MatInputModule,
     MatFormFieldModule,
     ReactiveFormsModule,
@@ -102,8 +95,6 @@ export class DatepickerDialogComponent {
     nonNullable: true,
   });
 
-  protected filteredYears$!: Observable<number[]>;
-
   protected readonly dialogId = computed(() => this.context().dialogId);
   protected readonly dialogTitleId = computed(
     () => this.context().dialogTitleId,
@@ -121,9 +112,11 @@ export class DatepickerDialogComponent {
   protected readonly selectedDate = computed(
     () => this.context().selectedDate,
   );
-  protected readonly months = computed(() => this.context().months);
+  protected readonly shortMonths = computed(() =>
+    Info.months("short", { locale: this.context().viewDate.locale ?? undefined }),
+  );
   protected readonly selectedMonth = computed(
-    () => this.context().viewDate.month,
+    () => this.context().viewDate.month.toString(),
   );
   protected readonly testIdPrefix = computed(
     () => this.context().testIdPrefix,
@@ -170,11 +163,6 @@ export class DatepickerDialogComponent {
   private readonly calendarGrid = viewChild.required(DatepickerGridComponent);
 
   constructor() {
-    this.filteredYears$ = this.yearControl.valueChanges.pipe(
-      startWith(""),
-      map((value) => this._filterYears(value || "")),
-    );
-
     effect(() => {
       const context = this.context();
       untracked(() => {
@@ -205,35 +193,42 @@ export class DatepickerDialogComponent {
     }
   }
 
-  protected onYearOptionSelected(event: MatAutocompleteSelectedEvent): void {
-    const year = Number(event.option.value);
-    if (!isNaN(year)) {
-      this.yearSelected.emit(year);
+  protected onYearInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const sanitizedValue = input.value.replace(/\D/g, "").slice(0, 4);
+
+    if (input.value !== sanitizedValue) {
+      input.value = sanitizedValue;
     }
+
+    if (this.yearControl.value !== sanitizedValue) {
+      this.yearControl.setValue(sanitizedValue, { emitEvent: false });
+    }
+  }
+
+  protected onYearEnter(event: Event): void {
+    (event.target as HTMLInputElement).blur();
   }
 
   protected onYearBlur(): void {
     const value = this.yearControl.value;
-    const year = parseInt(value, 10);
-    if (!isNaN(year) && year > 0) {
-      this.yearSelected.emit(year);
-    } else {
-      // Restore original value
-      this.yearControl.setValue(this.context().viewDate.year.toString(), {
-        emitEvent: false,
-      });
+
+    if (/^\d{4}$/.test(value) && Number(value) > 0) {
+      this.yearSelected.emit(Number(value));
+      return;
     }
+
+    this.restoreCurrentYear();
   }
 
   protected testIdFor(part: string): string {
     return `${this.testIdPrefix()}-${part}`;
   }
 
-  private _filterYears(value: string): number[] {
-    const currentYear = DateTime.now().year;
-    const years = Array.from({ length: 101 }, (_, i) => currentYear - 50 + i);
-    const filterValue = value.toLowerCase();
-    return years.filter((year) => year.toString().includes(filterValue));
+  private restoreCurrentYear(): void {
+    this.yearControl.setValue(this.context().viewDate.year.toString(), {
+      emitEvent: false,
+    });
   }
 
   private createTimeWheelContext(unit: TimeUnit): TimeWheelContext {

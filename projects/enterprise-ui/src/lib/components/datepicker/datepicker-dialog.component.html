@@ -18,95 +18,123 @@
     Leertaste wählen den fokussierten Tag aus. Escape schließt den Kalender.
   </p>
 
-  <div class="datepicker-header">
+  <div
+    [id]="monthHeadingId()"
+    class="datepicker-header"
+    aria-live="polite"
+    aria-atomic="true"
+    [attr.data-testid]="testIdFor('month-heading')"
+  >
     <div
-      [id]="monthHeadingId()"
-      class="datepicker-month-year"
-      aria-live="polite"
-      aria-atomic="true"
-      [attr.data-testid]="testIdFor('month-heading')"
+      class="datepicker-navigation-group datepicker-navigation-group--month"
+      role="group"
+      aria-labelledby="datepicker-month-navigation-label"
+      [attr.data-testid]="testIdFor('month-navigation')"
     >
-      <select
-        class="datepicker-month-select"
-        [value]="selectedMonth()"
-        aria-label="Monat auswählen"
-        [attr.data-testid]="testIdFor('month-select')"
-        (change)="onMonthChange($event)"
-      >
-        @for (month of months(); track $index) {
-          <option [value]="$index + 1">{{ month }}</option>
-        }
-      </select>
+      <div class="datepicker-navigation-controls">
+        <button
+          type="button"
+          class="datepicker-navigation"
+          aria-label="Vorherigen Monat anzeigen"
+          aria-keyshortcuts="PageUp"
+          [attr.aria-controls]="calendarGridId()"
+          [attr.data-testid]="testIdFor('previous-month')"
+          (click)="previousMonth.emit()"
+        >
+          <mat-icon aria-hidden="true">chevron_left</mat-icon>
+        </button>
 
-      <mat-form-field class="datepicker-year-field" subscriptSizing="dynamic">
-        <input
-          matInput
-          type="text"
-          [formControl]="yearControl"
-          [matAutocomplete]="yearAuto"
-          [matAutocompleteDisabled]="yearControl.pristine"
-          (mousedown)="yearControl.markAsDirty()"
-          (keydown)="yearControl.markAsDirty()"
-          (blur)="onYearBlur()"
-          aria-label="Jahr auswählen"
-          [attr.data-testid]="testIdFor('year-display')"
-        />
-        <mat-autocomplete #yearAuto="matAutocomplete" class="datepicker-autocomplete-panel" (optionSelected)="onYearOptionSelected($event)">
-          @for (year of (filteredYears$ | async) ?? []; track year) {
-            <mat-option [value]="year">{{ year }}</mat-option>
+        <select
+          class="datepicker-month-select"
+          [value]="selectedMonth()"
+          aria-label="Monat auswählen"
+          [attr.data-testid]="testIdFor('month-select')"
+          (change)="onMonthChange($event)"
+        >
+          @for (month of shortMonths(); track $index) {
+            <option [value]="($index + 1).toString()" [selected]="($index + 1).toString() === selectedMonth()">{{ month }}</option>
           }
-        </mat-autocomplete>
-      </mat-form-field>
+        </select>
+
+        <button
+          type="button"
+          class="datepicker-navigation"
+          aria-label="Nächsten Monat anzeigen"
+          aria-keyshortcuts="PageDown"
+          [attr.aria-controls]="calendarGridId()"
+          [attr.data-testid]="testIdFor('next-month')"
+          (click)="nextMonth.emit()"
+        >
+          <mat-icon aria-hidden="true">chevron_right</mat-icon>
+        </button>
+      </div>
+
+      <div class="datepicker-navigation-label" aria-hidden="true">
+        <span></span>
+        <strong id="datepicker-month-navigation-label">Monat</strong>
+        <span></span>
+      </div>
     </div>
 
-    <div class="datepicker-navigation-wrapper" role="group" aria-label="Datum wechseln">
-      <button
-        type="button"
-        class="datepicker-navigation"
-        aria-label="Vorheriges Jahr anzeigen"
-        aria-keyshortcuts="Shift+PageUp"
-        [attr.aria-controls]="calendarGridId()"
-        [attr.data-testid]="testIdFor('previous-year')"
-        (click)="previousYear.emit()"
-      >
-        <mat-icon aria-hidden="true">keyboard_double_arrow_left</mat-icon>
-      </button>
 
-      <button
-        type="button"
-        class="datepicker-navigation"
-        aria-label="Vorherigen Monat anzeigen"
-        aria-keyshortcuts="PageUp"
-        [attr.aria-controls]="calendarGridId()"
-        [attr.data-testid]="testIdFor('previous-month')"
-        (click)="previousMonth.emit()"
-      >
-        <mat-icon aria-hidden="true">chevron_left</mat-icon>
-      </button>
+    <span class="visually-hidden" aria-live="polite" aria-atomic="true">
+      {{ formattedMonth() }}
+    </span>
 
-      <button
-        type="button"
-        class="datepicker-navigation"
-        aria-label="Nächsten Monat anzeigen"
-        aria-keyshortcuts="PageDown"
-        [attr.aria-controls]="calendarGridId()"
-        [attr.data-testid]="testIdFor('next-month')"
-        (click)="nextMonth.emit()"
-      >
-        <mat-icon aria-hidden="true">chevron_right</mat-icon>
-      </button>
+    <div
+      class="datepicker-navigation-group datepicker-navigation-group--year"
+      role="group"
+      aria-labelledby="datepicker-year-navigation-label"
+      [attr.data-testid]="testIdFor('year-navigation')"
+    >
+      <div class="datepicker-navigation-controls">
+        <button
+          type="button"
+          class="datepicker-navigation"
+          aria-label="Vorheriges Jahr anzeigen"
+          aria-keyshortcuts="Shift+PageUp"
+          [attr.aria-controls]="calendarGridId()"
+          [attr.data-testid]="testIdFor('previous-year')"
+          (click)="previousYear.emit()"
+        >
+          <mat-icon aria-hidden="true">keyboard_double_arrow_left</mat-icon>
+        </button>
 
-      <button
-        type="button"
-        class="datepicker-navigation"
-        aria-label="Nächstes Jahr anzeigen"
-        aria-keyshortcuts="Shift+PageDown"
-        [attr.aria-controls]="calendarGridId()"
-        [attr.data-testid]="testIdFor('next-year')"
-        (click)="nextYear.emit()"
-      >
-        <mat-icon aria-hidden="true">keyboard_double_arrow_right</mat-icon>
-      </button>
+        <mat-form-field class="datepicker-year-field" subscriptSizing="dynamic">
+          <input
+            matInput
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            maxlength="4"
+            pattern="[0-9]{4}"
+            [formControl]="yearControl"
+            (input)="onYearInput($event)"
+            (blur)="onYearBlur()"
+            (keydown.enter)="onYearEnter($event)"
+            aria-label="Vierstellige Jahreszahl eingeben"
+            [attr.data-testid]="testIdFor('year-display')"
+          />
+        </mat-form-field>
+
+        <button
+          type="button"
+          class="datepicker-navigation"
+          aria-label="Nächstes Jahr anzeigen"
+          aria-keyshortcuts="Shift+PageDown"
+          [attr.aria-controls]="calendarGridId()"
+          [attr.data-testid]="testIdFor('next-year')"
+          (click)="nextYear.emit()"
+        >
+          <mat-icon aria-hidden="true">keyboard_double_arrow_right</mat-icon>
+        </button>
+      </div>
+
+      <div class="datepicker-navigation-label" aria-hidden="true">
+        <span></span>
+        <strong id="datepicker-year-navigation-label">Jahr</strong>
+        <span></span>
+      </div>
     </div>
   </div>
 
