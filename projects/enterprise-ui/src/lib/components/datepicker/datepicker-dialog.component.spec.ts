@@ -32,6 +32,7 @@ describe("DatepickerDialogComponent", () => {
       secondLabelId: "second-label",
       dialogTitle: "Datum und Uhrzeit auswählen",
       formattedMonth: "Juli 2026",
+      months: Info.months("long", { locale: "de" }),
       daysOfWeek: Info.weekdays("short", { locale: "de" }).map(
         (short, index) => ({
           short,
@@ -126,5 +127,18 @@ describe("DatepickerDialogComponent", () => {
     expect(nextYearSpy).toHaveBeenCalledOnce();
     expect(prevButton.getAttribute("aria-keyshortcuts")).toBe("Shift+PageUp");
     expect(nextButton.getAttribute("aria-keyshortcuts")).toBe("Shift+PageDown");
+  });
+
+  it("should forward month selection event", () => {
+    const monthSpy = vi.fn();
+    component.monthSelected.subscribe(monthSpy);
+
+    const select = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-month-select"]',
+    ) as HTMLSelectElement;
+    select.value = "5"; // May
+    select.dispatchEvent(new Event("change"));
+
+    expect(monthSpy).toHaveBeenCalledWith(5);
   });
 });

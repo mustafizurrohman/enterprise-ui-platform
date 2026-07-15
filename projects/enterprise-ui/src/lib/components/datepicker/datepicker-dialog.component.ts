@@ -34,6 +34,7 @@ export type DatepickerDialogContext = Readonly<{
   secondLabelId: string;
   dialogTitle: string;
   formattedMonth: string;
+  months: readonly string[];
   daysOfWeek: readonly DatepickerWeekday[];
   weeks: readonly DatepickerWeek[];
   selectedDate: DateTime | null;
@@ -73,6 +74,7 @@ export class DatepickerDialogComponent {
   readonly timeChanged = output<DatepickerTimeChange>();
   readonly nowSelected = output<void>();
   readonly confirmed = output<void>();
+  readonly monthSelected = output<number>();
 
   protected readonly dialogId = computed(() => this.context().dialogId);
   protected readonly dialogTitleId = computed(
@@ -141,6 +143,11 @@ export class DatepickerDialogComponent {
 
   protected emitTimeChange(unit: TimeUnit, value: number): void {
     this.timeChanged.emit({ unit, value });
+  }
+
+  protected onMonthChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.monthSelected.emit(Number(target.value));
   }
 
   protected testIdFor(part: string): string {

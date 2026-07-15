@@ -202,6 +202,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     weekday: i + 1,
   }));
 
+  months = Info.months("long", { locale: "de" });
+
 
   readonly grid = computed(() => {
     const startOfMonth = this.viewDate().startOf("month");
@@ -253,6 +255,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     secondLabelId: this.ids().secondLabel,
     dialogTitle: this.dialogTitle(),
     formattedMonth: this.formattedMonth(),
+    months: this.months,
     daysOfWeek: this.daysOfWeek,
     weeks: this.grid(),
     selectedDate: this.selectedDate(),
@@ -527,6 +530,17 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
   nextYear(): void {
     this.changeViewYear(1);
+  }
+
+  setMonth(month: number): void {
+    const nextViewDate = this.viewDate().set({ month }).startOf("month");
+    const targetDay = Math.min(
+      this.activeDate().day,
+      nextViewDate.daysInMonth ?? 1,
+    );
+
+    this.viewDate.set(nextViewDate);
+    this.activeDate.set(nextViewDate.set({ day: targetDay }));
   }
 
   private changeViewMonth(monthDifference: number): void {

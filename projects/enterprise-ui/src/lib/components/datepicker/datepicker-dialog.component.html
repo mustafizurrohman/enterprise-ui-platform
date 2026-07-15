@@ -26,7 +26,18 @@
       aria-atomic="true"
       [attr.data-testid]="testIdFor('month-heading')"
     >
-      {{ formattedMonth() }}
+      <select
+        class="datepicker-month-select"
+        [value]="context().viewDate.month"
+        (change)="onMonthChange($event)"
+        aria-label="Monat auswählen"
+        [attr.data-testid]="testIdFor('month-select')"
+      >
+        @for (month of context().months; track month; let i = $index) {
+          <option [value]="i + 1">{{ month }}</option>
+        }
+      </select>
+      <span class="datepicker-year-display" [attr.data-testid]="testIdFor('year-display')">{{ context().viewDate.year }}</span>
     </div>
 
     <div class="datepicker-navigation-wrapper" role="group" aria-label="Datum wechseln">

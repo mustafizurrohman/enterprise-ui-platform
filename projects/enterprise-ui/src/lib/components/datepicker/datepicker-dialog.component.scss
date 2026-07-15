@@ -47,6 +47,41 @@ $hover-background: rgba(0, 0, 0, 0.04);
       font-size: 14px;
       color: $foreground;
       text-transform: capitalize;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      .datepicker-month-select {
+        font: inherit;
+        font-weight: inherit;
+        color: inherit;
+        background: none;
+        border: none;
+        padding: 4px 8px;
+        margin: -4px -8px;
+        border-radius: 4px;
+        cursor: pointer;
+        text-transform: inherit;
+
+        &:hover {
+          background-color: $hover-background;
+        }
+
+        &:focus-visible {
+          outline: 2px solid $primary;
+          background-color: $hover-background;
+        }
+
+        option {
+          background: $background-card;
+          color: $foreground;
+          text-transform: none;
+        }
+      }
+
+      .datepicker-year-display {
+        margin-left: 4px;
+      }
     }
 
     .datepicker-navigation-wrapper {
