@@ -263,9 +263,6 @@ describe("DatepickerDialogComponent", () => {
       yearControls.querySelector('[data-testid="datepicker-year-display"]'),
     ).toBeTruthy();
     expect(
-      yearControls.querySelector(".datepicker-navigation-separator"),
-    ).toBeTruthy();
-    expect(
       yearControls.querySelector('[data-testid="datepicker-year-reset"]'),
     ).toBeTruthy();
     expect(

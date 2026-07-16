@@ -84,7 +84,7 @@ $divider: rgba(0, 0, 0, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
+    width: 40px;
     height: 40px;
     padding: 0;
     border: none;
@@ -107,18 +107,12 @@ $divider: rgba(0, 0, 0, 0.12);
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 20px;
-      height: 20px;
-      font-size: 20px;
+      width: 24px;
+      height: 24px;
+      font-size: 24px;
     }
   }
 
-  .datepicker-navigation-separator {
-    width: 1px;
-    height: 24px;
-    background: $divider;
-    margin: 0 2px;
-  }
 
   .datepicker-month-select {
     flex: 1;
