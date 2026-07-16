@@ -63,7 +63,7 @@
           [attr.data-testid]="testIdFor('month-reset')"
           (click)="monthSelected.emit(context().today.month)"
         >
-          <mat-icon aria-hidden="true">event</mat-icon>
+          <mat-icon aria-hidden="true">calendar_month</mat-icon>
         </button>
 
         <button
@@ -129,7 +129,7 @@
           [attr.data-testid]="testIdFor('year-reset')"
           (click)="yearSelected.emit(context().today.year)"
         >
-          <mat-icon aria-hidden="true">calendar_today</mat-icon>
+          <mat-icon aria-hidden="true">date_range</mat-icon>
         </button>
 
         <button
