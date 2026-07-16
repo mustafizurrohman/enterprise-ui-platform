@@ -214,15 +214,6 @@ describe("TimeWheelComponent", () => {
     ).toBeFalsy();
   });
 
-  it("should render previous and next preview values", () => {
-    const previews = fixture.nativeElement.querySelectorAll(
-      ".datepicker-time-preview",
-    );
-
-    expect(previews[0]?.textContent?.trim()).toBe("11");
-    expect(previews[1]?.textContent?.trim()).toBe("09");
-  });
-
   it("should render centered Material icons with stable test ids", () => {
     const wheel = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-hour-wheel"]',

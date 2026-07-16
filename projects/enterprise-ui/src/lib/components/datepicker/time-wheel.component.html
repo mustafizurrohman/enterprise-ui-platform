@@ -26,14 +26,6 @@
     [attr.data-animation]="animationName()"
     [attr.data-testid]="testIdFor('value')"
   >
-    <span
-      class="datepicker-time-preview"
-      aria-hidden="true"
-      [attr.data-testid]="testIdFor('next-value')"
-    >
-      {{ nextValue() }}
-    </span>
-
     <input
       #timeInput
       type="text"
@@ -59,14 +51,6 @@
       (keydown)="onKeyDown($event)"
       (change)="commit(timeInput.value)"
     />
-
-    <span
-      class="datepicker-time-preview"
-      aria-hidden="true"
-      [attr.data-testid]="testIdFor('previous-value')"
-    >
-      {{ previousValue() }}
-    </span>
   </div>
 
   <button

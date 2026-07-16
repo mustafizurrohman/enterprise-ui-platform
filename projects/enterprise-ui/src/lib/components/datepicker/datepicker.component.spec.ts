@@ -465,38 +465,6 @@ describe("DatepickerComponent", () => {
     expect(component.selectedDate()?.hour).toBe(23);
   });
 
-  it("should render correct previous and next time values", async () => {
-    component.writeValue("2026-07-12T10:30:00");
-    const toggle = fixture.nativeElement.querySelector(
-      '[data-testid="datepicker-toggle"]',
-    ) as HTMLButtonElement;
-    toggle.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const previews = (): HTMLElement[] =>
-      Array.from(
-        document.querySelectorAll<HTMLElement>(
-          "time-wheel:first-of-type .datepicker-time-preview",
-        ),
-      );
-
-    expect(previews().map((element) => element.textContent?.trim())).toEqual([
-      "11",
-      "09",
-    ]);
-
-    (component as any).updateTime("hour", 0);
-    fixture.detectChanges();
-    expect(previews()[0].textContent?.trim()).toBe("01");
-    expect(previews()[1].textContent?.trim()).toBe("23");
-
-    (component as any).updateTime("hour", 23);
-    fixture.detectChanges();
-    expect(previews()[0].textContent?.trim()).toBe("00");
-    expect(previews()[1].textContent?.trim()).toBe("22");
-  });
-
   it("should update state when writeValue is called", () => {
     const testDate = "2023-12-25";
     component.writeValue(testDate);

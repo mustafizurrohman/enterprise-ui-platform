@@ -4,7 +4,7 @@
 
 .datepicker-time-wheel {
   display: grid;
-  grid-template-rows: 32px 104px 32px auto;
+  grid-template-rows: 32px 48px 32px auto;
   justify-items: center;
   min-width: 64px;
 }
@@ -56,7 +56,6 @@
   position: relative;
   display: grid;
   width: 64px;
-  grid-template-rows: 28px 48px 28px;
   align-items: center;
   justify-items: center;
   overflow: hidden;
@@ -67,36 +66,12 @@
 
   &::before {
     position: absolute;
-    top: 28px;
-    right: 0;
-    bottom: 28px;
-    left: 0;
+    inset: 0;
     border-radius: 12px;
     background: rgb(118 118 128 / 12%);
     content: "";
     pointer-events: none;
   }
-
-  &::after {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to bottom,
-      rgb(250 250 252 / 95%),
-      transparent 32%,
-      transparent 68%,
-      rgb(250 250 252 / 95%)
-    );
-    content: "";
-    pointer-events: none;
-  }
-}
-
-.datepicker-time-preview {
-  color: rgb(60 60 67 / 35%);
-  font-size: 15px;
-  font-variant-numeric: tabular-nums;
-  user-select: none;
 }
 
 .datepicker-time-select {

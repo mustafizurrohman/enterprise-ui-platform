@@ -74,14 +74,6 @@ export class TimeWheelComponent {
     () => TIME_UNIT_CONFIGURATION[this.unit()],
   );
 
-  protected readonly previousValue = computed(() =>
-    this.formatValue(this.normalize(this.value() - 1)),
-  );
-
-  protected readonly nextValue = computed(() =>
-    this.formatValue(this.normalize(this.value() + 1)),
-  );
-
   protected readonly animationName = computed(() => {
     const state = this.animationState();
 
