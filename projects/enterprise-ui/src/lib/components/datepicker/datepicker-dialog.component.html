@@ -183,12 +183,30 @@
       </div>
 
       <div class="datepicker-time-adjustments" [attr.data-testid]="testIdFor('time-adjustments')">
-        <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('add-15-mins')" (click)="timeAdjusted.emit({ minutes: 15 })">+15 Min.</button>
-        <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('subtract-15-mins')" (click)="timeAdjusted.emit({ minutes: -15 })">-15 Min.</button>
-        <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('add-30-mins')" (click)="timeAdjusted.emit({ minutes: 30 })">+30 Min.</button>
-        <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('subtract-30-mins')" (click)="timeAdjusted.emit({ minutes: -30 })">-30 Min.</button>
-        <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('add-12-hrs')" (click)="timeAdjusted.emit({ hours: 12 })">+12 Std.</button>
-        <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('subtract-12-hrs')" (click)="timeAdjusted.emit({ hours: -12 })">-12 Std.</button>
+        <div class="datepicker-adjustment-group">
+          <div class="datepicker-adjustment-label">
+            <mat-icon aria-hidden="true">schedule</mat-icon>
+            <span>Min</span>
+          </div>
+          <div class="datepicker-adjustment-buttons">
+            <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('subtract-30-mins')" (click)="timeAdjusted.emit({ minutes: -30 })">-30</button>
+            <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('subtract-15-mins')" (click)="timeAdjusted.emit({ minutes: -15 })">-15</button>
+            <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('add-15-mins')" (click)="timeAdjusted.emit({ minutes: 15 })">+15</button>
+            <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('add-30-mins')" (click)="timeAdjusted.emit({ minutes: 30 })">+30</button>
+          </div>
+        </div>
+
+
+        <div class="datepicker-adjustment-group">
+          <div class="datepicker-adjustment-label">
+            <mat-icon aria-hidden="true">schedule</mat-icon>
+            <span>Std</span>
+          </div>
+          <div class="datepicker-adjustment-buttons">
+            <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('subtract-12-hrs')" (click)="timeAdjusted.emit({ hours: -12 })">-12</button>
+            <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('add-12-hrs')" (click)="timeAdjusted.emit({ hours: 12 })">+12</button>
+          </div>
+        </div>
       </div>
 
       <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" [attr.data-testid]="testIdFor('time-status')">
