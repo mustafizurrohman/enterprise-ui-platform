@@ -173,23 +173,24 @@ describe("DatepickerDialogComponent", () => {
     expect(yearSpy).toHaveBeenCalledWith(2099);
     expect(input.value).toBe("2099");
   });
-  it("should place the month and year navigation groups next to each other without a spacer", () => {
-    const currentPeriod = fixture.nativeElement.querySelector(
-      '[data-testid="datepicker-current-period"]',
-    );
-    const spacer = fixture.nativeElement.querySelector(
-      ".datepicker-navigation-spacer",
-    );
+  it("should present month and year as balanced navigation groups", () => {
     const header = fixture.nativeElement.querySelector(
       ".datepicker-header",
     ) as HTMLElement;
     const navigationGroups = header.querySelectorAll(
       ".datepicker-navigation-group",
     );
+    const periodControls = header.querySelectorAll(
+      ".datepicker-period-control",
+    );
+    const divider = header.querySelector(
+      ".datepicker-navigation-divider",
+    ) as HTMLElement;
 
-    expect(currentPeriod).toBeNull();
-    expect(spacer).toBeNull();
     expect(navigationGroups).toHaveLength(2);
+    expect(periodControls).toHaveLength(2);
+    expect(divider).toBeTruthy();
+    expect(divider.getAttribute("aria-hidden")).toBe("true");
   });
 
   it("should remove year autocomplete and restrict the input to four digits", () => {
@@ -227,6 +228,36 @@ describe("DatepickerDialogComponent", () => {
 
     expect(yearSpy).not.toHaveBeenCalled();
     expect(input.value).toBe("2026");
+  });
+
+  it("should integrate each current-period action with its value control", () => {
+    const monthPeriodControl = fixture.nativeElement.querySelector(
+      ".datepicker-period-control--month",
+    ) as HTMLElement;
+    const yearPeriodControl = fixture.nativeElement.querySelector(
+      ".datepicker-period-control--year",
+    ) as HTMLElement;
+
+    expect(
+      monthPeriodControl.querySelector(
+        '[data-testid="datepicker-month-select"]',
+      ),
+    ).toBeTruthy();
+    expect(
+      monthPeriodControl.querySelector(
+        '[data-testid="datepicker-month-reset"]',
+      ),
+    ).toBeTruthy();
+    expect(
+      yearPeriodControl.querySelector(
+        '[data-testid="datepicker-year-display"]',
+      ),
+    ).toBeTruthy();
+    expect(
+      yearPeriodControl.querySelector(
+        '[data-testid="datepicker-year-reset"]',
+      ),
+    ).toBeTruthy();
   });
 
   it("should group month and year navigation with their related controls", () => {

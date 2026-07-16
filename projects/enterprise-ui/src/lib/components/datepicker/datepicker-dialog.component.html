@@ -28,7 +28,7 @@
     <div
       class="datepicker-navigation-group datepicker-navigation-group--month"
       role="group"
-      aria-labelledby="datepicker-month-navigation-label"
+      aria-label="Monatsnavigation"
       [attr.data-testid]="testIdFor('month-navigation')"
     >
       <div class="datepicker-navigation-controls">
@@ -44,32 +44,39 @@
           <mat-icon aria-hidden="true">chevron_left</mat-icon>
         </button>
 
-        <select
-          class="datepicker-month-select"
-          [value]="selectedMonth()"
-          aria-label="Monat auswählen"
-          [attr.data-testid]="testIdFor('month-select')"
-          (change)="onMonthChange($event)"
-        >
-          @for (month of shortMonths(); track $index) {
-            <option [value]="($index + 1).toString()" [selected]="($index + 1).toString() === selectedMonth()">{{ month }}</option>
-          }
-        </select>
+        <div class="datepicker-period-control datepicker-period-control--month">
+          <select
+            class="datepicker-month-select"
+            [value]="selectedMonth()"
+            aria-label="Monat auswählen"
+            [attr.data-testid]="testIdFor('month-select')"
+            (change)="onMonthChange($event)"
+          >
+            @for (month of shortMonths(); track $index) {
+              <option
+                [value]="($index + 1).toString()"
+                [selected]="($index + 1).toString() === selectedMonth()"
+              >
+                {{ month }}
+              </option>
+            }
+          </select>
 
-        <button
-          type="button"
-          class="datepicker-navigation-reset"
-          aria-label="Zum aktuellen Monat springen"
-          [attr.data-testid]="testIdFor('month-reset')"
-          (click)="monthSelected.emit(context().today.month)"
-        >
-          <mat-icon aria-hidden="true">calendar_month</mat-icon>
-        </button>
+          <button
+            type="button"
+            class="datepicker-navigation-reset"
+            aria-label="Zum aktuellen Monat springen"
+            title="Aktueller Monat"
+            [attr.data-testid]="testIdFor('month-reset')"
+            (click)="monthSelected.emit(context().today.month)"
+          >
+            <mat-icon aria-hidden="true">calendar_month</mat-icon>
+          </button>
+        </div>
 
         <button
           type="button"
           class="datepicker-navigation"
-          style="transform: translateX(-10px)"
           aria-label="Nächsten Monat anzeigen"
           aria-keyshortcuts="PageDown"
           [attr.aria-controls]="calendarGridId()"
@@ -79,18 +86,14 @@
           <mat-icon aria-hidden="true">chevron_right</mat-icon>
         </button>
       </div>
-
     </div>
 
-
-    <span class="visually-hidden" aria-live="polite" aria-atomic="true">
-      {{ formattedMonth() }}
-    </span>
+    <span class="datepicker-navigation-divider" aria-hidden="true"></span>
 
     <div
       class="datepicker-navigation-group datepicker-navigation-group--year"
       role="group"
-      aria-labelledby="datepicker-year-navigation-label"
+      aria-label="Jahresnavigation"
       [attr.data-testid]="testIdFor('year-navigation')"
     >
       <div class="datepicker-navigation-controls">
@@ -106,37 +109,42 @@
           <mat-icon aria-hidden="true">keyboard_double_arrow_left</mat-icon>
         </button>
 
-        <mat-form-field class="datepicker-year-field" subscriptSizing="dynamic">
-          <input
-            matInput
-            type="text"
-            inputmode="numeric"
-            autocomplete="off"
-            maxlength="4"
-            pattern="[0-9]{4}"
-            [formControl]="yearControl"
-            (input)="onYearInput($event)"
-            (blur)="onYearBlur()"
-            (keydown.enter)="onYearEnter($event)"
-            aria-label="Vierstellige Jahreszahl eingeben"
-            [attr.data-testid]="testIdFor('year-display')"
-          />
-        </mat-form-field>
+        <div class="datepicker-period-control datepicker-period-control--year">
+          <mat-form-field
+            class="datepicker-year-field"
+            subscriptSizing="dynamic"
+          >
+            <input
+              matInput
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              maxlength="4"
+              pattern="[0-9]{4}"
+              [formControl]="yearControl"
+              (input)="onYearInput($event)"
+              (blur)="onYearBlur()"
+              (keydown.enter)="onYearEnter($event)"
+              aria-label="Vierstellige Jahreszahl eingeben"
+              [attr.data-testid]="testIdFor('year-display')"
+            />
+          </mat-form-field>
 
-        <button
-          type="button"
-          class="datepicker-navigation-reset"
-          aria-label="Zum aktuellen Jahr springen"
-          [attr.data-testid]="testIdFor('year-reset')"
-          (click)="yearSelected.emit(context().today.year)"
-        >
-          <mat-icon aria-hidden="true">date_range</mat-icon>
-        </button>
+          <button
+            type="button"
+            class="datepicker-navigation-reset"
+            aria-label="Zum aktuellen Jahr springen"
+            title="Aktuelles Jahr"
+            [attr.data-testid]="testIdFor('year-reset')"
+            (click)="yearSelected.emit(context().today.year)"
+          >
+            <mat-icon aria-hidden="true">date_range</mat-icon>
+          </button>
+        </div>
 
         <button
           type="button"
           class="datepicker-navigation"
-          style="transform: translateX(-10px)"
           aria-label="Nächstes Jahr anzeigen"
           aria-keyshortcuts="Shift+PageDown"
           [attr.aria-controls]="calendarGridId()"
@@ -147,6 +155,10 @@
         </button>
       </div>
     </div>
+
+    <span class="visually-hidden" aria-live="polite" aria-atomic="true">
+      {{ formattedMonth() }}
+    </span>
   </div>
 
   <datepicker-grid
