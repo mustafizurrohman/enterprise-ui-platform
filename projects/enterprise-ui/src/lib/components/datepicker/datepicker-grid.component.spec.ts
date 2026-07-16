@@ -87,10 +87,48 @@ describe("DatepickerGridComponent", () => {
     expect(grid.getAttribute("aria-labelledby")).toBe("month-heading");
     expect(grid.getAttribute("aria-rowcount")).toBe("4");
     expect(grid.getAttribute("aria-colcount")).toBe("8");
+    expect(selectedDay.id).toBe("calendar-grid-day-2026-07-15");
     expect(selectedDay.getAttribute("role")).toBe("gridcell");
+    expect(selectedDay.getAttribute("aria-rowindex")).toBe("3");
     expect(selectedDay.getAttribute("aria-colindex")).toBe("4");
     expect(selectedDay.getAttribute("aria-selected")).toBe("true");
     expect(selectedDay.getAttribute("tabindex")).toBe("0");
+  });
+
+  it("should expose explicit states and positions for all grid cells", () => {
+    const unselectedDay = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-day-2026-07-14"]',
+    ) as HTMLButtonElement;
+    const emptyCell = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-cell-0-0"]',
+    ) as HTMLElement;
+
+    expect(unselectedDay.getAttribute("aria-selected")).toBe("false");
+    expect(unselectedDay.getAttribute("aria-rowindex")).toBe("3");
+    expect(unselectedDay.getAttribute("aria-colindex")).toBe("3");
+    expect(emptyCell.id).toBe("calendar-grid-cell-0-0");
+    expect(emptyCell.getAttribute("role")).toBe("gridcell");
+    expect(emptyCell.getAttribute("aria-rowindex")).toBe("2");
+    expect(emptyCell.getAttribute("aria-colindex")).toBe("2");
+    expect(emptyCell.getAttribute("aria-disabled")).toBe("true");
+  });
+
+  it("should expose unique IDs for rendered grid elements", () => {
+    const ids = Array.from(
+      fixture.nativeElement.querySelectorAll("[id]") as NodeListOf<HTMLElement>,
+      (element) => element.id,
+    );
+
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-weekday-row"]',
+      ).id,
+    ).toBe("calendar-grid-weekday-row");
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="datepicker-week-1"]')
+        .id,
+    ).toBe("calendar-grid-week-1");
   });
 
   it("should not display calendar week numbers for weeks without dates", () => {

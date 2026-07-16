@@ -1,10 +1,12 @@
 <div
+  [id]="wheelId()"
   class="datepicker-time-wheel"
   role="group"
   [attr.aria-labelledby]="labelId()"
   [attr.data-testid]="testIdFor('wheel')"
 >
   <button
+    [id]="incrementButtonId()"
     type="button"
     class="datepicker-time-button"
     [attr.aria-controls]="controlId()"
@@ -21,6 +23,7 @@
   </button>
 
   <div
+    [id]="valueId()"
     class="datepicker-time-value"
     [class.datepicker-time-value--rapid]="isRapidChange()"
     [attr.data-animation]="animationName()"
@@ -28,6 +31,7 @@
   >
     <input
       #timeInput
+      [id]="controlId()"
       type="text"
       inputmode="numeric"
       pattern="[0-9]*"
@@ -36,9 +40,9 @@
       autocomplete="off"
       spellcheck="false"
       aria-keyshortcuts="ArrowUp ArrowDown PageUp PageDown Home End"
-      [id]="controlId()"
       class="datepicker-time-select"
       [attr.aria-labelledby]="labelId()"
+      [attr.aria-describedby]="descriptionId()"
       [attr.aria-valuemin]="0"
       [attr.aria-valuemax]="configuration().maximum"
       [attr.aria-valuenow]="value()"
@@ -54,6 +58,7 @@
   </div>
 
   <button
+    [id]="decrementButtonId()"
     type="button"
     class="datepicker-time-button"
     [attr.aria-controls]="controlId()"

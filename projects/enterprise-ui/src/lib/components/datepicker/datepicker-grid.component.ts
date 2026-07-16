@@ -143,6 +143,10 @@ export class DatepickerGridComponent {
     return date.toISODate() ?? String(date.toMillis());
   }
 
+  protected idFor(part: string): string {
+    return `${this.gridId()}-${part}`;
+  }
+
   protected testIdFor(part: string): string {
     return `${this.testIdPrefix()}-${part}`;
   }

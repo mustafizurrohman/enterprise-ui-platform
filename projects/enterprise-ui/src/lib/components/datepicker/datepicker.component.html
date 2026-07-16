@@ -3,7 +3,11 @@
 @let invalid = hasInputError();
 @let currentDate = selectedDate();
 
-<div class="datepicker" [attr.data-testid]="testIdFor()">
+<div
+  [id]="ids().root"
+  class="datepicker"
+  [attr.data-testid]="testIdFor()"
+>
   <label
     class="datepicker-label"
     [class.datepicker-label--disabled]="disabled"
@@ -16,6 +20,7 @@
   <div
     #calendarOrigin="cdkOverlayOrigin"
     cdkOverlayOrigin
+    [id]="ids().inputWrapper"
     class="datepicker-input"
     [class.datepicker-input--disabled]="disabled"
     [attr.data-testid]="testIdFor('input-wrapper')"
@@ -28,9 +33,11 @@
       role="combobox"
       aria-autocomplete="none"
       aria-haspopup="dialog"
+      aria-keyshortcuts="Enter Escape"
       [attr.aria-expanded]="open"
       [attr.aria-controls]="open ? ids().dialog : null"
       [attr.aria-describedby]="inputDescriptionIds()"
+      [attr.aria-errormessage]="invalid ? ids().inputError : null"
       [attr.aria-invalid]="invalid"
       [attr.data-testid]="testIdFor('input')"
       [value]="inputDisplayValue()"
@@ -43,11 +50,13 @@
 
     @if (currentDate && !disabled) {
       <button
+        [id]="ids().clearButton"
         type="button"
         class="datepicker-icon datepicker-clear"
         [class.datepicker-icon--disabled]="disabled"
         [disabled]="disabled"
         aria-label="Ausgewähltes Datum löschen"
+        [attr.aria-controls]="ids().input"
         [attr.data-testid]="testIdFor('clear')"
         (click)="clearValue($event, dateInput)"
       >
@@ -57,11 +66,13 @@
 
     @if (!disabled) {
       <button
+        [id]="ids().nowButton"
         type="button"
         class="datepicker-icon"
         [class.datepicker-icon--disabled]="disabled"
         [disabled]="disabled"
-        aria-label="Aktuelle Zeit auswählen"
+        [attr.aria-label]="selectNowLabel()"
+        [attr.aria-controls]="ids().input"
         [attr.data-testid]="testIdFor('now-input')"
         (click)="selectNow()"
       >
@@ -71,6 +82,7 @@
 
     <button
       #calendarToggle
+      [id]="ids().toggleButton"
       type="button"
       class="datepicker-icon"
       [class.datepicker-icon--disabled]="disabled"
@@ -99,6 +111,7 @@
       [id]="ids().inputError"
       class="datepicker-error"
       role="alert"
+      aria-atomic="true"
       [attr.data-testid]="testIdFor('error')"
     >
       Bitte geben Sie ein gültiges Datum im Format

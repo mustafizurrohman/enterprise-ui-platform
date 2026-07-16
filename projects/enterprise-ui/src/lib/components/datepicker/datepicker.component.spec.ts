@@ -143,6 +143,19 @@ describe("DatepickerComponent", () => {
       expect(document.querySelector(".datepicker-confirm")).toBeTruthy();
     });
 
+    it("should describe the input-adjacent current-date action accurately", () => {
+      fixture.componentRef.setInput("dateOnly", true);
+      fixture.detectChanges();
+
+      const nowButton = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-now-input"]',
+      ) as HTMLButtonElement;
+
+      expect(nowButton.getAttribute("aria-label")).toBe(
+        "Heutiges Datum auswählen",
+      );
+    });
+
     it("should emit the selected date at the start of the day", () => {
       fixture.componentRef.setInput("dateOnly", true);
       const onChangeSpy = vi.fn();
@@ -392,6 +405,17 @@ describe("DatepickerComponent", () => {
     expect(toggleIndex).not.toBe(-1);
     expect(clearIndex).toBeLessThan(nowIndex);
     expect(nowIndex).toBeLessThan(toggleIndex);
+
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-input"]',
+    ) as HTMLInputElement;
+    const clearButton = buttons.find((button) =>
+      button.getAttribute("data-testid")?.endsWith("-clear"),
+    );
+
+    expect(clearButton).toBeTruthy();
+    expect(clearButton?.id).toMatch(/^datepicker-\d+-clear$/);
+    expect(clearButton?.getAttribute("aria-controls")).toBe(input.id);
   });
 
   it("should update time", () => {
@@ -512,9 +536,17 @@ describe("DatepickerComponent", () => {
       expect(input.value).toBe("31.02.2026");
       expect(component.selectedDate()).toBeNull();
       expect(input.getAttribute("aria-invalid")).toBe("true");
-      expect(
-        fixture.nativeElement.querySelector('[data-testid="datepicker-error"]'),
-      ).toBeTruthy();
+
+      const error = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-error"]',
+      ) as HTMLElement;
+      expect(error).toBeTruthy();
+      expect(error.getAttribute("role")).toBe("alert");
+      expect(error.getAttribute("aria-atomic")).toBe("true");
+      expect(input.getAttribute("aria-errormessage")).toBe(error.id);
+      expect(input.getAttribute("aria-describedby")?.split(" ")).toContain(
+        error.id,
+      );
     });
 
     it("should proactively append separators and pad an unambiguous month", () => {
@@ -706,21 +738,51 @@ describe("DatepickerComponent", () => {
     });
   });
 
-  it("should have correct accessibility attributes", () => {
-    const label = fixture.nativeElement.querySelector(".datepicker-label");
-    const input = fixture.nativeElement.querySelector("input");
-    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
+  it("should have correct accessibility attributes and ID relationships", () => {
+    const root = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker"]',
+    ) as HTMLElement;
+    const wrapper = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-input-wrapper"]',
+    ) as HTMLElement;
+    const label = fixture.nativeElement.querySelector(
+      ".datepicker-label",
+    ) as HTMLLabelElement;
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-input"]',
+    ) as HTMLInputElement;
+    const nowButton = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-now-input"]',
+    ) as HTMLButtonElement;
+    const toggleButton = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-toggle"]',
+    ) as HTMLButtonElement;
 
+    expect(root.id).toMatch(/^datepicker-\d+$/);
+    expect(wrapper.id).toBe(`${root.id}-input-wrapper`);
     expect(label.textContent).toContain(component.label());
-    expect(label.getAttribute("for")).toBe(input.id);
+    expect(label.htmlFor).toBe(input.id);
+    expect(input.id).toBe(`${root.id}-input`);
     expect(input.getAttribute("role")).toBe("combobox");
     expect(input.getAttribute("aria-autocomplete")).toBe("none");
     expect(input.getAttribute("aria-haspopup")).toBe("dialog");
+    expect(input.getAttribute("aria-keyshortcuts")).toBe("Enter Escape");
     expect(input.getAttribute("aria-invalid")).toBe("false");
-    expect(button.getAttribute("aria-label")).toContain("Kalender");
-    expect(button.getAttribute("aria-haspopup")).toBe("dialog");
+    expect(input.hasAttribute("aria-errormessage")).toBeFalsy();
+    expect(document.getElementById(input.getAttribute("aria-describedby")!)).toBeTruthy();
 
-    const icon = button.querySelector("mat-icon");
+    expect(nowButton.id).toBe(`${root.id}-now`);
+    expect(nowButton.getAttribute("aria-controls")).toBe(input.id);
+    expect(nowButton.getAttribute("aria-label")).toBe(
+      "Aktuelles Datum und aktuelle Uhrzeit auswählen",
+    );
+
+    expect(toggleButton.id).toBe(`${root.id}-toggle`);
+    expect(toggleButton.getAttribute("aria-label")).toContain("Kalender");
+    expect(toggleButton.getAttribute("aria-haspopup")).toBe("dialog");
+    expect(toggleButton.getAttribute("aria-expanded")).toBe("false");
+
+    const icon = toggleButton.querySelector("mat-icon");
     expect(icon).toBeTruthy();
     expect(icon?.getAttribute("aria-hidden")).toBe("true");
   });
@@ -752,16 +814,34 @@ describe("DatepickerComponent", () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const dialog = document.querySelector(".datepicker-calendar");
+    const dialog = document.querySelector(
+      ".datepicker-calendar",
+    ) as HTMLElement;
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-input"]',
+    ) as HTMLInputElement;
+
     expect(dialog).toBeTruthy();
-    expect(dialog?.getAttribute("role")).toBe("dialog");
-    expect(dialog?.getAttribute("aria-modal")).toBe("true");
-    expect(dialog?.hasAttribute("cdktrapfocus")).toBeTruthy();
+    expect(dialog.getAttribute("role")).toBe("dialog");
+    expect(dialog.getAttribute("aria-modal")).toBe("true");
+    expect(dialog.hasAttribute("cdktrapfocus")).toBeTruthy();
+    expect(button.getAttribute("aria-controls")).toBe(dialog.id);
+    expect(input.getAttribute("aria-controls")).toBe(dialog.id);
 
     const title = document.getElementById(
-      dialog?.getAttribute("aria-labelledby") || "",
+      dialog.getAttribute("aria-labelledby") || "",
+    );
+    const description = document.getElementById(
+      dialog.getAttribute("aria-describedby") || "",
     );
     expect(title?.classList.contains("visually-hidden")).toBeTruthy();
+    expect(description?.classList.contains("visually-hidden")).toBeTruthy();
+    expect(title?.getAttribute("data-testid")).toBe(
+      "datepicker-dialog-title",
+    );
+    expect(description?.getAttribute("data-testid")).toBe(
+      "datepicker-dialog-description",
+    );
   });
 
   it("should navigate calendar with keyboard", async () => {

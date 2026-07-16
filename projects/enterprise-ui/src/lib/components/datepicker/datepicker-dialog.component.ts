@@ -114,7 +114,9 @@ export class DatepickerDialogComponent {
     () => this.context().selectedDate,
   );
   protected readonly shortMonths = computed(() =>
-    Info.months("short", { locale: this.context().viewDate.locale ?? undefined }),
+    Info.months("short", {
+      locale: this.context().viewDate.locale ?? undefined,
+    }),
   );
   protected readonly selectedMonth = computed(
     () => this.context().viewDate.month.toString(),
@@ -222,6 +224,10 @@ export class DatepickerDialogComponent {
     this.restoreCurrentYear();
   }
 
+  protected idFor(part: string): string {
+    return `${this.dialogId()}-${part}`;
+  }
+
   protected testIdFor(part: string): string {
     return `${this.testIdPrefix()}-${part}`;
   }
@@ -240,6 +246,7 @@ export class DatepickerDialogComponent {
       value: this.getTimeValue(context.selectedDate, unit),
       controlId: this.getTimeId(context, unit, "control"),
       labelId: this.getTimeId(context, unit, "label"),
+      descriptionId: this.idFor("time-instructions"),
       testIdPrefix: context.testIdPrefix,
     };
   }

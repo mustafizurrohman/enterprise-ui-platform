@@ -87,6 +87,55 @@ describe("DatepickerDialogComponent", () => {
     expect(previous.getAttribute("aria-controls")).toBe(grid.id);
   });
 
+  it("should label the grid with only the announced month and year", () => {
+    const grid = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-calendar-grid"]',
+    ) as HTMLElement;
+    const monthHeading = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-month-heading"]',
+    ) as HTMLElement;
+    const header = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-header"]',
+    ) as HTMLElement;
+
+    expect(header.id).toBe("dialog-header");
+    expect(monthHeading.id).toBe("month-heading");
+    expect(monthHeading.getAttribute("role")).toBe("status");
+    expect(monthHeading.getAttribute("aria-live")).toBe("polite");
+    expect(monthHeading.textContent?.trim()).toBe("Juli 2026");
+    expect(grid.getAttribute("aria-labelledby")).toBe(monthHeading.id);
+  });
+
+  it("should expose unique stable IDs for interactive controls", () => {
+    const elements = Array.from(
+      fixture.nativeElement.querySelectorAll("[id]") as NodeListOf<HTMLElement>,
+    );
+    const ids = elements.map((element) => element.id);
+    const grid = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-calendar-grid"]',
+    ) as HTMLElement;
+
+    expect(new Set(ids).size).toBe(ids.length);
+
+    for (const testId of [
+      "previous-month",
+      "month-select",
+      "month-reset",
+      "next-month",
+      "previous-year",
+      "year-display",
+      "year-reset",
+      "next-year",
+    ]) {
+      const control = fixture.nativeElement.querySelector(
+        `[data-testid="datepicker-${testId}"]`,
+      ) as HTMLElement;
+
+      expect(control.id).toBeTruthy();
+      expect(control.getAttribute("aria-controls")).toBe(grid.id);
+    }
+  });
+
   it("should forward navigation and time changes", () => {
     const previousSpy = vi.fn();
     const timeSpy = vi.fn();
@@ -140,6 +189,16 @@ describe("DatepickerDialogComponent", () => {
       Info.months("short", { locale: "de" })[6],
     );
     expect(select.options).toHaveLength(12);
+  });
+
+  it("should expose stable IDs and test IDs for month options", () => {
+    const option = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-month-option-7"]',
+    ) as HTMLOptionElement;
+
+    expect(option.id).toBe("dialog-month-option-7");
+    expect(option.value).toBe("7");
+    expect(option.selected).toBeTruthy();
   });
 
   it("should forward month selection event", () => {
@@ -322,6 +381,84 @@ describe("DatepickerDialogComponent", () => {
 
     expect(monthSpy).toHaveBeenCalledWith(component.context().today.month);
     expect(yearSpy).toHaveBeenCalledWith(component.context().today.year);
+  });
+
+  it("should provide explicit labels and control relationships for time actions", () => {
+    const fieldset = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-time-picker"]',
+    ) as HTMLFieldSetElement;
+    const legend = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-time-picker-legend"]',
+    ) as HTMLElement;
+    const instructions = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-time-instructions"]',
+    ) as HTMLElement;
+    const timeWheels = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-time-wheels"]',
+    ) as HTMLElement;
+    const minuteButtons = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-minute-adjustment-buttons"]',
+    ) as HTMLElement;
+    const hourButtons = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-adjustment-buttons"]',
+    ) as HTMLElement;
+
+    expect(fieldset.getAttribute("aria-describedby")).toBe(instructions.id);
+    expect(timeWheels.getAttribute("aria-labelledby")).toBe(legend.id);
+    expect(minuteButtons.getAttribute("role")).toBe("group");
+    expect(minuteButtons.getAttribute("aria-label")).toBe("Minuten anpassen");
+    expect(hourButtons.getAttribute("role")).toBe("group");
+    expect(hourButtons.getAttribute("aria-label")).toBe("Stunden anpassen");
+
+    const hourInput = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-input"]',
+    ) as HTMLInputElement;
+    const minuteInput = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-minute-input"]',
+    ) as HTMLInputElement;
+    expect(hourInput.getAttribute("aria-describedby")).toBe(instructions.id);
+    expect(minuteInput.getAttribute("aria-describedby")).toBe(instructions.id);
+
+    const expectedControls = [
+      ["subtract-30-mins", "30 Minuten abziehen", "minute"],
+      ["subtract-15-mins", "15 Minuten abziehen", "minute"],
+      ["add-15-mins", "15 Minuten hinzufügen", "minute"],
+      ["add-30-mins", "30 Minuten hinzufügen", "minute"],
+      ["subtract-12-hrs", "12 Stunden abziehen", "hour"],
+      ["add-12-hrs", "12 Stunden hinzufügen", "hour"],
+    ] as const;
+
+    for (const [testId, label, controlId] of expectedControls) {
+      const button = fixture.nativeElement.querySelector(
+        `[data-testid="datepicker-${testId}"]`,
+      ) as HTMLButtonElement;
+
+      expect(button.id).toBe(`dialog-${testId}`);
+      expect(button.getAttribute("aria-label")).toBe(label);
+      expect(button.getAttribute("aria-controls")).toBe(controlId);
+    }
+  });
+
+  it("should provide accessible labels and stable IDs for dialog actions", () => {
+    const actions = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-actions"]',
+    ) as HTMLElement;
+    const nowButton = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-now"]',
+    ) as HTMLButtonElement;
+    const confirmButton = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-confirm"]',
+    ) as HTMLButtonElement;
+
+    expect(actions.id).toBe("dialog-actions");
+    expect(nowButton.id).toBe("dialog-now");
+    expect(nowButton.getAttribute("aria-label")).toBe(
+      "Aktuelles Datum und aktuelle Uhrzeit auswählen",
+    );
+    expect(confirmButton.id).toBe("dialog-confirm");
+    expect(confirmButton.getAttribute("aria-label")).toBe(
+      "Auswahl übernehmen und Kalender schließen",
+    );
   });
 
   it("should forward time adjustment events", () => {

@@ -8,8 +8,15 @@
   aria-colcount="8"
   [attr.data-testid]="testIdFor('calendar-grid')"
 >
-  <div role="row" aria-rowindex="1" class="datepicker-weekday-row">
+  <div
+    [id]="idFor('weekday-row')"
+    role="row"
+    aria-rowindex="1"
+    class="datepicker-weekday-row"
+    [attr.data-testid]="testIdFor('weekday-row')"
+  >
     <div
+      [id]="idFor('weekday-calendar-week')"
       class="datepicker-day-name datepicker-kw"
       role="columnheader"
       aria-colindex="1"
@@ -21,6 +28,7 @@
 
     @for (day of daysOfWeek(); track day.weekday; let dayIndex = $index) {
       <div
+        [id]="idFor('weekday-' + day.weekday)"
         class="datepicker-day-name"
         role="columnheader"
         [attr.aria-colindex]="dayIndex + 2"
@@ -37,12 +45,14 @@
 
   @for (weekInfo of weeks(); track $index; let weekIndex = $index) {
     <div
+      [id]="idFor('week-' + weekIndex)"
       role="row"
       class="datepicker-week"
       [attr.aria-rowindex]="weekIndex + 2"
       [attr.data-testid]="testIdFor('week-' + weekIndex)"
     >
       <div
+        [id]="idFor('week-number-' + weekIndex)"
         class="datepicker-kw-value"
         role="rowheader"
         aria-colindex="1"
@@ -59,28 +69,31 @@
 
       @for (date of weekInfo.days; track $index; let cellIndex = $index) {
         <div
+          [id]="idFor('cell-' + weekIndex + '-' + cellIndex)"
           class="datepicker-gridcell"
           [attr.role]="date ? 'presentation' : 'gridcell'"
+          [attr.aria-rowindex]="date ? null : weekIndex + 2"
           [attr.aria-colindex]="date ? null : cellIndex + 2"
-          [attr.aria-label]="null"
           [attr.aria-disabled]="date ? null : 'true'"
           [attr.data-testid]="testIdFor('cell-' + weekIndex + '-' + cellIndex)"
         >
           @if (date; as calendarDate) {
             <button
               #calendarDay
+              [id]="idFor('day-' + dateIso(calendarDate))"
               type="button"
               role="gridcell"
               class="datepicker-day"
               aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End PageUp PageDown Shift+PageUp Shift+PageDown Enter Space Escape"
               [class.selected]="isSelected(calendarDate)"
               [class.today]="isToday(calendarDate)"
+              [attr.aria-rowindex]="weekIndex + 2"
               [attr.aria-colindex]="cellIndex + 2"
               [attr.data-date]="dateIso(calendarDate)"
               [attr.data-testid]="testIdFor('day-' + dateIso(calendarDate))"
               [attr.tabindex]="isActiveDate(calendarDate) ? 0 : -1"
               [attr.aria-label]="getAccessibleDateLabel(calendarDate)"
-              [attr.aria-selected]="isSelected(calendarDate) ? 'true' : null"
+              [attr.aria-selected]="isSelected(calendarDate)"
               [attr.aria-current]="isToday(calendarDate) ? 'date' : null"
               (click)="selectDate(calendarDate)"
               (focus)="focusDateCell(calendarDate)"

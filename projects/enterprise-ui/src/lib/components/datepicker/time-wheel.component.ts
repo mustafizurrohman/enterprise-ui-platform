@@ -8,6 +8,7 @@ export type TimeWheelContext = Readonly<{
   value: number;
   controlId: string;
   labelId: string;
+  descriptionId?: string;
   testIdPrefix: string;
 }>;
 
@@ -66,8 +67,19 @@ export class TimeWheelComponent {
   protected readonly value = computed(() => this.context().value);
   protected readonly controlId = computed(() => this.context().controlId);
   protected readonly labelId = computed(() => this.context().labelId);
+  protected readonly descriptionId = computed(
+    () => this.context().descriptionId ?? null,
+  );
   protected readonly testIdPrefix = computed(
     () => this.context().testIdPrefix,
+  );
+  protected readonly wheelId = computed(() => `${this.controlId()}-wheel`);
+  protected readonly valueId = computed(() => `${this.controlId()}-value`);
+  protected readonly incrementButtonId = computed(
+    () => `${this.controlId()}-increment`,
+  );
+  protected readonly decrementButtonId = computed(
+    () => `${this.controlId()}-decrement`,
   );
 
   protected readonly configuration = computed(

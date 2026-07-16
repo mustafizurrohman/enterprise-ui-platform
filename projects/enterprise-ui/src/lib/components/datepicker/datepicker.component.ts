@@ -66,7 +66,9 @@ import { LuxonDateInputAutocomplete } from "./luxon-date-input-autocomplete";
 })
 export class DatepickerComponent implements ControlValueAccessor, Validator {
   private static nextId = 0;
-  private readonly componentId = signal(`datepicker-${DatepickerComponent.nextId++}`);
+  private readonly componentId = signal(
+    `datepicker-${DatepickerComponent.nextId++}`,
+  );
   private lastFocusedTrigger: HTMLElement | null = null;
 
   readonly label = input<string>("Datum auswählen");
@@ -86,9 +88,14 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   protected readonly ids = computed(
     () =>
       ({
+        root: this.componentId(),
+        inputWrapper: `${this.componentId()}-input-wrapper`,
         input: `${this.componentId()}-input`,
         inputHint: `${this.componentId()}-hint`,
         inputError: `${this.componentId()}-error`,
+        clearButton: `${this.componentId()}-clear`,
+        nowButton: `${this.componentId()}-now`,
+        toggleButton: `${this.componentId()}-toggle`,
         dialog: `${this.componentId()}-dialog`,
         dialogTitle: `${this.componentId()}-dialog-title`,
         dialogDescription: `${this.componentId()}-dialog-description`,
@@ -138,6 +145,12 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       ? "Kalender zur Auswahl eines Datums öffnen"
       : "Kalender zur Auswahl von Datum und Uhrzeit öffnen";
   });
+
+  protected readonly selectNowLabel = computed(() =>
+    this.dateOnly()
+      ? "Heutiges Datum auswählen"
+      : "Aktuelles Datum und aktuelle Uhrzeit auswählen",
+  );
 
   protected readonly dialogTitle = computed(() =>
     this.dateOnly() ? "Datum auswählen" : "Datum und Uhrzeit auswählen",

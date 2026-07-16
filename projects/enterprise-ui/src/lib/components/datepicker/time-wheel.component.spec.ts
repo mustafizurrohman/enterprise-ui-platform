@@ -14,6 +14,7 @@ describe("TimeWheelComponent", () => {
     value,
     controlId: "hour-control",
     labelId: "hour-label",
+    descriptionId: "time-instructions",
     testIdPrefix: "datepicker",
   });
 
@@ -57,6 +58,35 @@ describe("TimeWheelComponent", () => {
     expect(input.getAttribute("aria-valuemin")).toBe("0");
     expect(input.getAttribute("aria-valuemax")).toBe("23");
     expect(input.getAttribute("aria-valuetext")).toBe("10 Uhr");
+  });
+
+  it("should expose stable IDs and accessible control relationships", () => {
+    const wheel = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-wheel"]',
+    ) as HTMLElement;
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-input"]',
+    ) as HTMLInputElement;
+    const value = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-value"]',
+    ) as HTMLElement;
+    const label = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-label"]',
+    ) as HTMLElement;
+    const increment = getIncrementButton();
+    const decrement = getDecrementButton();
+
+    expect(wheel.id).toBe("hour-control-wheel");
+    expect(wheel.getAttribute("aria-labelledby")).toBe(label.id);
+    expect(label.id).toBe("hour-label");
+    expect(input.id).toBe("hour-control");
+    expect(input.getAttribute("aria-labelledby")).toBe(label.id);
+    expect(input.getAttribute("aria-describedby")).toBe("time-instructions");
+    expect(value.id).toBe("hour-control-value");
+    expect(increment.id).toBe("hour-control-increment");
+    expect(increment.getAttribute("aria-controls")).toBe(input.id);
+    expect(decrement.id).toBe("hour-control-decrement");
+    expect(decrement.getAttribute("aria-controls")).toBe(input.id);
   });
 
   it("should emit incremented and decremented values with wrap-around", () => {

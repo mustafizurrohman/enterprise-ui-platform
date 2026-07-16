@@ -9,9 +9,19 @@
   [attr.aria-describedby]="dialogDescriptionId()"
   [attr.data-testid]="testIdFor('dialog')"
 >
-  <h2 [id]="dialogTitleId()" class="visually-hidden">{{ dialogTitle() }}</h2>
+  <h2
+    [id]="dialogTitleId()"
+    class="visually-hidden"
+    [attr.data-testid]="testIdFor('dialog-title')"
+  >
+    {{ dialogTitle() }}
+  </h2>
 
-  <p [id]="dialogDescriptionId()" class="visually-hidden">
+  <p
+    [id]="dialogDescriptionId()"
+    class="visually-hidden"
+    [attr.data-testid]="testIdFor('dialog-description')"
+  >
     Verwenden Sie die Pfeiltasten zur Navigation zwischen den Tagen. Pos1 und
     Ende springen zum Wochenanfang beziehungsweise Wochenende. Bild auf und Bild
     ab wechseln den Monat; mit Umschalttaste wechseln Sie das Jahr. Enter oder
@@ -19,20 +29,24 @@
   </p>
 
   <div
-    [id]="monthHeadingId()"
+    [id]="idFor('header')"
     class="datepicker-header"
-    aria-live="polite"
-    aria-atomic="true"
-    [attr.data-testid]="testIdFor('month-heading')"
+    [attr.data-testid]="testIdFor('header')"
   >
     <div
+      [id]="idFor('month-navigation')"
       class="datepicker-navigation-group datepicker-navigation-group--month"
       role="group"
       aria-label="Monatsnavigation"
       [attr.data-testid]="testIdFor('month-navigation')"
     >
-      <div class="datepicker-navigation-controls">
+      <div
+        [id]="idFor('month-navigation-controls')"
+        class="datepicker-navigation-controls"
+        [attr.data-testid]="testIdFor('month-navigation-controls')"
+      >
         <button
+          [id]="idFor('previous-month')"
           type="button"
           class="datepicker-navigation"
           aria-label="Vorherigen Monat anzeigen"
@@ -44,18 +58,26 @@
           <mat-icon aria-hidden="true">chevron_left</mat-icon>
         </button>
 
-        <div class="datepicker-period-control datepicker-period-control--month">
+        <div
+          [id]="idFor('month-period-control')"
+          class="datepicker-period-control datepicker-period-control--month"
+          [attr.data-testid]="testIdFor('month-period-control')"
+        >
           <select
+            [id]="idFor('month-select')"
             class="datepicker-month-select"
             [value]="selectedMonth()"
             aria-label="Monat auswählen"
+            [attr.aria-controls]="calendarGridId()"
             [attr.data-testid]="testIdFor('month-select')"
             (change)="onMonthChange($event)"
           >
             @for (month of shortMonths(); track $index) {
               <option
+                [id]="idFor('month-option-' + ($index + 1))"
                 [value]="($index + 1).toString()"
                 [selected]="($index + 1).toString() === selectedMonth()"
+                [attr.data-testid]="testIdFor('month-option-' + ($index + 1))"
               >
                 {{ month }}
               </option>
@@ -63,10 +85,12 @@
           </select>
 
           <button
+            [id]="idFor('month-reset')"
             type="button"
             class="datepicker-navigation-reset"
             aria-label="Zum aktuellen Monat springen"
             title="Aktueller Monat"
+            [attr.aria-controls]="calendarGridId()"
             [attr.data-testid]="testIdFor('month-reset')"
             (click)="monthSelected.emit(context().today.month)"
           >
@@ -75,6 +99,7 @@
         </div>
 
         <button
+          [id]="idFor('next-month')"
           type="button"
           class="datepicker-navigation"
           aria-label="Nächsten Monat anzeigen"
@@ -91,13 +116,19 @@
     <span class="datepicker-navigation-divider" aria-hidden="true"></span>
 
     <div
+      [id]="idFor('year-navigation')"
       class="datepicker-navigation-group datepicker-navigation-group--year"
       role="group"
       aria-label="Jahresnavigation"
       [attr.data-testid]="testIdFor('year-navigation')"
     >
-      <div class="datepicker-navigation-controls">
+      <div
+        [id]="idFor('year-navigation-controls')"
+        class="datepicker-navigation-controls"
+        [attr.data-testid]="testIdFor('year-navigation-controls')"
+      >
         <button
+          [id]="idFor('previous-year')"
           type="button"
           class="datepicker-navigation"
           aria-label="Vorheriges Jahr anzeigen"
@@ -109,32 +140,41 @@
           <mat-icon aria-hidden="true">keyboard_double_arrow_left</mat-icon>
         </button>
 
-        <div class="datepicker-period-control datepicker-period-control--year">
+        <div
+          [id]="idFor('year-period-control')"
+          class="datepicker-period-control datepicker-period-control--year"
+          [attr.data-testid]="testIdFor('year-period-control')"
+        >
           <mat-form-field
             class="datepicker-year-field"
             subscriptSizing="dynamic"
           >
             <input
+              [id]="idFor('year-input')"
               matInput
               type="text"
               inputmode="numeric"
               autocomplete="off"
               maxlength="4"
               pattern="[0-9]{4}"
+              aria-keyshortcuts="Enter"
+              aria-label="Vierstellige Jahreszahl eingeben"
+              [attr.aria-controls]="calendarGridId()"
               [formControl]="yearControl"
+              [attr.data-testid]="testIdFor('year-display')"
               (input)="onYearInput($event)"
               (blur)="onYearBlur()"
               (keydown.enter)="onYearEnter($event)"
-              aria-label="Vierstellige Jahreszahl eingeben"
-              [attr.data-testid]="testIdFor('year-display')"
             />
           </mat-form-field>
 
           <button
+            [id]="idFor('year-reset')"
             type="button"
             class="datepicker-navigation-reset"
             aria-label="Zum aktuellen Jahr springen"
             title="Aktuelles Jahr"
+            [attr.aria-controls]="calendarGridId()"
             [attr.data-testid]="testIdFor('year-reset')"
             (click)="yearSelected.emit(context().today.year)"
           >
@@ -143,6 +183,7 @@
         </div>
 
         <button
+          [id]="idFor('next-year')"
           type="button"
           class="datepicker-navigation"
           aria-label="Nächstes Jahr anzeigen"
@@ -156,27 +197,69 @@
       </div>
     </div>
 
-    <span class="visually-hidden" aria-live="polite" aria-atomic="true">
+    <span
+      [id]="monthHeadingId()"
+      class="visually-hidden"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      [attr.data-testid]="testIdFor('month-heading')"
+    >
       {{ formattedMonth() }}
     </span>
   </div>
 
   <datepicker-grid
+    [attr.id]="idFor('grid-component')"
     [context]="gridContext()"
+    [attr.data-testid]="testIdFor('grid-component')"
     (dateSelected)="dateSelected.emit($event)"
     (dateFocused)="dateFocused.emit($event)"
     (dateKeydown)="dateKeydown.emit($event)"
   />
 
-  <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" [attr.data-testid]="testIdFor('date-status')">
+  <div
+    [id]="idFor('date-status')"
+    class="visually-hidden"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+    [attr.data-testid]="testIdFor('date-status')"
+  >
     {{ dateAnnouncement() }}
   </div>
 
   @if (!dateOnly()) {
-    <fieldset class="datepicker-time-picker" [attr.data-testid]="testIdFor('time-picker')">
-      <legend class="visually-hidden">Uhrzeit auswählen</legend>
+    <fieldset
+      [id]="idFor('time-picker')"
+      class="datepicker-time-picker"
+      [attr.aria-describedby]="idFor('time-instructions')"
+      [attr.data-testid]="testIdFor('time-picker')"
+    >
+      <legend
+        [id]="idFor('time-picker-legend')"
+        class="visually-hidden"
+        [attr.data-testid]="testIdFor('time-picker-legend')"
+      >
+        Uhrzeit auswählen
+      </legend>
 
-      <div class="datepicker-time-wheels" role="group" aria-label="Zeit-Einsteller" [attr.data-testid]="testIdFor('time-wheels')">
+      <p
+        [id]="idFor('time-instructions')"
+        class="visually-hidden"
+        [attr.data-testid]="testIdFor('time-instructions')"
+      >
+        Verwenden Sie die Pfeiltasten oder geben Sie zweistellige Werte direkt
+        ein.
+      </p>
+
+      <div
+        [id]="idFor('time-wheels')"
+        class="datepicker-time-wheels"
+        role="group"
+        [attr.aria-labelledby]="idFor('time-picker-legend')"
+        [attr.data-testid]="testIdFor('time-wheels')"
+      >
         <time-wheel
           [context]="hourWheelContext()"
           (valueChange)="emitTimeChange('hour', $event)"
@@ -196,49 +279,184 @@
         }
       </div>
 
-      <div class="datepicker-time-adjustments" [attr.data-testid]="testIdFor('time-adjustments')">
-        <div class="datepicker-adjustment-group">
-          <div class="datepicker-adjustment-label">
+      <div
+        [id]="idFor('time-adjustments')"
+        class="datepicker-time-adjustments"
+        [attr.data-testid]="testIdFor('time-adjustments')"
+      >
+        <div
+          [id]="idFor('minute-adjustment-group')"
+          class="datepicker-adjustment-group"
+          [attr.data-testid]="testIdFor('minute-adjustment-group')"
+        >
+          <div
+            [id]="idFor('minute-adjustment-label')"
+            class="datepicker-adjustment-label"
+            [attr.data-testid]="testIdFor('minute-adjustment-label')"
+          >
             <mat-icon aria-hidden="true">schedule</mat-icon>
             <span>Min</span>
           </div>
-          <div class="datepicker-adjustment-buttons">
-            <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('subtract-30-mins')" (click)="timeAdjusted.emit({ minutes: -30 })">-30</button>
-            <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('subtract-15-mins')" (click)="timeAdjusted.emit({ minutes: -15 })">-15</button>
-            <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('add-15-mins')" (click)="timeAdjusted.emit({ minutes: 15 })">+15</button>
-            <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('add-30-mins')" (click)="timeAdjusted.emit({ minutes: 30 })">+30</button>
+          <div
+            [id]="idFor('minute-adjustment-buttons')"
+            class="datepicker-adjustment-buttons"
+            role="group"
+            aria-label="Minuten anpassen"
+            [attr.data-testid]="testIdFor('minute-adjustment-buttons')"
+          >
+            <button
+              [id]="idFor('subtract-30-mins')"
+              type="button"
+              class="datepicker-time-adjustment"
+              aria-label="30 Minuten abziehen"
+              [attr.aria-controls]="context().minuteSelectId"
+              [attr.data-testid]="testIdFor('subtract-30-mins')"
+              (click)="timeAdjusted.emit({ minutes: -30 })"
+            >
+              -30
+            </button>
+            <button
+              [id]="idFor('subtract-15-mins')"
+              type="button"
+              class="datepicker-time-adjustment"
+              aria-label="15 Minuten abziehen"
+              [attr.aria-controls]="context().minuteSelectId"
+              [attr.data-testid]="testIdFor('subtract-15-mins')"
+              (click)="timeAdjusted.emit({ minutes: -15 })"
+            >
+              -15
+            </button>
+            <button
+              [id]="idFor('add-15-mins')"
+              type="button"
+              class="datepicker-time-adjustment"
+              aria-label="15 Minuten hinzufügen"
+              [attr.aria-controls]="context().minuteSelectId"
+              [attr.data-testid]="testIdFor('add-15-mins')"
+              (click)="timeAdjusted.emit({ minutes: 15 })"
+            >
+              +15
+            </button>
+            <button
+              [id]="idFor('add-30-mins')"
+              type="button"
+              class="datepicker-time-adjustment"
+              aria-label="30 Minuten hinzufügen"
+              [attr.aria-controls]="context().minuteSelectId"
+              [attr.data-testid]="testIdFor('add-30-mins')"
+              (click)="timeAdjusted.emit({ minutes: 30 })"
+            >
+              +30
+            </button>
           </div>
         </div>
 
-
-        <div class="datepicker-adjustment-group">
-          <div class="datepicker-adjustment-label">
+        <div
+          [id]="idFor('hour-adjustment-group')"
+          class="datepicker-adjustment-group"
+          [attr.data-testid]="testIdFor('hour-adjustment-group')"
+        >
+          <div
+            [id]="idFor('hour-adjustment-label')"
+            class="datepicker-adjustment-label"
+            [attr.data-testid]="testIdFor('hour-adjustment-label')"
+          >
             <mat-icon aria-hidden="true">schedule</mat-icon>
             <span>Std</span>
           </div>
-          <div class="datepicker-adjustment-buttons">
-            <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('subtract-12-hrs')" (click)="timeAdjusted.emit({ hours: -12 })">-12</button>
-            <button type="button" class="datepicker-time-adjustment" [attr.data-testid]="testIdFor('add-12-hrs')" (click)="timeAdjusted.emit({ hours: 12 })">+12</button>
+          <div
+            [id]="idFor('hour-adjustment-buttons')"
+            class="datepicker-adjustment-buttons"
+            role="group"
+            aria-label="Stunden anpassen"
+            [attr.data-testid]="testIdFor('hour-adjustment-buttons')"
+          >
+            <button
+              [id]="idFor('subtract-12-hrs')"
+              type="button"
+              class="datepicker-time-adjustment"
+              aria-label="12 Stunden abziehen"
+              [attr.aria-controls]="context().hourSelectId"
+              [attr.data-testid]="testIdFor('subtract-12-hrs')"
+              (click)="timeAdjusted.emit({ hours: -12 })"
+            >
+              -12
+            </button>
+            <button
+              [id]="idFor('add-12-hrs')"
+              type="button"
+              class="datepicker-time-adjustment"
+              aria-label="12 Stunden hinzufügen"
+              [attr.aria-controls]="context().hourSelectId"
+              [attr.data-testid]="testIdFor('add-12-hrs')"
+              (click)="timeAdjusted.emit({ hours: 12 })"
+            >
+              +12
+            </button>
           </div>
         </div>
       </div>
 
-      <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" [attr.data-testid]="testIdFor('time-status')">
+      <div
+        [id]="idFor('time-status')"
+        class="visually-hidden"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        [attr.data-testid]="testIdFor('time-status')"
+      >
         {{ timeAnnouncement() }}
       </div>
 
-      <ng-container [ngTemplateOutlet]="actions" [ngTemplateOutletContext]="{ withoutTime: false }" />
+      <ng-container
+        [ngTemplateOutlet]="actions"
+        [ngTemplateOutletContext]="{ withoutTime: false }"
+      />
     </fieldset>
   } @else {
-    <div class="datepicker-time-picker" [attr.data-testid]="testIdFor('date-only-actions')">
-      <ng-container [ngTemplateOutlet]="actions" [ngTemplateOutletContext]="{ withoutTime: true }" />
+    <div
+      [id]="idFor('date-only-actions')"
+      class="datepicker-time-picker"
+      [attr.data-testid]="testIdFor('date-only-actions')"
+    >
+      <ng-container
+        [ngTemplateOutlet]="actions"
+        [ngTemplateOutletContext]="{ withoutTime: true }"
+      />
     </div>
   }
 </div>
 
 <ng-template #actions let-withoutTime="withoutTime">
-  <div class="datepicker-actions" [class.datepicker-actions--without-time]="withoutTime">
-    <button type="button" class="datepicker-now" [attr.data-testid]="testIdFor('now')" (click)="nowSelected.emit()">{{ dateOnly() ? 'Heute' : 'Jetzt' }}</button>
-    <button type="button" class="datepicker-confirm" aria-label="Auswahl übernehmen und Kalender schließen" [attr.data-testid]="testIdFor('confirm')" (click)="confirmed.emit()">OK</button>
+  <div
+    [id]="idFor('actions')"
+    class="datepicker-actions"
+    [class.datepicker-actions--without-time]="withoutTime"
+    [attr.data-testid]="testIdFor('actions')"
+  >
+    <button
+      [id]="idFor('now')"
+      type="button"
+      class="datepicker-now"
+      [attr.aria-label]="
+        dateOnly()
+          ? 'Heutiges Datum auswählen'
+          : 'Aktuelles Datum und aktuelle Uhrzeit auswählen'
+      "
+      [attr.data-testid]="testIdFor('now')"
+      (click)="nowSelected.emit()"
+    >
+      {{ dateOnly() ? "Heute" : "Jetzt" }}
+    </button>
+    <button
+      [id]="idFor('confirm')"
+      type="button"
+      class="datepicker-confirm"
+      aria-label="Auswahl übernehmen und Kalender schließen"
+      [attr.data-testid]="testIdFor('confirm')"
+      (click)="confirmed.emit()"
+    >
+      OK
+    </button>
   </div>
 </ng-template>
