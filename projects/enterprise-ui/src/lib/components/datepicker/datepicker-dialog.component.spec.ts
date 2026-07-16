@@ -237,13 +237,40 @@ describe("DatepickerDialogComponent", () => {
       '[data-testid="datepicker-year-navigation"]',
     ) as HTMLElement;
 
-    expect(monthGroup.querySelector('[data-testid="datepicker-previous-month"]')).toBeTruthy();
-    expect(monthGroup.querySelector('[data-testid="datepicker-month-select"]')).toBeTruthy();
-    expect(monthGroup.querySelector('[data-testid="datepicker-next-month"]')).toBeTruthy();
+    const monthControls = monthGroup.querySelector(
+      ".datepicker-navigation-controls",
+    )!;
+    expect(
+      monthControls.querySelector('[data-testid="datepicker-previous-month"]'),
+    ).toBeTruthy();
+    expect(
+      monthControls.querySelector('[data-testid="datepicker-month-select"]'),
+    ).toBeTruthy();
+    expect(
+      monthControls.querySelector('[data-testid="datepicker-month-reset"]'),
+    ).toBeTruthy();
+    expect(
+      monthControls.querySelector('[data-testid="datepicker-next-month"]'),
+    ).toBeTruthy();
 
-    expect(yearGroup.querySelector('[data-testid="datepicker-previous-year"]')).toBeTruthy();
-    expect(yearGroup.querySelector('[data-testid="datepicker-year-display"]')).toBeTruthy();
-    expect(yearGroup.querySelector('[data-testid="datepicker-next-year"]')).toBeTruthy();
+    const yearControls = yearGroup.querySelector(
+      ".datepicker-navigation-controls",
+    )!;
+    expect(
+      yearControls.querySelector('[data-testid="datepicker-previous-year"]'),
+    ).toBeTruthy();
+    expect(
+      yearControls.querySelector('[data-testid="datepicker-year-display"]'),
+    ).toBeTruthy();
+    expect(
+      yearControls.querySelector(".datepicker-navigation-separator"),
+    ).toBeTruthy();
+    expect(
+      yearControls.querySelector('[data-testid="datepicker-year-reset"]'),
+    ).toBeTruthy();
+    expect(
+      yearControls.querySelector('[data-testid="datepicker-next-year"]'),
+    ).toBeTruthy();
   });
 
   it("should navigate to current month and year when reset buttons are clicked", () => {

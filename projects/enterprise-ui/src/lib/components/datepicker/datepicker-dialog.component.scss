@@ -42,8 +42,8 @@ $divider: rgba(0, 0, 0, 0.12);
     display: flex;
     justify-content: center;
     align-items: start;
-    gap: 16px;
-    padding: 8px 8px 16px;
+    gap: 8px;
+    padding: 8px 4px 16px;
     color: $foreground;
   }
 
@@ -53,16 +53,15 @@ $divider: rgba(0, 0, 0, 0.12);
   }
 
   .datepicker-navigation-controls {
-    display: grid;
-    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
   }
 
 
   .datepicker-navigation-label {
     display: grid;
-    grid-template-columns: 1fr auto auto 1fr;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 4px;
     margin-top: 8px;
@@ -85,21 +84,18 @@ $divider: rgba(0, 0, 0, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 40px;
     padding: 0;
     border: none;
-    border-radius: 50%;
+    border-radius: 4px;
     background: none;
-    color: color.adjust($primary, $alpha: -0.2);
+    color: $primary;
     cursor: pointer;
-    transition:
-      background-color 0.2s,
-      color 0.2s;
+    transition: background-color 0.2s;
 
     &:hover {
       background-color: $hover-background;
-      color: $primary;
     }
 
     &:focus-visible {
@@ -111,17 +107,24 @@ $divider: rgba(0, 0, 0, 0.12);
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 16px;
-      height: 16px;
-      font-size: 16px;
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
     }
   }
 
+  .datepicker-navigation-separator {
+    width: 1px;
+    height: 24px;
+    background: $divider;
+    margin: 0 2px;
+  }
+
   .datepicker-month-select {
-    width: 100%;
+    flex: 1;
     min-width: 0;
     height: 40px;
-    padding: 0 32px 0 12px;
+    padding: 0 24px 0 8px;
     border: 1px solid $divider;
     border-radius: 4px;
     background-color: $background-card;
@@ -145,13 +148,13 @@ $divider: rgba(0, 0, 0, 0.12);
   }
 
   .datepicker-year-field {
-    width: 100%;
+    flex: 1;
     min-width: 0;
 
     ::ng-deep {
       .mat-mdc-text-field-wrapper {
         height: 40px;
-        padding: 0 8px !important;
+        padding: 0 4px !important;
         border: 1px solid $divider;
         border-radius: 4px;
         background-color: $background-card !important;
