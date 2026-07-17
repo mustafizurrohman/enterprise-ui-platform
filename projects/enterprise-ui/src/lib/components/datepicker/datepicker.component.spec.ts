@@ -125,15 +125,15 @@ describe("DatepickerComponent", () => {
   });
 
   describe("dateOnly", () => {
-    it("should transform an attribute-style value to true", () => {
-      fixture.componentRef.setInput("dateOnly", "");
+    it("should infer date-only mode from the Luxon format", () => {
+      fixture.componentRef.setInput("luxonDateFormat", "dd.MM.yyyy");
       fixture.detectChanges();
 
       expect(component.dateOnly()).toBeTruthy();
     });
 
     it("should hide time selection and use the date-only format", async () => {
-      fixture.componentRef.setInput("dateOnly", true);
+      fixture.componentRef.setInput("luxonDateFormat", "dd.MM.yyyy");
       component.writeValue("2026-07-12T14:30:45");
       fixture.detectChanges();
 
@@ -158,7 +158,7 @@ describe("DatepickerComponent", () => {
     });
 
     it("should describe the input-adjacent current-date action accurately", () => {
-      fixture.componentRef.setInput("dateOnly", true);
+      fixture.componentRef.setInput("luxonDateFormat", "dd.MM.yyyy");
       fixture.detectChanges();
 
       const nowButton = fixture.nativeElement.querySelector(
@@ -171,7 +171,7 @@ describe("DatepickerComponent", () => {
     });
 
     it("should emit the selected date at the start of the day", () => {
-      fixture.componentRef.setInput("dateOnly", true);
+      fixture.componentRef.setInput("luxonDateFormat", "dd.MM.yyyy");
       const onChangeSpy = vi.fn();
       component.registerOnChange(onChangeSpy);
 
@@ -344,7 +344,10 @@ describe("DatepickerComponent", () => {
   });
 
   it("should select now from the input-adjacent button", async () => {
-    fixture.componentRef.setInput("showSeconds", true);
+    fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
     const onChangeSpy = vi.fn();
     component.registerOnChange(onChangeSpy);
 
@@ -502,7 +505,10 @@ describe("DatepickerComponent", () => {
 
   describe("Manual Input", () => {
     it("should allow entering date manually", () => {
-      fixture.componentRef.setInput("showSeconds", true);
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
       const input = fixture.nativeElement.querySelector(
         "input",
       ) as HTMLInputElement;
@@ -526,7 +532,7 @@ describe("DatepickerComponent", () => {
     });
 
     it("should keep an invalid date visible and expose an error", () => {
-      fixture.componentRef.setInput("dateOnly", true);
+      fixture.componentRef.setInput("luxonDateFormat", "dd.MM.yyyy");
       const input = fixture.nativeElement.querySelector(
         "input",
       ) as HTMLInputElement;
@@ -620,7 +626,6 @@ describe("DatepickerComponent", () => {
     );
 
     it("should update the placeholder and formatted value when luxonDateFormat changes after initialization", async () => {
-      fixture.componentRef.setInput("showSeconds", true);
       fixture.componentRef.setInput(
         "luxonDateFormat",
         "dd.MM.yyyy HH:mm:ss",
@@ -650,7 +655,6 @@ describe("DatepickerComponent", () => {
     });
 
     it("should keep the dateFormat alias reactive after initialization", async () => {
-      fixture.componentRef.setInput("showSeconds", true);
       fixture.componentRef.setInput("dateFormat", "dd.MM.yyyy HH:mm:ss");
       fixture.detectChanges();
 
@@ -699,7 +703,10 @@ describe("DatepickerComponent", () => {
     });
 
     it("should NOT open calendar on enter and should commit the current input", () => {
-      fixture.componentRef.setInput("showSeconds", true);
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
       const input = fixture.nativeElement.querySelector(
         "input",
       ) as HTMLInputElement;
@@ -716,7 +723,10 @@ describe("DatepickerComponent", () => {
     });
 
     it("should parse a pasted datetime without requiring the Uhr suffix", () => {
-      fixture.componentRef.setInput("showSeconds", true);
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
       const onChangeSpy = vi.fn();
       component.registerOnChange(onChangeSpy);
       const input = fixture.nativeElement.querySelector(
@@ -737,7 +747,10 @@ describe("DatepickerComponent", () => {
     });
 
     it("should normalize a pasted case-insensitive Uhr suffix", () => {
-      fixture.componentRef.setInput("showSeconds", true);
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
       const input = fixture.nativeElement.querySelector(
         '[data-testid="datepicker-input"]',
       ) as HTMLInputElement;
@@ -757,7 +770,10 @@ describe("DatepickerComponent", () => {
     ])(
       "should parse pasted epoch %s and display the configured format",
       (_, epoch) => {
-        fixture.componentRef.setInput("showSeconds", true);
+        fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
         const input = fixture.nativeElement.querySelector(
           '[data-testid="datepicker-input"]',
         ) as HTMLInputElement;
@@ -794,7 +810,7 @@ describe("DatepickerComponent", () => {
     });
 
     it("should normalize a pasted epoch to start of day in date-only mode", () => {
-      fixture.componentRef.setInput("dateOnly", true);
+      fixture.componentRef.setInput("luxonDateFormat", "dd.MM.yyyy");
       const input = fixture.nativeElement.querySelector(
         '[data-testid="datepicker-input"]',
       ) as HTMLInputElement;
@@ -845,7 +861,10 @@ describe("DatepickerComponent", () => {
     });
 
     it("should prefer a complete pasted value over the existing input content", () => {
-      fixture.componentRef.setInput("showSeconds", true);
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
       component.writeValue("2026-01-01T10:00:00");
       fixture.detectChanges();
       const input = fixture.nativeElement.querySelector(
@@ -903,7 +922,10 @@ describe("DatepickerComponent", () => {
     });
 
     it("should follow the smart backspace example sequence from the issue description", () => {
-      fixture.componentRef.setInput("showSeconds", true);
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
       const input = fixture.nativeElement.querySelector(
         "input",
       ) as HTMLInputElement;
@@ -978,7 +1000,7 @@ describe("DatepickerComponent", () => {
     });
 
     it("should support backspace deletion for a date-only value", () => {
-      fixture.componentRef.setInput("dateOnly", true);
+      fixture.componentRef.setInput("luxonDateFormat", "dd.MM.yyyy");
       const input = fixture.nativeElement.querySelector(
         "input",
       ) as HTMLInputElement;
@@ -997,7 +1019,10 @@ describe("DatepickerComponent", () => {
     });
 
     it("should remove ' Uhr' suffix and the last digit when Backspace is pressed at the end", () => {
-      fixture.componentRef.setInput("showSeconds", true);
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
       const input = fixture.nativeElement.querySelector(
         "input",
       ) as HTMLInputElement;
@@ -1572,10 +1597,30 @@ describe("DatepickerComponent", () => {
     });
   });
 
-  describe("showSeconds", () => {
+  describe("format-derived mode", () => {
     it("should be false by default", () => {
       expect(component.showSeconds()).toBeFalsy();
     });
+
+    it.each([
+      ["dd.MM.yyyy", true, false],
+      ["dd.MM.yyyy HH:mm", false, false],
+      ["dd.MM.yyyy HH:mm:ss", false, true],
+      ["D", true, false],
+      ["t", false, false],
+      ["tt", false, true],
+      ["f", false, false],
+      ["F", false, true],
+    ])(
+      "should infer mode from Luxon format %s",
+      (format, expectedDateOnly, expectedShowSeconds) => {
+        fixture.componentRef.setInput("luxonDateFormat", format);
+        fixture.detectChanges();
+
+        expect(component.dateOnly()).toBe(expectedDateOnly);
+        expect(component.showSeconds()).toBe(expectedShowSeconds);
+      },
+    );
 
     it("should hide seconds wheel by default", async () => {
       const button = fixture.nativeElement.querySelector(
@@ -1593,8 +1638,11 @@ describe("DatepickerComponent", () => {
       );
     });
 
-    it("should show seconds wheel when showSeconds is true", async () => {
-      fixture.componentRef.setInput("showSeconds", true);
+    it("should show the seconds wheel when the format contains seconds", async () => {
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
       fixture.detectChanges();
 
       const button = fixture.nativeElement.querySelector(
@@ -1612,33 +1660,73 @@ describe("DatepickerComponent", () => {
       );
     });
 
-    it("should adjust dateFormat when showSeconds is toggled", () => {
+    it("should infer showSeconds from the Luxon format", () => {
       expect((component as any).dateFormat()).not.toContain(":ss");
 
-      fixture.componentRef.setInput("showSeconds", true);
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
       fixture.detectChanges();
       expect((component as any).dateFormat()).toContain(":ss");
     });
 
-    it("should adjust announceTime when showSeconds is true", () => {
+    it("should normalize the selected value when the inferred mode changes", async () => {
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss",
+      );
+      component.writeValue("2026-07-15T16:59:45.123");
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.second).toBe(45);
+
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm",
+      );
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.second).toBe(0);
+      expect(component.selectedDate()?.millisecond).toBe(0);
+
+      fixture.componentRef.setInput("luxonDateFormat", "dd.MM.yyyy");
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.hour).toBe(0);
+      expect(component.selectedDate()?.minute).toBe(0);
+      expect(component.dateOnly()).toBeTruthy();
+    });
+
+    it("should include seconds in announcements when present in the format", () => {
       const testDate = DateTime.fromISO("2026-07-12T14:30:45");
       (component as any).selectedDate.set(testDate);
 
       (component as any).announceTime();
       expect((component as any).timeAnnouncement()).not.toContain("Sekunden");
 
-      fixture.componentRef.setInput("showSeconds", true);
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
       fixture.detectChanges();
       (component as any).announceTime();
       expect((component as any).timeAnnouncement()).toContain("45 Sekunden");
     });
 
-    it("should strip seconds in writeValue when showSeconds is false", () => {
+    it("should normalize seconds according to the Luxon format", () => {
       const testDate = "2026-07-12T14:30:45";
       component.writeValue(testDate);
       expect(component.selectedDate()?.second).toBe(0);
 
-      fixture.componentRef.setInput("showSeconds", true);
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
       component.writeValue(testDate);
       expect(component.selectedDate()?.second).toBe(45);
     });

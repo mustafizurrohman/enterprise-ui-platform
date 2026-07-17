@@ -2,6 +2,7 @@
 @let open = isOpen();
 @let invalid = hasInputError();
 @let currentDate = selectedDate();
+@let dateOnlyFormat = dateOnly();
 
 <div [id]="ids().root" class="datepicker" [attr.data-testid]="testIdFor()">
   <label
@@ -73,7 +74,9 @@
         [attr.data-testid]="testIdFor('now-input')"
         (click)="selectNow()"
       >
-        <mat-icon aria-hidden="true">access_time</mat-icon>
+        <mat-icon aria-hidden="true">
+          {{ dateOnlyFormat ? "today" : "access_time" }}
+        </mat-icon>
       </button>
     }
 
@@ -100,9 +103,11 @@
     class="visually-hidden"
     [attr.data-testid]="testIdFor('hint')"
   >
-    Erwartetes Format: {{ dateFormatDescription() }}. Beim Einfügen ist „Uhr“
-    optional. Unix-Zeitstempel in Sekunden oder Millisekunden werden ebenfalls
-    unterstützt.
+    Erwartetes Format: {{ dateFormatDescription() }}.
+    @if (!dateOnlyFormat) {
+      Beim Einfügen ist „Uhr“ optional.
+    }
+    Unix-Zeitstempel in Sekunden oder Millisekunden werden ebenfalls unterstützt.
   </div>
 
   <div

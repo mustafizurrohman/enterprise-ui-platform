@@ -76,8 +76,6 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
   readonly label = input<string>("Datum auswählen");
   readonly value = model<Date | string | null>(null);
-  readonly dateOnly = input(false, { transform: booleanAttribute });
-  readonly showSeconds = input(false, { transform: booleanAttribute });
   readonly today = input<DateTime>(DateTime.now());
   readonly testId = input<string | null>(null);
   readonly locale = input<string>("de-DE");
@@ -124,32 +122,27 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     () => this.luxonDateFormat() ?? this.dateFormatInput(),
   );
 
-  protected readonly dateFormat = computed(() => {
-    const configuredFormat = this.configuredDateFormat();
-    const resolvedFormat =
-      configuredFormat === null
-        ? LuxonDateInputAutocomplete.getFormat({
-            dateOnly: this.dateOnly(),
-            showSeconds: this.showSeconds(),
-          })
-        : configuredFormat;
-
-    return LuxonDateInputAutocomplete.assertValidFormat(
-      resolvedFormat,
+  protected readonly dateFormat = computed(() =>
+    LuxonDateInputAutocomplete.assertValidFormat(
+      this.configuredDateFormat() ??
+        LuxonDateInputAutocomplete.DEFAULT_DATETIME_FORMAT,
       this.locale(),
-    );
-  });
+    ),
+  );
 
-  protected readonly dateFormatDescription = computed(() => {
-    if (this.configuredDateFormat() !== null) {
-      return this.dateFormat();
-    }
+  private readonly dateFormatCapabilities = computed(() =>
+    getLuxonFormatCapabilities(this.dateFormat()),
+  );
 
-    return LuxonDateInputAutocomplete.getFormatDescription({
-      dateOnly: this.dateOnly(),
-      showSeconds: this.showSeconds(),
-    });
-  });
+  readonly dateOnly = computed(
+    () => !this.dateFormatCapabilities().hasTime,
+  );
+
+  readonly showSeconds = computed(
+    () => this.dateFormatCapabilities().hasSeconds,
+  );
+
+  protected readonly dateFormatDescription = computed(() => this.dateFormat());
 
   protected readonly calendarToggleLabel = computed(() => {
     if (this.isOpen()) {
@@ -335,13 +328,32 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     effect(() => {
       const format = this.dateFormat();
       const locale = this.locale();
+      const dateOnly = this.dateOnly();
+      const showSeconds = this.showSeconds();
       const selectedDate = this.selectedDate();
+
       untracked(() => {
-        if (selectedDate && !this.manualInputError()) {
-          this.inputDisplayValue.set(
-            selectedDate.setLocale(locale).toFormat(format),
-          );
+        if (!selectedDate || this.manualInputError()) {
+          return;
         }
+
+        const normalizedDate = dateOnly
+          ? selectedDate.startOf("day")
+          : showSeconds
+            ? selectedDate
+            : selectedDate.set({ second: 0, millisecond: 0 });
+
+        if (normalizedDate.toMillis() !== selectedDate.toMillis()) {
+          const jsDate = normalizedDate.toJSDate();
+
+          this.selectedDate.set(normalizedDate);
+          this.value.set(jsDate);
+          this.onChange(jsDate);
+        }
+
+        this.inputDisplayValue.set(
+          normalizedDate.setLocale(locale).toFormat(format),
+        );
       });
     });
   }
@@ -995,3 +1007,121 @@ function looksLikeCompleteDateOrEpoch(value: string): boolean {
     /^[+-]?\d{8,13}$/u.test(normalizedValue)
   );
 }
+
+type LuxonFormatCapabilities = Readonly<{
+  hasTime: boolean;
+  hasSeconds: boolean;
+}>;
+
+const TIME_FIELD_TOKENS = new Set([
+  "H",
+  "HH",
+  "h",
+  "hh",
+  "m",
+  "mm",
+  "s",
+  "ss",
+  "S",
+  "SSS",
+  "u",
+  "uu",
+  "uuu",
+  "a",
+]);
+
+const SECOND_FIELD_TOKENS = new Set([
+  "s",
+  "ss",
+  "S",
+  "SSS",
+  "u",
+  "uu",
+  "uuu",
+]);
+
+const TIME_MACRO_TOKENS = new Set([
+  "t",
+  "tt",
+  "ttt",
+  "tttt",
+  "T",
+  "TT",
+  "TTT",
+  "TTTT",
+  "f",
+  "ff",
+  "fff",
+  "ffff",
+  "F",
+  "FF",
+  "FFF",
+  "FFFF",
+]);
+
+const SECOND_MACRO_TOKENS = new Set([
+  "tt",
+  "ttt",
+  "tttt",
+  "TT",
+  "TTT",
+  "TTTT",
+  "F",
+  "FF",
+  "FFF",
+  "FFFF",
+]);
+
+function getLuxonFormatCapabilities(
+  format: string,
+): LuxonFormatCapabilities {
+  const tokens = getUnquotedLuxonTokens(format);
+
+  return {
+    hasTime: tokens.some(
+      (token) =>
+        TIME_FIELD_TOKENS.has(token) || TIME_MACRO_TOKENS.has(token),
+    ),
+    hasSeconds: tokens.some(
+      (token) =>
+        SECOND_FIELD_TOKENS.has(token) || SECOND_MACRO_TOKENS.has(token),
+    ),
+  };
+}
+
+function getUnquotedLuxonTokens(format: string): string[] {
+  const tokens: string[] = [];
+  let insideLiteral = false;
+
+  for (let index = 0; index < format.length; ) {
+    const character = format[index];
+
+    if (character === "'") {
+      if (format[index + 1] === "'") {
+        index += 2;
+        continue;
+      }
+
+      insideLiteral = !insideLiteral;
+      index += 1;
+      continue;
+    }
+
+    if (!insideLiteral && /[A-Za-z]/u.test(character)) {
+      let tokenEnd = index + 1;
+
+      while (format[tokenEnd] === character) {
+        tokenEnd += 1;
+      }
+
+      tokens.push(format.slice(index, tokenEnd));
+      index = tokenEnd;
+      continue;
+    }
+
+    index += 1;
+  }
+
+  return tokens;
+}
+
