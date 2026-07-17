@@ -248,12 +248,13 @@ $divider: rgba(0, 0, 0, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 12px;
     margin-top: 12px;
   }
 
   .datepicker-adjustment-group {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 8px;
   }
@@ -264,20 +265,21 @@ $divider: rgba(0, 0, 0, 0.12);
     gap: 4px;
     color: $foreground;
     font-size: 14px;
+    font-weight: 500;
     white-space: nowrap;
 
     mat-icon {
       font-size: 20px;
       width: 20px;
       height: 20px;
-      color: #007aff;
+      color: $foreground-secondary;
     }
   }
 
   .datepicker-adjustment-buttons {
     display: flex;
     border: 1px solid $divider;
-    border-radius: 8px;
+    border-radius: 6px;
     background: #fff;
     overflow: hidden;
   }
@@ -286,7 +288,7 @@ $divider: rgba(0, 0, 0, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
+    width: 44px;
     min-height: 32px;
     border: 0;
     border-right: 1px solid $divider;
@@ -295,10 +297,14 @@ $divider: rgba(0, 0, 0, 0.12);
     cursor: pointer;
     font: inherit;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
 
     &:last-child {
       border-right: 0;
+    }
+
+    &--highlighted {
+      background-color: rgba(0, 122, 255, 0.1);
     }
 
     &:hover {

@@ -425,6 +425,8 @@ describe("DatepickerDialogComponent", () => {
       ["add-15-mins", "15 Minuten hinzufügen", "minute"],
       ["add-30-mins", "30 Minuten hinzufügen", "minute"],
       ["subtract-12-hrs", "12 Stunden abziehen", "hour"],
+      ["subtract-6-hrs", "6 Stunden abziehen", "hour"],
+      ["add-6-hrs", "6 Stunden hinzufügen", "hour"],
       ["add-12-hrs", "12 Stunden hinzufügen", "hour"],
     ] as const;
 
@@ -472,6 +474,8 @@ describe("DatepickerDialogComponent", () => {
       { id: "subtract-30-mins", expected: { minutes: -30 } },
       { id: "add-12-hrs", expected: { hours: 12 } },
       { id: "subtract-12-hrs", expected: { hours: -12 } },
+      { id: "add-6-hrs", expected: { hours: 6 } },
+      { id: "subtract-6-hrs", expected: { hours: -6 } },
     ];
 
     for (const testCase of testCases) {
