@@ -258,10 +258,10 @@ describe("TimeWheelComponent", () => {
     expect(wheel.getAttribute("role")).toBe("group");
     expect(wheel.getAttribute("aria-labelledby")).toBe("hour-label");
     expect(incrementIcon.tagName).toBe("MAT-ICON");
-    expect(incrementIcon.textContent?.trim()).toBe("keyboard_arrow_up");
+    expect(incrementIcon.textContent?.trim()).toBe("add");
     expect(incrementIcon.getAttribute("aria-hidden")).toBe("true");
     expect(decrementIcon.tagName).toBe("MAT-ICON");
-    expect(decrementIcon.textContent?.trim()).toBe("keyboard_arrow_down");
+    expect(decrementIcon.textContent?.trim()).toBe("remove");
     expect(decrementIcon.getAttribute("aria-hidden")).toBe("true");
   });
 

@@ -4,26 +4,29 @@
 
 .datepicker-time-wheel {
   display: grid;
-  grid-template-rows: 32px 48px 32px auto;
+  grid-template-columns: 28px 40px 28px;
+  grid-template-rows: 40px auto;
   justify-items: center;
-  min-width: 64px;
+  align-items: center;
+  min-width: 96px;
 }
 
 .datepicker-time-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   place-items: center;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: #fff;
   color: #007aff;
   cursor: pointer;
   font-size: 22px;
   line-height: 1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
   &:hover {
     background: rgb(0 122 255 / 10%);
@@ -55,7 +58,7 @@
 
   position: relative;
   display: grid;
-  width: 64px;
+  width: 40px;
   align-items: center;
   justify-items: center;
   overflow: hidden;
@@ -67,8 +70,9 @@
   &::before {
     position: absolute;
     inset: 0;
-    border-radius: 12px;
+    border-radius: 10px;
     background: rgb(118 118 128 / 12%);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     content: "";
     pointer-events: none;
   }
@@ -77,8 +81,8 @@
 .datepicker-time-select {
   position: relative;
   z-index: 1;
-  width: 64px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: 0;
   outline: 0;
@@ -99,6 +103,8 @@
 }
 
 .datepicker-time-label {
+  grid-row: 2;
+  grid-column: 1 / span 3;
   margin-top: 4px;
   color: rgb(60 60 67 / 60%);
   font-size: 12px;

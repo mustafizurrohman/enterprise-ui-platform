@@ -6,19 +6,19 @@
   [attr.data-testid]="testIdFor('wheel')"
 >
   <button
-    [id]="incrementButtonId()"
+    [id]="decrementButtonId()"
     type="button"
     class="datepicker-time-button"
     [attr.aria-controls]="controlId()"
-    [attr.aria-label]="configuration().singularLabel + ' um eins erhöhen'"
-    [attr.data-testid]="testIdFor('increment')"
-    (click)="increment()"
+    [attr.aria-label]="configuration().singularLabel + ' um eins verringern'"
+    [attr.data-testid]="testIdFor('decrement')"
+    (click)="decrement()"
   >
     <mat-icon
       aria-hidden="true"
-      [attr.data-testid]="testIdFor('increment-icon')"
+      [attr.data-testid]="testIdFor('decrement-icon')"
     >
-      keyboard_arrow_up
+      remove
     </mat-icon>
   </button>
 
@@ -58,19 +58,19 @@
   </div>
 
   <button
-    [id]="decrementButtonId()"
+    [id]="incrementButtonId()"
     type="button"
     class="datepicker-time-button"
     [attr.aria-controls]="controlId()"
-    [attr.aria-label]="configuration().singularLabel + ' um eins verringern'"
-    [attr.data-testid]="testIdFor('decrement')"
-    (click)="decrement()"
+    [attr.aria-label]="configuration().singularLabel + ' um eins erhöhen'"
+    [attr.data-testid]="testIdFor('increment')"
+    (click)="increment()"
   >
     <mat-icon
       aria-hidden="true"
-      [attr.data-testid]="testIdFor('decrement-icon')"
+      [attr.data-testid]="testIdFor('increment-icon')"
     >
-      keyboard_arrow_down
+      add
     </mat-icon>
   </button>
 
