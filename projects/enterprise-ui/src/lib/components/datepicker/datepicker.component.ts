@@ -80,6 +80,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   readonly showSeconds = input(false, { transform: booleanAttribute });
   readonly today = input<DateTime>(DateTime.now());
   readonly testId = input<string | null>(null);
+  readonly locale = input<string>("de-DE");
   readonly luxonDateFormat = input<string | null>(null, {
     alias: "dateFormat",
   });
@@ -119,21 +120,25 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   );
 
   protected readonly dateFormat = computed(() => {
-    const configuredFormat = this.luxonDateFormat()?.trim();
-    if (configuredFormat) {
-      return configuredFormat;
-    }
+    const configuredFormat = this.luxonDateFormat();
+    const resolvedFormat =
+      configuredFormat === null
+        ? LuxonDateInputAutocomplete.getFormat({
+            dateOnly: this.dateOnly(),
+            showSeconds: this.showSeconds(),
+          })
+        : configuredFormat;
 
-    return LuxonDateInputAutocomplete.getFormat({
-      dateOnly: this.dateOnly(),
-      showSeconds: this.showSeconds(),
-    });
+    return LuxonDateInputAutocomplete.assertValidFormat(
+      resolvedFormat,
+      this.locale(),
+    );
   });
 
   protected readonly dateFormatDescription = computed(() => {
-    const configuredFormat = this.luxonDateFormat()?.trim();
-    if (configuredFormat) {
-      return configuredFormat;
+    const configuredFormat = this.luxonDateFormat();
+    if (configuredFormat !== null) {
+      return this.dateFormat();
     }
 
     return LuxonDateInputAutocomplete.getFormatDescription({
@@ -170,7 +175,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   protected readonly inputDisplayValue = signal("");
   private readonly manualInputError = signal(false);
   private readonly inputAutocomplete = computed(
-    () => new LuxonDateInputAutocomplete(this.dateFormat()),
+    () => new LuxonDateInputAutocomplete(this.dateFormat(), this.locale()),
   );
   readonly viewDate = signal<DateTime>(DateTime.now());
   protected readonly isOpen = signal(false);
@@ -325,10 +330,13 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
     effect(() => {
       const format = this.dateFormat();
+      const locale = this.locale();
       const selectedDate = this.selectedDate();
       untracked(() => {
         if (selectedDate && !this.manualInputError()) {
-          this.inputDisplayValue.set(selectedDate.toFormat(format));
+          this.inputDisplayValue.set(
+            selectedDate.setLocale(locale).toFormat(format),
+          );
         }
       });
     });
@@ -615,7 +623,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
     const jsDate = newSelectedDate.toJSDate();
     this.selectedDate.set(newSelectedDate);
-    this.inputDisplayValue.set(newSelectedDate.toFormat(this.dateFormat()));
+    this.inputDisplayValue.set(this.formatDate(newSelectedDate));
     this.manualInputError.set(false);
     this.value.set(jsDate);
     this.onChange(jsDate);
@@ -633,7 +641,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     }
     const jsDate = now.toJSDate();
     this.selectedDate.set(now);
-    this.inputDisplayValue.set(now.toFormat(this.dateFormat()));
+    this.inputDisplayValue.set(this.formatDate(now));
     this.manualInputError.set(false);
     this.inputAnnouncement.set("");
     this.value.set(jsDate);
@@ -666,6 +674,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     const result = this.inputAutocomplete().process(input.value, {
       isDeletion,
       now: this.today(),
+      locale: this.locale(),
     });
 
     this.applyManualInputResult(input, result, false);
@@ -675,6 +684,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     const result = this.inputAutocomplete().process(input.value, {
       commit: true,
       now: this.today(),
+      locale: this.locale(),
     });
 
     this.applyManualInputResult(input, result, true);
@@ -706,11 +716,11 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       input.value.slice(selectionEnd);
     const combinedResult = this.inputAutocomplete().processPastedValue(
       nextValue,
-      { now: this.today() },
+      { now: this.today(), locale: this.locale() },
     );
     const pastedResult = this.inputAutocomplete().processPastedValue(
       pastedValue,
-      { now: this.today() },
+      { now: this.today(), locale: this.locale() },
     );
     const shouldUsePastedValue =
       !!pastedResult.date &&
@@ -758,7 +768,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
     this.selectedDate.set(normalizedDate);
     this.viewDate.set(normalizedDate);
-    this.inputDisplayValue.set(normalizedDate.toFormat(this.dateFormat()));
+    this.inputDisplayValue.set(this.formatDate(normalizedDate));
     this.manualInputError.set(false);
     this.value.set(jsDate);
     this.onChange(jsDate);
@@ -781,7 +791,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     });
     const jsDate = newDate.toJSDate();
     this.selectedDate.set(newDate);
-    this.inputDisplayValue.set(newDate.toFormat(this.dateFormat()));
+    this.inputDisplayValue.set(this.formatDate(newDate));
     this.manualInputError.set(false);
     this.value.set(jsDate);
     this.onChange(jsDate);
@@ -794,11 +804,15 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
     const jsDate = newDate.toJSDate();
     this.selectedDate.set(newDate);
-    this.inputDisplayValue.set(newDate.toFormat(this.dateFormat()));
+    this.inputDisplayValue.set(this.formatDate(newDate));
     this.manualInputError.set(false);
     this.value.set(jsDate);
     this.onChange(jsDate);
     this.announceTime();
+  }
+
+  private formatDate(date: DateTime): string {
+    return date.setLocale(this.locale()).toFormat(this.dateFormat());
   }
 
   private announceTime(): void {
@@ -840,7 +854,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
         }
 
         this.selectedDate.set(date);
-        this.inputDisplayValue.set(date.toFormat(this.dateFormat()));
+        this.inputDisplayValue.set(this.formatDate(date));
         this.manualInputError.set(false);
         this.inputAnnouncement.set("");
         this.viewDate.set(date);

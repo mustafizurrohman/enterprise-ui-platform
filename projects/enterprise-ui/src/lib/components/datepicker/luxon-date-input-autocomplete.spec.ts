@@ -211,6 +211,75 @@ describe("LuxonDateInputAutocomplete", () => {
     });
   });
 
+  describe("Luxon format support", () => {
+    it.each([
+      ["textual month", "dd MMMM yyyy", "15 Juli 2026", "2026-07-15"],
+      [
+        "12-hour time with meridiem",
+        "MM/dd/yyyy h:mm a",
+        "07/15/2026 4:59 PM",
+        "2026-07-15T16:59:00",
+      ],
+      ["ISO week date", "kkkk-'W'WW-E", "2026-W29-3", "2026-07-15"],
+      ["ordinal date", "yyyy-ooo", "2026-196", "2026-07-15"],
+      ["localized macro", "D", "15.7.2026", "2026-07-15"],
+      [
+        "numeric offset",
+        "yyyy-MM-dd HH:mm ZZZ",
+        "2026-07-15 16:59 +0200",
+        "2026-07-15T16:59:00+02:00",
+      ],
+      [
+        "IANA zone",
+        "yyyy-MM-dd HH:mm z",
+        "2026-07-15 16:59 Europe/Berlin",
+        "2026-07-15T16:59:00+02:00",
+      ],
+    ])("parses a %s format", (_, format, value, expectedIso) => {
+      const result = new LuxonDateInputAutocomplete(format, "de-DE").process(
+        value,
+        { commit: true, locale: "de-DE", now },
+      );
+
+      expect(result.valid).toBe(true);
+      expect(result.complete).toBe(true);
+      expect(result.date?.toMillis()).toBe(
+        DateTime.fromISO(expectedIso, { setZone: true }).toMillis(),
+      );
+      expect(result.value).toBe(
+        result.date?.setLocale("de-DE").toFormat(format),
+      );
+    });
+
+    it("keeps an incomplete generic-format value editable until commit", () => {
+      const autocomplete = new LuxonDateInputAutocomplete("dd MMMM yyyy");
+
+      const editing = autocomplete.process("15 Jul", { now });
+      const committed = autocomplete.process("15 Jul", { now, commit: true });
+
+      expect(editing.value).toBe("15 Jul");
+      expect(editing.valid).toBe(true);
+      expect(editing.complete).toBe(false);
+      expect(committed.valid).toBe(false);
+      expect(committed.error?.code).toBe("INVALID_DATE");
+    });
+
+    it.each([
+      ["empty", ""],
+      ["whitespace-only", "   "],
+      ["unknown token", "dd.MM.yyy"],
+      ["unclosed literal", "dd.MM.yyyy 'Uhr"],
+      ["literal-only", "'Datum'"],
+      ["conflicting meridiem", "HH:mm a"],
+      ["format-only zone name", "yyyy-MM-dd ZZZZ"],
+      ["format-only epoch token", "X"],
+    ])("throws for an invalid %s format", (_, format) => {
+      expect(() => new LuxonDateInputAutocomplete(format)).toThrowError(
+        /Invalid Luxon date format/u,
+      );
+    });
+  });
+
   it("provides default formats and descriptions", () => {
     expect(LuxonDateInputAutocomplete.getFormat({ dateOnly: true })).toBe(
       "dd.MM.yyyy",

@@ -590,6 +590,63 @@ describe("DatepickerComponent", () => {
       expect(input.value).toBe("2026-03-");
     });
 
+    it.each([
+      ["dd MMMM yyyy", "15 Juli 2026", "2026-07-15T00:00:00"],
+      ["MM/dd/yyyy h:mm a", "07/15/2026 4:59 PM", "2026-07-15T16:59:00"],
+      ["kkkk-'W'WW-E", "2026-W29-3", "2026-07-15T00:00:00"],
+      ["yyyy-ooo", "2026-196", "2026-07-15T00:00:00"],
+      ["D", "15.7.2026", "2026-07-15T00:00:00"],
+    ])(
+      "should parse the custom Luxon format %s",
+      (format, value, expectedIsoPrefix) => {
+        fixture.componentRef.setInput("dateFormat", format);
+        fixture.componentRef.setInput("locale", "de-DE");
+        const input = fixture.nativeElement.querySelector(
+          '[data-testid="datepicker-input"]',
+        ) as HTMLInputElement;
+
+        input.value = value;
+        input.dispatchEvent(new Event("input"));
+        fixture.detectChanges();
+
+        expect(component.selectedDate()?.toISO()).toMatch(
+          new RegExp(`^${expectedIsoPrefix}`),
+        );
+        expect(input.value).toBe(
+          component.selectedDate()?.setLocale("de-DE").toFormat(format),
+        );
+        expect(input.getAttribute("aria-invalid")).toBe("false");
+      },
+    );
+
+    it("should use the configured locale for textual Luxon tokens", () => {
+      fixture.componentRef.setInput("dateFormat", "dd MMMM yyyy");
+      fixture.componentRef.setInput("locale", "en-US");
+      component.writeValue("2026-07-15T00:00:00");
+      fixture.detectChanges();
+
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+
+      expect(input.value).toBe("15 July 2026");
+    });
+
+    it.each([
+      ["empty", ""],
+      ["unknown token", "dd.MM.yyy"],
+      ["unclosed literal", "dd.MM.yyyy 'Uhr"],
+      ["conflicting tokens", "HH:mm a"],
+      ["non-parseable token", "yyyy-MM-dd ZZZZ"],
+    ])("should throw for an invalid %s dateFormat", (_, format) => {
+      fixture.componentRef.setInput("dateFormat", format);
+
+      expect(() => {
+        fixture.detectChanges();
+        (component as any).dateFormat();
+      }).toThrowError(/Invalid Luxon date format/u);
+    });
+
     it("should NOT open calendar on enter and should commit the current input", () => {
       fixture.componentRef.setInput("showSeconds", true);
       const input = fixture.nativeElement.querySelector(
