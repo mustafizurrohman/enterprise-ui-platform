@@ -1,4 +1,5 @@
-import { Meta, Canvas, Controls } from '@storybook/addon-docs/blocks';
+import { Canvas, Controls, Meta } from '@storybook/addon-docs/blocks';
+
 import * as DateTimeStories from './date-time/date-time.stories';
 import * as DateOnlyStories from './date-only/date-only.stories';
 import * as ReactiveFormStories from './reactive-form/reactive-form.stories';
@@ -7,32 +8,46 @@ import * as ReactiveFormStories from './reactive-form/reactive-form.stories';
 
 # Datepicker
 
-The `DatepickerComponent` is a robust and accessible date/time selection component designed for enterprise applications. It provides a consistent user interface for selecting dates and times, with support for localization, keyboard navigation, and manual input with autocomplete.
+The `DatepickerComponent` is a robust and accessible date and time selection
+component designed for enterprise applications.
+
+It provides a consistent user interface for selecting dates and times, with
+support for localization, keyboard navigation, and intelligent manual input.
 
 ## Features
 
-- **Automatic Date & Time Detection**: Automatically switches between date-only and date-time modes based on the provided `dateFormat`.
-- **Intelligent Manual Input**: Supports manual entry with smart autocomplete, including support for German "Uhr" notation and Unix timestamps.
-- **Standalone Component**: Easy to integrate in modern Angular applications.
-- **Angular Forms Integration**: Full support for Template-driven and Reactive Forms (implements `ControlValueAccessor` and `Validator`).
-- **Accessibility**: ARIA labels, roles, and full keyboard navigation support.
-- **Customizable**: Control labels, display formats, locale, and disabled states.
+- **Automatic date and time detection:** Automatically switches between
+date-only and date-time modes based on the configured `dateFormat`.
+- **Intelligent manual input:** Supports manual entry with autocomplete,
+German `Uhr` notation, and Unix timestamps.
+- **Standalone component:** Integrates easily into modern Angular applications.
+- **Angular Forms integration:** Supports template-driven and reactive forms
+through `ControlValueAccessor` and `Validator`.
+- **Accessibility:** Provides ARIA attributes and comprehensive keyboard
+navigation.
+- **Customizable:** Supports configurable labels, date formats, locales, and
+disabled states.
 
-# Interactive Demo
+## Interactive demo
 
 <Canvas of={DateTimeStories.DateTime} />
 
-## Controls
+### Controls
 
 <Controls of={DateTimeStories.DateTime} />
 
-# Other features
+## Additional examples
 
-## Date Only
+### Date only
 
-<Canvas of={DateOnlyStories.DateOnly} />
+<Canvas
+  of={DateOnlyStories.DateOnly}
+  meta={DateOnlyStories}
+/>
 
-## Reactive Form
+### Reactive form
 
-<Canvas of={ReactiveFormStories.ReactiveForm} />
-
+<Canvas
+  of={ReactiveFormStories.ReactiveForm}
+  meta={ReactiveFormStories}
+/>
