@@ -81,7 +81,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   readonly today = input<DateTime>(DateTime.now());
   readonly testId = input<string | null>(null);
   readonly locale = input<string>("de-DE");
-  readonly luxonDateFormat = input<string | null>(null, {
+  readonly luxonDateFormat = input<string | null>(null);
+  readonly dateFormatInput = input<string | null>(null, {
     alias: "dateFormat",
   });
 
@@ -119,8 +120,12 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     () => this.testId()?.trim() || this.componentId(),
   );
 
+  private readonly configuredDateFormat = computed(
+    () => this.luxonDateFormat() ?? this.dateFormatInput(),
+  );
+
   protected readonly dateFormat = computed(() => {
-    const configuredFormat = this.luxonDateFormat();
+    const configuredFormat = this.configuredDateFormat();
     const resolvedFormat =
       configuredFormat === null
         ? LuxonDateInputAutocomplete.getFormat({
@@ -136,8 +141,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   });
 
   protected readonly dateFormatDescription = computed(() => {
-    const configuredFormat = this.luxonDateFormat();
-    if (configuredFormat !== null) {
+    if (this.configuredDateFormat() !== null) {
       return this.dateFormat();
     }
 

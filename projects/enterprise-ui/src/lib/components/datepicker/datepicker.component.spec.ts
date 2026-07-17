@@ -619,6 +619,57 @@ describe("DatepickerComponent", () => {
       },
     );
 
+    it("should update the placeholder and formatted value when luxonDateFormat changes after initialization", async () => {
+      fixture.componentRef.setInput("showSeconds", true);
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss",
+      );
+      fixture.detectChanges();
+
+      component.writeValue("2026-07-15T16:59:11");
+      fixture.detectChanges();
+
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+
+      expect(input.placeholder).toBe("dd.MM.yyyy HH:mm:ss");
+      expect(input.value).toBe("15.07.2026 16:59:11");
+
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "yyyy/MM/dd HH:mm:ss",
+      );
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(input.placeholder).toBe("yyyy/MM/dd HH:mm:ss");
+      expect(input.value).toBe("2026/07/15 16:59:11");
+    });
+
+    it("should keep the dateFormat alias reactive after initialization", async () => {
+      fixture.componentRef.setInput("showSeconds", true);
+      fixture.componentRef.setInput("dateFormat", "dd.MM.yyyy HH:mm:ss");
+      fixture.detectChanges();
+
+      component.writeValue("2026-07-15T16:59:11");
+      fixture.detectChanges();
+
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+
+      fixture.componentRef.setInput("dateFormat", "MM-dd-yyyy HH:mm:ss");
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(input.placeholder).toBe("MM-dd-yyyy HH:mm:ss");
+      expect(input.value).toBe("07-15-2026 16:59:11");
+    });
+
     it("should use the configured locale for textual Luxon tokens", () => {
       fixture.componentRef.setInput("dateFormat", "dd MMMM yyyy");
       fixture.componentRef.setInput("locale", "en-US");
