@@ -7,14 +7,28 @@ import * as ReactiveFormStories from './reactive-form/reactive-form.stories';
 
 # Datepicker
 
-The `DatepickerComponent` is a robust and accessible date/time selection component designed for enterprise applications. It provides a consistent user interface for selecting dates and times, with support for localization and keyboard navigation.
+The `DatepickerComponent` is a robust and accessible date/time selection component designed for enterprise applications. It provides a consistent user interface for selecting dates and times, with support for localization, keyboard navigation, and manual input with autocomplete.
 
 ## Features
 
-- **Date & Time Selection**: Choose between date-only or combined date-time modes.
-- **Angular Forms Integration**: Full support for Template-driven and Reactive Forms.
-- **Accessibility**: ARIA labels and full keyboard navigation support.
-- **Customizable**: Control labels, display formats, and disabled states.
+- **Automatic Date & Time Detection**: Automatically switches between date-only and date-time modes based on the provided `dateFormat`.
+- **Intelligent Manual Input**: Supports manual entry with smart autocomplete, including support for German "Uhr" notation and Unix timestamps.
+- **Standalone Component**: Easy to integrate in modern Angular applications.
+- **Angular Forms Integration**: Full support for Template-driven and Reactive Forms (implements `ControlValueAccessor` and `Validator`).
+- **Accessibility**: ARIA labels, roles, and full keyboard navigation support.
+- **Customizable**: Control labels, display formats, locale, and disabled states.
+
+## Inputs
+
+| Input | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `label` | `string` | `'Datum auswählen'` | The label displayed above the input. |
+| `value` | `Date \| string \| null` | `null` | The current value of the datepicker. |
+| `dateFormat` | `string \| null` | `null` | The Luxon format string for display and parsing. If time tokens are present, time selection is enabled. |
+| `locale` | `string` | `'de-DE'` | The locale used for formatting and names. |
+| `today` | `DateTime` | `DateTime.now()` | The reference "today" date. |
+| `disabled` | `boolean` | `false` | Whether the component is disabled. |
+| `testId` | `string \| null` | `null` | Base ID for automated testing hooks. |
 
 # Interactive Demo
 

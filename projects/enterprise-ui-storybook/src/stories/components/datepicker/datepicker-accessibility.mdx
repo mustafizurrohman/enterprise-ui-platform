@@ -5,24 +5,33 @@ import * as DateTimeStories from './date-time/date-time.stories';
 
 # Accessibility
 
-The `MrDatepickerComponent` is engineered for high accessibility, adhering to WCAG 2.1 AA standards to ensure usability for all enterprise users, including those relying on assistive technologies.
+The `DatepickerComponent` is engineered for high accessibility, adhering to WCAG 2.1 AA standards to ensure usability for all enterprise users, including those relying on assistive technologies.
 
 ## Keyboard Navigation
 
 Full keyboard support is provided for efficient, mouse-free operation:
 
+### Input Focus
+
 | Key | Action |
 | :--- | :--- |
-| **Enter** / **ArrowDown** | Opens the calendar dialog when the input is focused. |
+| **Enter** / **ArrowDown** | Opens the calendar dialog. |
 | **Escape** | Closes the calendar and returns focus to the trigger element. |
+
+### Calendar Navigation
+
+| Key | Action |
+| :--- | :--- |
 | **Arrow Keys** | Navigates between days in the calendar grid. |
 | **Home** / **End** | Moves focus to the first or last day of the current week. |
 | **PageUp** / **PageDown** | Switches to the previous or next month. |
-| **Shift + PageUp / PageDown** | Switches to the previous or next year. |
+| **Shift + PageUp** / **Shift + PageDown** | Switches to the previous or next year. |
 | **Space** / **Enter** | Selects the currently focused date. |
+| **Escape** | Closes the calendar without making a selection (unless already selected). |
 
 ## Screen Reader Support
 
-- **ARIA Roles**: Utilizes appropriate ARIA roles including `combobox`, `grid`, `gridcell`, and `dialog` to convey component structure and state.
-- **Live Regions**: Employs `aria-live` regions to announce dynamic updates, such as date selection and time adjustments, providing immediate feedback to screen reader users.
-- **Descriptive Labels**: Every date button features a localized, descriptive label (e.g., "Montag, 12. Juli 2026, heute, ausgewählt") to provide full context.
+- **ARIA Roles**: Utilizes appropriate ARIA roles including `combobox` for the input, `dialog` for the overlay, `grid` for the calendar, and `status`/`alert` for dynamic updates and errors.
+- **Live Regions**: Employs `aria-live` regions to announce dynamic updates, such as month changes, date selection, and time adjustments, providing immediate feedback to screen reader users.
+- **Descriptive Labels**: Every date button features a localized, descriptive label (e.g., "Montag, 12. Juli 2026") including information about whether it is today or the currently selected date.
+- **Visual Feedback**: Focus is managed explicitly, ensuring that the active date is always clear to both keyboard and screen reader users.
