@@ -434,29 +434,17 @@
     [class.datepicker-actions--without-time]="withoutTime"
     [attr.data-testid]="testIdFor('actions')"
   >
-    <button
-      [id]="idFor('now')"
-      type="button"
-      class="datepicker-now"
-      [attr.aria-label]="
-        dateOnly()
-          ? 'Heutiges Datum auswählen'
-          : 'Aktuelles Datum und aktuelle Uhrzeit auswählen'
-      "
-      [attr.data-testid]="testIdFor('now')"
-      (click)="nowSelected.emit()"
-    >
-      {{ dateOnly() ? "Heute" : "Jetzt" }}
-    </button>
-    <button
-      [id]="idFor('confirm')"
-      type="button"
-      class="datepicker-confirm"
-      aria-label="Auswahl übernehmen und Kalender schließen"
-      [attr.data-testid]="testIdFor('confirm')"
-      (click)="confirmed.emit()"
-    >
-      OK
-    </button>
+    @if (dateOnly()) {
+      <button
+        [id]="idFor('now')"
+        type="button"
+        class="datepicker-now"
+        aria-label="Heutiges Datum auswählen"
+        [attr.data-testid]="testIdFor('now')"
+        (click)="nowSelected.emit()"
+      >
+        Heute
+      </button>
+    }
   </div>
 </ng-template>

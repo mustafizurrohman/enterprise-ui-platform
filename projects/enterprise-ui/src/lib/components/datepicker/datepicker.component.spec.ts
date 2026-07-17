@@ -72,9 +72,6 @@ describe("DatepickerComponent", () => {
       expect(
         document.querySelector('[data-testid="datepicker-hour-input"]'),
       ).toBeTruthy();
-      expect(
-        document.querySelector('[data-testid="datepicker-confirm"]'),
-      ).toBeTruthy();
     });
 
     it("should have all documented test IDs from MDX", async () => {
@@ -102,9 +99,6 @@ describe("DatepickerComponent", () => {
 
       expect(
         document.querySelector('[data-testid="your-id-dialog"]'),
-      ).toBeTruthy();
-      expect(
-        document.querySelector('[data-testid="your-id-confirm"]'),
       ).toBeTruthy();
     });
   });
@@ -140,7 +134,6 @@ describe("DatepickerComponent", () => {
 
       expect(document.querySelector(".datepicker-time-wheels")).toBeNull();
       expect(document.querySelector(".datepicker-time-select")).toBeNull();
-      expect(document.querySelector(".datepicker-confirm")).toBeTruthy();
     });
 
     it("should describe the input-adjacent current-date action accurately", () => {
@@ -327,39 +320,6 @@ describe("DatepickerComponent", () => {
     expect((component as any).isOpen()).toBeTruthy();
   });
 
-  it("should select now and close the calendar when Jetzt is clicked", async () => {
-    fixture.componentRef.setInput("showSeconds", true);
-    const onChangeSpy = vi.fn();
-    component.registerOnChange(onChangeSpy);
-    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
-    button.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const jetztButton = document.querySelector(
-      ".datepicker-now",
-    ) as HTMLButtonElement;
-    expect(jetztButton).toBeTruthy();
-    expect(jetztButton.textContent?.trim()).toBe("Jetzt");
-
-    const before = DateTime.now();
-    jetztButton.click();
-    fixture.detectChanges();
-    const after = DateTime.now();
-
-    expect(component.selectedDate()).toBeTruthy();
-    const selectedDate = component.selectedDate()!;
-    // Should be between before and after
-    expect(selectedDate.toMillis()).toBeGreaterThanOrEqual(
-      before.toMillis() - 1000,
-    ); // Tolerance for slight delays
-    expect(selectedDate.toMillis()).toBeLessThanOrEqual(
-      after.toMillis() + 1000,
-    );
-
-    expect(onChangeSpy).toHaveBeenCalled();
-    expect((component as any).isOpen()).toBeFalsy();
-  });
 
   it("should select now from the input-adjacent button", async () => {
     fixture.componentRef.setInput("showSeconds", true);

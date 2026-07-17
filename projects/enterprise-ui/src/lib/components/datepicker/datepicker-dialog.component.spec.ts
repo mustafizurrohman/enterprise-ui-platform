@@ -439,25 +439,25 @@ describe("DatepickerDialogComponent", () => {
     }
   });
 
-  it("should provide accessible labels and stable IDs for dialog actions", () => {
+  it("should provide accessible labels and stable IDs for dialog actions when dateOnly is true", () => {
+    const context: DatepickerDialogContext = {
+      ...component.context(),
+      dateOnly: true,
+    };
+    fixture.componentRef.setInput("context", context);
+    fixture.detectChanges();
+
     const actions = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-actions"]',
     ) as HTMLElement;
     const nowButton = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-now"]',
     ) as HTMLButtonElement;
-    const confirmButton = fixture.nativeElement.querySelector(
-      '[data-testid="datepicker-confirm"]',
-    ) as HTMLButtonElement;
 
     expect(actions.id).toBe("dialog-actions");
     expect(nowButton.id).toBe("dialog-now");
     expect(nowButton.getAttribute("aria-label")).toBe(
-      "Aktuelles Datum und aktuelle Uhrzeit auswählen",
-    );
-    expect(confirmButton.id).toBe("dialog-confirm");
-    expect(confirmButton.getAttribute("aria-label")).toBe(
-      "Auswahl übernehmen und Kalender schließen",
+      "Heutiges Datum auswählen",
     );
   });
 
