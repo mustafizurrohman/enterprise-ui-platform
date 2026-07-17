@@ -63,6 +63,154 @@ describe("LuxonDateInputAutocomplete", () => {
     expect(result.suggestedValue).toBe("2026-07-14 18:30:45");
   });
 
+  describe("pasted formatted values", () => {
+    it("normalizes surrounding whitespace and adds an omitted Uhr suffix", () => {
+      const result = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy HH:mm 'Uhr'",
+      ).processPastedValue("\u00a0 15.07.2026 16:59 \u00a0", { now });
+
+      expect(result.value).toBe("15.07.2026 16:59 Uhr");
+      expect(result.date?.toISO()).toBe(
+        DateTime.fromISO("2026-07-15T16:59:00").toISO(),
+      );
+    });
+
+    it.each(["uhr", "UHR", "uHr"])(
+      "normalizes a case-insensitive %s suffix",
+      (suffix) => {
+        const result = new LuxonDateInputAutocomplete(
+          "dd.MM.yyyy HH:mm 'Uhr'",
+        ).processPastedValue(`15.07.2026 16:59 ${suffix}`, { now });
+
+        expect(result.value).toBe("15.07.2026 16:59 Uhr");
+        expect(result.date?.toISO()).toBe(
+          DateTime.fromISO("2026-07-15T16:59:00").toISO(),
+        );
+      },
+    );
+
+    it("accepts a missing space before an optional Uhr suffix", () => {
+      const result = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy HH:mm 'Uhr'",
+      ).processPastedValue("15.07.2026 16:59Uhr", { now });
+
+      expect(result.value).toBe("15.07.2026 16:59 Uhr");
+      expect(result.date?.isValid).toBe(true);
+    });
+
+    it("ignores a single Uhr suffix when the configured format omits it", () => {
+      const result = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy HH:mm",
+      ).processPastedValue("15.07.2026 16:59 Uhr", { now });
+
+      expect(result.value).toBe("15.07.2026 16:59");
+      expect(result.date?.toISO()).toBe(
+        DateTime.fromISO("2026-07-15T16:59:00").toISO(),
+      );
+    });
+
+    it("does not accept a duplicated Uhr suffix", () => {
+      const result = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy HH:mm 'Uhr'",
+      ).processPastedValue("15.07.2026 16:59 Uhr Uhr", { now });
+
+      expect(result.valid).toBe(false);
+      expect(result.date).toBeNull();
+      expect(result.error?.code).toBe("INVALID_CHARACTER");
+    });
+
+    it("normalizes configured literals case-insensitively", () => {
+      const result = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy 'um' HH:mm 'Uhr'",
+      ).processPastedValue("15.07.2026 UM 16:59 UHR", { now });
+
+      expect(result.value).toBe("15.07.2026 um 16:59 Uhr");
+      expect(result.date?.isValid).toBe(true);
+    });
+
+    it("does not silently ignore trailing pasted input", () => {
+      const result = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy",
+      ).processPastedValue("15.07.2026 extra", { now });
+
+      expect(result.valid).toBe(false);
+      expect(result.date).toBeNull();
+      expect(result.error?.code).toBe("INVALID_CHARACTER");
+    });
+
+    it("reports unexpected trailing numeric input", () => {
+      const result = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy",
+      ).processPastedValue("15.07.2026 99", { now });
+
+      expect(result.valid).toBe(false);
+      expect(result.date).toBeNull();
+      expect(result.error?.code).toBe("UNEXPECTED_INPUT");
+    });
+
+    it("keeps compact dates distinct from epoch values", () => {
+      const result = new LuxonDateInputAutocomplete(
+        "ddMMyyyy",
+      ).processPastedValue("15072026", { now });
+
+      expect(result.value).toBe("15072026");
+      expect(result.date?.toISODate()).toBe("2026-07-15");
+    });
+  });
+
+  describe("pasted epoch values", () => {
+    it.each([
+      ["seconds", "1752598751", 1_752_598_751_000],
+      ["milliseconds", "1752598751000", 1_752_598_751_000],
+      ["seconds with suffix", "1752598751 Uhr", 1_752_598_751_000],
+      ["epoch origin", "0", 0],
+      ["negative seconds", "-1", -1_000],
+      ["explicit positive seconds", "+1", 1_000],
+    ])(
+      "parses %s and renders the configured format",
+      (_, epoch, expectedMilliseconds) => {
+        const result = new LuxonDateInputAutocomplete(
+          "dd.MM.yyyy HH:mm:ss 'Uhr'",
+        ).processPastedValue(epoch, { now });
+        const expected = DateTime.fromMillis(expectedMilliseconds);
+
+        expect(result.valid).toBe(true);
+        expect(result.complete).toBe(true);
+        expect(result.date?.toMillis()).toBe(expected.toMillis());
+        expect(result.value).toBe(
+          expected.toFormat("dd.MM.yyyy HH:mm:ss 'Uhr'"),
+        );
+      },
+    );
+
+    it("uses the seconds/milliseconds boundary consistently", () => {
+      const autocomplete = new LuxonDateInputAutocomplete(
+        "yyyy-MM-dd HH:mm:ss",
+      );
+      const seconds = autocomplete.processPastedValue("9999999999", { now });
+      const milliseconds = autocomplete.processPastedValue("10000000000", {
+        now,
+      });
+
+      expect(seconds.date?.toMillis()).toBe(9_999_999_999_000);
+      expect(milliseconds.date?.toMillis()).toBe(10_000_000_000);
+    });
+
+    it.each([
+      ["ambiguous short unsigned integer", "16"],
+      ["decimal seconds", "1752598751.5"],
+      ["scientific notation", "1.752598751e9"],
+      ["microseconds", "1752598751000000"],
+      ["sign only", "+"],
+    ])("rejects %s as an epoch", (_, value) => {
+      const result = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      ).processPastedValue(value, { now });
+
+      expect(result.date).toBeNull();
+    });
+  });
+
   it("provides default formats and descriptions", () => {
     expect(LuxonDateInputAutocomplete.getFormat({ dateOnly: true })).toBe(
       "dd.MM.yyyy",

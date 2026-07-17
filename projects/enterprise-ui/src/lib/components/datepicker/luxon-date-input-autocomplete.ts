@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 
-export type LuxonDateField = "year" | "month" | "day" | "hour" | "minute" | "second";
+export type LuxonDateField =
+  "year" | "month" | "day" | "hour" | "minute" | "second";
 
 type FieldToken = Readonly<{
   type: "field";
@@ -21,7 +22,8 @@ export type DateInputErrorCode =
   | "INVALID_CHARACTER"
   | "OUT_OF_RANGE"
   | "INVALID_DAY_FOR_MONTH"
-  | "INVALID_DATE";
+  | "INVALID_DATE"
+  | "UNEXPECTED_INPUT";
 
 export type DateInputError = Readonly<{
   code: DateInputErrorCode;
@@ -46,7 +48,9 @@ export type DateInputAutocompleteOptions = Readonly<{
   isDeletion?: boolean;
 }>;
 
-const FIELD_TOKENS: Readonly<Record<string, Omit<FieldToken, "type" | "token">>> = {
+const FIELD_TOKENS: Readonly<
+  Record<string, Omit<FieldToken, "type" | "token">>
+> = {
   yyyy: { field: "year", width: 4 },
   yy: { field: "year", width: 2 },
   MM: { field: "month", width: 2 },
@@ -68,12 +72,17 @@ const ORDERED_FIELD_TOKENS = Object.keys(FIELD_TOKENS).sort(
 export class LuxonDateInputAutocomplete {
   public static readonly DEFAULT_FORMAT = "dd.MM.yyyy";
   public static readonly DEFAULT_DATETIME_FORMAT = "dd.MM.yyyy HH:mm 'Uhr'";
-  public static readonly DEFAULT_DATETIME_SECONDS_FORMAT = "dd.MM.yyyy HH:mm:ss 'Uhr'";
+  public static readonly DEFAULT_DATETIME_SECONDS_FORMAT =
+    "dd.MM.yyyy HH:mm:ss 'Uhr'";
 
   private readonly tokens: readonly FormatToken[];
+  private readonly hasUhrLiteral: boolean;
 
   constructor(protected readonly dateFormat: string) {
     this.tokens = tokenizeFormat(dateFormat);
+    this.hasUhrLiteral = this.tokens.some(
+      (token) => token.type === "literal" && /uhr/iu.test(token.value),
+    );
 
     if (!this.tokens.some((token) => token.type === "field")) {
       throw new Error(`Unsupported Luxon date format: ${dateFormat}`);
@@ -111,7 +120,8 @@ export class LuxonDateInputAutocomplete {
     const now = options.now ?? DateTime.now();
     const locale = options.locale ?? "de-DE";
     const normalized = this.normalize(rawValue, options);
-    const error = normalized.error ?? this.validateKnownFields(normalized.fields);
+    const error =
+      normalized.error ?? this.validateKnownFields(normalized.fields);
     const complete = this.isComplete(normalized.fields);
     let date: DateTime | null = null;
     let parseError = error;
@@ -144,6 +154,53 @@ export class LuxonDateInputAutocomplete {
       valid: !parseError,
       date,
       error: parseError,
+    };
+  }
+
+  public processPastedValue(
+    rawValue: string,
+    options: Omit<DateInputAutocompleteOptions, "commit" | "isDeletion"> = {},
+  ): DateInputAutocompleteResult {
+    const locale = options.locale ?? "de-DE";
+    const trimmedValue = rawValue.trim();
+    const directResult = this.process(trimmedValue, {
+      ...options,
+      commit: true,
+    });
+
+    if (directResult.date) {
+      return directResult;
+    }
+
+    const valueWithoutUhr = removeOptionalUhrSuffix(trimmedValue);
+    let fallbackResult = directResult;
+
+    if (!this.hasUhrLiteral && valueWithoutUhr !== trimmedValue) {
+      fallbackResult = this.process(valueWithoutUhr, {
+        ...options,
+        commit: true,
+      });
+
+      if (fallbackResult.date) {
+        return fallbackResult;
+      }
+    }
+
+    const epochDate = parseEpoch(valueWithoutUhr, locale);
+    if (!epochDate) {
+      return fallbackResult;
+    }
+
+    const value = epochDate.toFormat(this.dateFormat);
+
+    return {
+      value,
+      suggestedValue: value,
+      completionSuffix: "",
+      complete: true,
+      valid: true,
+      date: epochDate,
+      error: null,
     };
   }
 
@@ -204,8 +261,12 @@ export class LuxonDateInputAutocomplete {
       const shouldPad =
         token.width === 2 &&
         digits.value.length === 1 &&
-        (commit || explicitlyCommitted || isUnambiguousSingleDigit(token.field, digits.value));
-      const fieldValue = shouldPad ? digits.value.padStart(2, "0") : digits.value;
+        (commit ||
+          explicitlyCommitted ||
+          isUnambiguousSingleDigit(token.field, digits.value));
+      const fieldValue = shouldPad
+        ? digits.value.padStart(2, "0")
+        : digits.value;
 
       fields[token.field] = fieldValue;
       value += fieldValue;
@@ -217,7 +278,8 @@ export class LuxonDateInputAutocomplete {
     }
 
     const remaining = rawValue.slice(sourceIndex);
-    const invalidCharacter = [...remaining].find(
+    const unexpectedInput = remaining.trim();
+    const invalidCharacter = [...unexpectedInput].find(
       (character) => !/[0-9\s./:\-']/u.test(character),
     );
 
@@ -229,7 +291,12 @@ export class LuxonDateInputAutocomplete {
             code: "INVALID_CHARACTER",
             message: `Unsupported character: ${invalidCharacter}`,
           }
-        : null,
+        : unexpectedInput
+          ? {
+              code: "UNEXPECTED_INPUT",
+              message: `Unexpected trailing input: ${unexpectedInput}`,
+            }
+          : null,
     };
   }
 
@@ -272,9 +339,7 @@ export class LuxonDateInputAutocomplete {
     return null;
   }
 
-  private isComplete(
-    fields: Partial<Record<LuxonDateField, string>>,
-  ): boolean {
+  private isComplete(fields: Partial<Record<LuxonDateField, string>>): boolean {
     return this.tokens
       .filter((token): token is FieldToken => token.type === "field")
       .every((token) => fields[token.field]?.length === token.width);
@@ -300,9 +365,14 @@ export class LuxonDateInputAutocomplete {
         }
 
         const current = fields[token.field];
-        const fallback = String(defaults[token.field]).padStart(token.width, "0");
+        const fallback = String(defaults[token.field]).padStart(
+          token.width,
+          "0",
+        );
         if (!current) {
-          return token.width === 2 ? fallback.slice(-2) : fallback.slice(-token.width);
+          return token.width === 2
+            ? fallback.slice(-2)
+            : fallback.slice(-token.width);
         }
 
         if (current.length >= token.width) {
@@ -315,6 +385,37 @@ export class LuxonDateInputAutocomplete {
       })
       .join("");
   }
+}
+
+function removeOptionalUhrSuffix(value: string): string {
+  return value.replace(/(?:\s|\u00a0)*uhr(?:\s|\u00a0)*$/iu, "").trimEnd();
+}
+
+function parseEpoch(value: string, locale: string): DateTime | null {
+  const match = /^([+-]?)(\d+)$/u.exec(value);
+
+  if (!match) {
+    return null;
+  }
+
+  const [, sign, digits] = match;
+  const hasUnambiguousLength = digits.length >= 9 && digits.length <= 13;
+  const isExplicitlySigned = sign.length > 0 && digits.length <= 13;
+  const isEpochOrigin = sign.length === 0 && digits === "0";
+
+  if (!hasUnambiguousLength && !isExplicitlySigned && !isEpochOrigin) {
+    return null;
+  }
+
+  const epoch = Number(value);
+  if (!Number.isSafeInteger(epoch)) {
+    return null;
+  }
+
+  const milliseconds = Math.abs(epoch) < 10_000_000_000 ? epoch * 1_000 : epoch;
+  const date = DateTime.fromMillis(milliseconds).setLocale(locale);
+
+  return date.isValid ? date : null;
 }
 
 function tokenizeFormat(format: string): readonly FormatToken[] {
@@ -362,7 +463,10 @@ function pushLiteral(tokens: FormatToken[], value: string): void {
   if (!value) return;
   const previous = tokens.at(-1);
   if (previous?.type === "literal") {
-    tokens[tokens.length - 1] = { type: "literal", value: previous.value + value };
+    tokens[tokens.length - 1] = {
+      type: "literal",
+      value: previous.value + value,
+    };
   } else {
     tokens.push({ type: "literal", value });
   }
@@ -387,18 +491,51 @@ function readDigits(
   return { value, nextIndex: index };
 }
 
-function consumeLiteral(source: string, startIndex: number, literal: string): number {
-  let consumed = 0;
-  while (
-    consumed < literal.length &&
-    source[startIndex + consumed] === literal[consumed]
-  ) {
-    consumed++;
+function consumeLiteral(
+  source: string,
+  startIndex: number,
+  literal: string,
+): number {
+  let sourceIndex = startIndex;
+  let literalIndex = 0;
+
+  while (literalIndex < literal.length) {
+    const literalCharacter = literal[literalIndex];
+
+    if (/\s/u.test(literalCharacter)) {
+      while (
+        literalIndex < literal.length &&
+        /\s/u.test(literal[literalIndex])
+      ) {
+        literalIndex++;
+      }
+
+      while (sourceIndex < source.length && /\s/u.test(source[sourceIndex])) {
+        sourceIndex++;
+      }
+      continue;
+    }
+
+    const sourceCharacter = source[sourceIndex];
+    if (
+      !sourceCharacter ||
+      sourceCharacter.toLocaleLowerCase() !==
+        literalCharacter.toLocaleLowerCase()
+    ) {
+      return 0;
+    }
+
+    sourceIndex++;
+    literalIndex++;
   }
-  return consumed;
+
+  return sourceIndex - startIndex;
 }
 
-function isUnambiguousSingleDigit(field: LuxonDateField, digit: string): boolean {
+function isUnambiguousSingleDigit(
+  field: LuxonDateField,
+  digit: string,
+): boolean {
   const value = Number(digit);
   switch (field) {
     case "month":

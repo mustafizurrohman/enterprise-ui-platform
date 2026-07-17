@@ -36,7 +36,10 @@ import {
   type DatepickerDialogContext,
 } from "./datepicker-dialog.component";
 import type { TimeUnit } from "./time-wheel.component";
-import { LuxonDateInputAutocomplete } from "./luxon-date-input-autocomplete";
+import {
+  type DateInputAutocompleteResult,
+  LuxonDateInputAutocomplete,
+} from "./luxon-date-input-autocomplete";
 
 @Component({
   selector: "datepicker",
@@ -77,7 +80,9 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   readonly showSeconds = input(false, { transform: booleanAttribute });
   readonly today = input<DateTime>(DateTime.now());
   readonly testId = input<string | null>(null);
-  readonly luxonDateFormat = input<string | null>(null, { alias: "dateFormat" });
+  readonly luxonDateFormat = input<string | null>(null, {
+    alias: "dateFormat",
+  });
 
   readonly disabled = input(false, { transform: booleanAttribute });
   private readonly _disabledForm = signal(false);
@@ -93,6 +98,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
         input: `${this.componentId()}-input`,
         inputHint: `${this.componentId()}-hint`,
         inputError: `${this.componentId()}-error`,
+        inputStatus: `${this.componentId()}-status`,
         clearButton: `${this.componentId()}-clear`,
         nowButton: `${this.componentId()}-now`,
         toggleButton: `${this.componentId()}-toggle`,
@@ -173,6 +179,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   );
   protected readonly timeAnnouncement = signal("");
   protected readonly dateAnnouncement = signal("");
+  protected readonly inputAnnouncement = signal("");
 
   private readonly dateInput =
     viewChild<ElementRef<HTMLInputElement>>("dateInput");
@@ -216,7 +223,6 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   }));
 
   months = Info.months("long", { locale: "de" });
-
 
   readonly grid = computed(() => {
     const startOfMonth = this.viewDate().startOf("month");
@@ -316,7 +322,6 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
         }
       });
     });
-
 
     effect(() => {
       const format = this.dateFormat();
@@ -630,15 +635,13 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     this.selectedDate.set(now);
     this.inputDisplayValue.set(now.toFormat(this.dateFormat()));
     this.manualInputError.set(false);
+    this.inputAnnouncement.set("");
     this.value.set(jsDate);
     this.onChange(jsDate);
     this.closeCalendar();
   }
 
-  protected clearValue(
-    event: MouseEvent,
-    input: HTMLInputElement,
-  ): void {
+  protected clearValue(event: MouseEvent, input: HTMLInputElement): void {
     event.stopPropagation();
 
     this.selectedDate.set(null);
@@ -648,6 +651,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     this.viewDate.set(DateTime.now());
     this.dateAnnouncement.set("Datum gelöscht.");
     this.timeAnnouncement.set("");
+    this.inputAnnouncement.set("");
     this.onChange(null);
     this.onTouched();
 
@@ -656,19 +660,15 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   protected onManualInput(input: HTMLInputElement): void {
+    this.inputAnnouncement.set("");
+
     const isDeletion = input.value.length < this.inputDisplayValue().length;
     const result = this.inputAutocomplete().process(input.value, {
       isDeletion,
       now: this.today(),
     });
 
-    input.value = result.value;
-    this.inputDisplayValue.set(result.value);
-    this.manualInputError.set(!result.valid);
-
-    if (result.date) {
-      this.applyManualDate(result.date);
-    }
+    this.applyManualInputResult(input, result, false);
   }
 
   protected commitManualInput(input: HTMLInputElement): void {
@@ -677,15 +677,75 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       now: this.today(),
     });
 
+    this.applyManualInputResult(input, result, true);
+    this.onTouched();
+  }
+
+  protected handlePaste(event: ClipboardEvent, input: HTMLInputElement): void {
+    const clipboardData = event.clipboardData;
+    const pastedValue =
+      clipboardData?.getData("text/plain") || clipboardData?.getData("text");
+
+    if (pastedValue === undefined) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (!pastedValue.trim()) {
+      return;
+    }
+
+    const selectionStart = input.selectionStart ?? 0;
+    const selectionEnd = input.selectionEnd ?? input.value.length;
+    const replacesCompleteValue =
+      selectionStart === 0 && selectionEnd === input.value.length;
+    const nextValue =
+      input.value.slice(0, selectionStart) +
+      pastedValue +
+      input.value.slice(selectionEnd);
+    const combinedResult = this.inputAutocomplete().processPastedValue(
+      nextValue,
+      { now: this.today() },
+    );
+    const pastedResult = this.inputAutocomplete().processPastedValue(
+      pastedValue,
+      { now: this.today() },
+    );
+    const shouldUsePastedValue =
+      !!pastedResult.date &&
+      (replacesCompleteValue ||
+        !input.value ||
+        looksLikeCompleteDateOrEpoch(pastedValue));
+    const result = shouldUsePastedValue ? pastedResult : combinedResult;
+
+    this.applyManualInputResult(input, result, true);
+
+    if (result.date) {
+      this.inputAnnouncement.set(
+        this.dateOnly()
+          ? "Eingefügtes Datum übernommen."
+          : "Eingefügtes Datum und Uhrzeit übernommen.",
+      );
+    }
+
+    input.setSelectionRange(input.value.length, input.value.length);
+  }
+
+  private applyManualInputResult(
+    input: HTMLInputElement,
+    result: DateInputAutocompleteResult,
+    requireComplete: boolean,
+  ): void {
     input.value = result.value;
     this.inputDisplayValue.set(result.value);
-    this.manualInputError.set(!result.valid || !result.complete);
+    this.manualInputError.set(
+      !result.valid || (requireComplete && !result.complete),
+    );
 
     if (result.date) {
       this.applyManualDate(result.date);
     }
-
-    this.onTouched();
   }
 
   private applyManualDate(parsedDate: DateTime): void {
@@ -782,17 +842,20 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
         this.selectedDate.set(date);
         this.inputDisplayValue.set(date.toFormat(this.dateFormat()));
         this.manualInputError.set(false);
+        this.inputAnnouncement.set("");
         this.viewDate.set(date);
       } else {
         this.selectedDate.set(null);
         this.inputDisplayValue.set("");
         this.manualInputError.set(true);
+        this.inputAnnouncement.set("");
         this.viewDate.set(DateTime.now());
       }
     } else {
       this.selectedDate.set(null);
       this.inputDisplayValue.set("");
       this.manualInputError.set(false);
+      this.inputAnnouncement.set("");
       this.viewDate.set(DateTime.now());
     }
   }
@@ -901,4 +964,16 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
     return this.dateInput()?.nativeElement ?? null;
   }
+}
+
+function looksLikeCompleteDateOrEpoch(value: string): boolean {
+  const normalizedValue = value
+    .trim()
+    .replace(/(?:\s|\u00a0)*uhr(?:\s|\u00a0)*$/iu, "")
+    .trimEnd();
+
+  return (
+    /[./:\-T]/u.test(normalizedValue) ||
+    /^[+-]?\d{8,13}$/u.test(normalizedValue)
+  );
 }

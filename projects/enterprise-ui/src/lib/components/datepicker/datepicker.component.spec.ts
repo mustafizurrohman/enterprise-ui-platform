@@ -9,6 +9,22 @@ describe("DatepickerComponent", () => {
   let component: DatepickerComponent;
   let fixture: ComponentFixture<DatepickerComponent>;
 
+  const dispatchPaste = (input: HTMLInputElement, value: string): void => {
+    const event = new Event("paste", {
+      bubbles: true,
+      cancelable: true,
+    }) as ClipboardEvent;
+
+    Object.defineProperty(event, "clipboardData", {
+      value: {
+        getData: (type: string) =>
+          type === "text/plain" || type === "text" ? value : "",
+      },
+    });
+
+    input.dispatchEvent(event);
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DatepickerComponent],
@@ -49,6 +65,11 @@ describe("DatepickerComponent", () => {
       ).toBeTruthy();
       expect(
         fixture.nativeElement.querySelector('[data-testid="datepicker-hint"]'),
+      ).toBeTruthy();
+      expect(
+        fixture.nativeElement.querySelector(
+          '[data-testid="datepicker-input-status"]',
+        ),
       ).toBeTruthy();
 
       const toggle = fixture.nativeElement.querySelector(
@@ -174,7 +195,9 @@ describe("DatepickerComponent", () => {
     let calendar = document.querySelector(".datepicker-calendar");
     expect(calendar).toBeNull();
 
-    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
+    const button = fixture.nativeElement.querySelector(
+      '[data-testid$="toggle"]',
+    ) as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     expect((component as any).isOpen()).toBeTruthy();
@@ -320,7 +343,6 @@ describe("DatepickerComponent", () => {
     expect((component as any).isOpen()).toBeTruthy();
   });
 
-
   it("should select now from the input-adjacent button", async () => {
     fixture.componentRef.setInput("showSeconds", true);
     const onChangeSpy = vi.fn();
@@ -353,12 +375,22 @@ describe("DatepickerComponent", () => {
     component.writeValue("2026-07-15T10:00:00");
     fixture.detectChanges();
 
-    const wrapper = fixture.nativeElement.querySelector('[data-testid="datepicker-input-wrapper"]');
-    const buttons = Array.from(wrapper.querySelectorAll('button')) as HTMLButtonElement[];
+    const wrapper = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-input-wrapper"]',
+    );
+    const buttons = Array.from(
+      wrapper.querySelectorAll("button"),
+    ) as HTMLButtonElement[];
 
-    const clearIndex = buttons.findIndex(b => b.getAttribute('data-testid')?.endsWith('-clear'));
-    const nowIndex = buttons.findIndex(b => b.getAttribute('data-testid')?.endsWith('-now-input'));
-    const toggleIndex = buttons.findIndex(b => b.getAttribute('data-testid')?.endsWith('-toggle'));
+    const clearIndex = buttons.findIndex((b) =>
+      b.getAttribute("data-testid")?.endsWith("-clear"),
+    );
+    const nowIndex = buttons.findIndex((b) =>
+      b.getAttribute("data-testid")?.endsWith("-now-input"),
+    );
+    const toggleIndex = buttons.findIndex((b) =>
+      b.getAttribute("data-testid")?.endsWith("-toggle"),
+    );
 
     expect(clearIndex).not.toBe(-1);
     expect(nowIndex).not.toBe(-1);
@@ -405,13 +437,19 @@ describe("DatepickerComponent", () => {
     component.writeValue(baseDate.toISO());
 
     (component as any).adjustTime({ minutes: 15 });
-    expect(component.selectedDate()?.toISO()).toBe(baseDate.plus({ minutes: 15 }).toISO());
+    expect(component.selectedDate()?.toISO()).toBe(
+      baseDate.plus({ minutes: 15 }).toISO(),
+    );
 
     (component as any).adjustTime({ minutes: -30 });
-    expect(component.selectedDate()?.toISO()).toBe(baseDate.minus({ minutes: 15 }).toISO());
+    expect(component.selectedDate()?.toISO()).toBe(
+      baseDate.minus({ minutes: 15 }).toISO(),
+    );
 
     (component as any).adjustTime({ hours: 12 });
-    expect(component.selectedDate()?.toISO()).toBe(baseDate.plus({ hours: 12, minutes: -15 }).toISO());
+    expect(component.selectedDate()?.toISO()).toBe(
+      baseDate.plus({ hours: 12, minutes: -15 }).toISO(),
+    );
   });
 
   it("should increment and decrement time through the reusable wheel", async () => {
@@ -465,7 +503,9 @@ describe("DatepickerComponent", () => {
   describe("Manual Input", () => {
     it("should allow entering date manually", () => {
       fixture.componentRef.setInput("showSeconds", true);
-      const input = fixture.nativeElement.querySelector("input") as HTMLInputElement;
+      const input = fixture.nativeElement.querySelector(
+        "input",
+      ) as HTMLInputElement;
       expect(input.readOnly).toBeFalsy();
 
       const testDateStr = "24.12.2023 18:00:00 Uhr";
@@ -487,7 +527,9 @@ describe("DatepickerComponent", () => {
 
     it("should keep an invalid date visible and expose an error", () => {
       fixture.componentRef.setInput("dateOnly", true);
-      const input = fixture.nativeElement.querySelector("input") as HTMLInputElement;
+      const input = fixture.nativeElement.querySelector(
+        "input",
+      ) as HTMLInputElement;
 
       input.value = "31.02.2026";
       input.dispatchEvent(new Event("input"));
@@ -511,7 +553,9 @@ describe("DatepickerComponent", () => {
 
     it("should proactively append separators and pad an unambiguous month", () => {
       fixture.componentRef.setInput("dateFormat", "MM-dd-yyyy");
-      const input = fixture.nativeElement.querySelector("input") as HTMLInputElement;
+      const input = fixture.nativeElement.querySelector(
+        "input",
+      ) as HTMLInputElement;
 
       input.value = "3";
       input.dispatchEvent(new Event("input"));
@@ -522,7 +566,9 @@ describe("DatepickerComponent", () => {
 
     it("should append the separator when a day segment is submitted", () => {
       fixture.componentRef.setInput("dateFormat", "dd-MM-yyyy");
-      const input = fixture.nativeElement.querySelector("input") as HTMLInputElement;
+      const input = fixture.nativeElement.querySelector(
+        "input",
+      ) as HTMLInputElement;
 
       input.value = "3";
       input.dispatchEvent(new Event("blur"));
@@ -533,7 +579,9 @@ describe("DatepickerComponent", () => {
 
     it("should support a year-first Luxon format and proactively append separators", () => {
       fixture.componentRef.setInput("dateFormat", "yyyy-MM-dd");
-      const input = fixture.nativeElement.querySelector("input") as HTMLInputElement;
+      const input = fixture.nativeElement.querySelector(
+        "input",
+      ) as HTMLInputElement;
 
       input.value = "20263";
       input.dispatchEvent(new Event("input"));
@@ -544,7 +592,9 @@ describe("DatepickerComponent", () => {
 
     it("should NOT open calendar on enter and should commit the current input", () => {
       fixture.componentRef.setInput("showSeconds", true);
-      const input = fixture.nativeElement.querySelector("input") as HTMLInputElement;
+      const input = fixture.nativeElement.querySelector(
+        "input",
+      ) as HTMLInputElement;
       const testDateStr = "24.12.2023 18:00:00 Uhr";
       input.value = testDateStr;
       input.dispatchEvent(new Event("input"));
@@ -557,9 +607,179 @@ describe("DatepickerComponent", () => {
       expect(component.selectedDate()?.toISODate()).toBe("2023-12-24");
     });
 
+    it("should parse a pasted datetime without requiring the Uhr suffix", () => {
+      fixture.componentRef.setInput("showSeconds", true);
+      const onChangeSpy = vi.fn();
+      component.registerOnChange(onChangeSpy);
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+
+      dispatchPaste(input, " 15.07.2026 16:59:11 ");
+      fixture.detectChanges();
+
+      expect(input.value).toBe("15.07.2026 16:59:11 Uhr");
+      expect(component.selectedDate()?.toISO()).toBe(
+        DateTime.fromISO("2026-07-15T16:59:11").toISO(),
+      );
+      expect(onChangeSpy).toHaveBeenCalledWith(
+        DateTime.fromISO("2026-07-15T16:59:11").toJSDate(),
+      );
+      expect(input.getAttribute("aria-invalid")).toBe("false");
+    });
+
+    it("should normalize a pasted case-insensitive Uhr suffix", () => {
+      fixture.componentRef.setInput("showSeconds", true);
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+
+      dispatchPaste(input, "15.07.2026 16:59:11 uHr");
+      fixture.detectChanges();
+
+      expect(input.value).toBe("15.07.2026 16:59:11 Uhr");
+      expect(component.selectedDate()?.toISO()).toBe(
+        DateTime.fromISO("2026-07-15T16:59:11").toISO(),
+      );
+    });
+
+    it.each([
+      ["seconds", 1_752_598_751],
+      ["milliseconds", 1_752_598_751_000],
+    ])(
+      "should parse pasted epoch %s and display the configured format",
+      (_, epoch) => {
+        fixture.componentRef.setInput("showSeconds", true);
+        const input = fixture.nativeElement.querySelector(
+          '[data-testid="datepicker-input"]',
+        ) as HTMLInputElement;
+        const expected = DateTime.fromMillis(
+          epoch < 10_000_000_000 ? epoch * 1_000 : epoch,
+        );
+
+        dispatchPaste(input, epoch.toString());
+        fixture.detectChanges();
+
+        expect(component.selectedDate()?.toMillis()).toBe(expected.toMillis());
+        expect(input.value).toBe(
+          expected.toFormat("dd.MM.yyyy HH:mm:ss 'Uhr'"),
+        );
+        expect(input.getAttribute("aria-invalid")).toBe("false");
+      },
+    );
+
+    it("should normalize pasted epoch seconds when seconds are hidden", () => {
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+      const epoch = 1_752_598_751;
+      const expected = DateTime.fromMillis(epoch * 1_000).set({
+        second: 0,
+        millisecond: 0,
+      });
+
+      dispatchPaste(input, epoch.toString());
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.toMillis()).toBe(expected.toMillis());
+      expect(input.value).toBe(expected.toFormat("dd.MM.yyyy HH:mm 'Uhr'"));
+    });
+
+    it("should normalize a pasted epoch to start of day in date-only mode", () => {
+      fixture.componentRef.setInput("dateOnly", true);
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+      const epoch = 1_752_598_751_000;
+      const expected = DateTime.fromMillis(epoch).startOf("day");
+
+      dispatchPaste(input, epoch.toString());
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.toMillis()).toBe(expected.toMillis());
+      expect(input.value).toBe(expected.toFormat("dd.MM.yyyy"));
+    });
+
+    it("should paste a short value into the selected hour without treating it as epoch", () => {
+      component.writeValue("2026-07-15T10:59:00");
+      fixture.detectChanges();
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+      const hourStart = input.value.indexOf("10");
+      input.setSelectionRange(hourStart, hourStart + 2);
+
+      dispatchPaste(input, "16");
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.toISO()).toBe(
+        DateTime.fromISO("2026-07-15T16:59:00").toISO(),
+      );
+      expect(input.value).toBe("15.07.2026 16:59 Uhr");
+    });
+
+    it("should mark invalid pasted trailing text without emitting a new value", () => {
+      const onChangeSpy = vi.fn();
+      component.registerOnChange(onChangeSpy);
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+
+      dispatchPaste(input, "15.07.2026 16:59 extra");
+      fixture.detectChanges();
+
+      expect(onChangeSpy).not.toHaveBeenCalled();
+      expect(component.selectedDate()).toBeNull();
+      expect(input.getAttribute("aria-invalid")).toBe("true");
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="datepicker-error"]'),
+      ).toBeTruthy();
+    });
+
+    it("should prefer a complete pasted value over the existing input content", () => {
+      fixture.componentRef.setInput("showSeconds", true);
+      component.writeValue("2026-01-01T10:00:00");
+      fixture.detectChanges();
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+      input.setSelectionRange(input.value.length, input.value.length);
+
+      dispatchPaste(input, "15.07.2026 16:59:11");
+      fixture.detectChanges();
+
+      expect(input.value).toBe("15.07.2026 16:59:11 Uhr");
+      expect(component.selectedDate()?.toISO()).toBe(
+        DateTime.fromISO("2026-07-15T16:59:11").toISO(),
+      );
+    });
+
+    it("should expose an accessible status message after successful paste", () => {
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+      const status = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input-status"]',
+      ) as HTMLElement;
+
+      expect(status.id).toMatch(/^datepicker-\d+-status$/);
+      expect(status.getAttribute("role")).toBe("status");
+      expect(status.getAttribute("aria-live")).toBe("polite");
+      expect(status.getAttribute("aria-atomic")).toBe("true");
+
+      dispatchPaste(input, "15.07.2026 16:59");
+      fixture.detectChanges();
+
+      expect(status.textContent).toContain(
+        "Eingefügtes Datum und Uhrzeit übernommen.",
+      );
+    });
+
     it("should allow deleting the separator via backspace", () => {
       fixture.componentRef.setInput("dateFormat", "dd.MM.yyyy");
-      const input = fixture.nativeElement.querySelector("input") as HTMLInputElement;
+      const input = fixture.nativeElement.querySelector(
+        "input",
+      ) as HTMLInputElement;
 
       // Simulate typing "15" -> becomes "15."
       input.value = "15";
@@ -729,7 +949,9 @@ describe("DatepickerComponent", () => {
     expect(input.getAttribute("aria-keyshortcuts")).toBe("Enter Escape");
     expect(input.getAttribute("aria-invalid")).toBe("false");
     expect(input.hasAttribute("aria-errormessage")).toBeFalsy();
-    expect(document.getElementById(input.getAttribute("aria-describedby")!)).toBeTruthy();
+    expect(
+      document.getElementById(input.getAttribute("aria-describedby")!),
+    ).toBeTruthy();
 
     expect(nowButton.id).toBe(`${root.id}-now`);
     expect(nowButton.getAttribute("aria-controls")).toBe(input.id);
@@ -769,7 +991,9 @@ describe("DatepickerComponent", () => {
   });
 
   it("should trap focus and have dialog attributes when calendar is open", async () => {
-    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
+    const button = fixture.nativeElement.querySelector(
+      '[data-testid$="toggle"]',
+    ) as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -796,16 +1020,16 @@ describe("DatepickerComponent", () => {
     );
     expect(title?.classList.contains("visually-hidden")).toBeTruthy();
     expect(description?.classList.contains("visually-hidden")).toBeTruthy();
-    expect(title?.getAttribute("data-testid")).toBe(
-      "datepicker-dialog-title",
-    );
+    expect(title?.getAttribute("data-testid")).toBe("datepicker-dialog-title");
     expect(description?.getAttribute("data-testid")).toBe(
       "datepicker-dialog-description",
     );
   });
 
   it("should navigate calendar with keyboard", async () => {
-    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
+    const button = fixture.nativeElement.querySelector(
+      '[data-testid$="toggle"]',
+    ) as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1023,10 +1247,10 @@ describe("DatepickerComponent", () => {
         dispatchKey(targetDay, key);
 
         expect(component.selectedDate()?.toISODate()).toBe("2026-07-20");
-        expect(onChangeSpy).toHaveBeenCalledWith(
-          expect.any(Date),
+        expect(onChangeSpy).toHaveBeenCalledWith(expect.any(Date));
+        expect((onChangeSpy.mock.calls[0][0] as Date).toISOString()).toContain(
+          "2026-07-20",
         );
-        expect((onChangeSpy.mock.calls[0][0] as Date).toISOString()).toContain("2026-07-20");
         expect(
           document.querySelector('[data-testid="datepicker-date-status"]')
             ?.textContent,
@@ -1095,7 +1319,9 @@ describe("DatepickerComponent", () => {
 
   it("should allow typing time in time picker", async () => {
     component.registerOnChange(vi.fn());
-    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
+    const button = fixture.nativeElement.querySelector(
+      '[data-testid$="toggle"]',
+    ) as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1115,7 +1341,9 @@ describe("DatepickerComponent", () => {
   });
 
   it("should validate time typing", async () => {
-    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
+    const button = fixture.nativeElement.querySelector(
+      '[data-testid$="toggle"]',
+    ) as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1140,7 +1368,9 @@ describe("DatepickerComponent", () => {
   });
 
   it("should announce time changes", async () => {
-    const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
+    const button = fixture.nativeElement.querySelector(
+      '[data-testid$="toggle"]',
+    ) as HTMLButtonElement;
     button.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1240,7 +1470,9 @@ describe("DatepickerComponent", () => {
     });
 
     it("should hide seconds wheel by default", async () => {
-      const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
+      const button = fixture.nativeElement.querySelector(
+        '[data-testid$="toggle"]',
+      ) as HTMLButtonElement;
       button.click();
       fixture.detectChanges();
       await fixture.whenStable();
@@ -1248,16 +1480,18 @@ describe("DatepickerComponent", () => {
       expect(
         document.querySelector("#" + (component as any).ids().secondSelect),
       ).toBeNull();
-      expect(
-        document.querySelectorAll(".datepicker-time-wheel"),
-      ).toHaveLength(2);
+      expect(document.querySelectorAll(".datepicker-time-wheel")).toHaveLength(
+        2,
+      );
     });
 
     it("should show seconds wheel when showSeconds is true", async () => {
       fixture.componentRef.setInput("showSeconds", true);
       fixture.detectChanges();
 
-      const button = fixture.nativeElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
+      const button = fixture.nativeElement.querySelector(
+        '[data-testid$="toggle"]',
+      ) as HTMLButtonElement;
       button.click();
       fixture.detectChanges();
       await fixture.whenStable();
@@ -1265,9 +1499,9 @@ describe("DatepickerComponent", () => {
       expect(
         document.querySelector("#" + (component as any).ids().secondSelect),
       ).toBeTruthy();
-      expect(
-        document.querySelectorAll(".datepicker-time-wheel"),
-      ).toHaveLength(3);
+      expect(document.querySelectorAll(".datepicker-time-wheel")).toHaveLength(
+        3,
+      );
     });
 
     it("should adjust dateFormat when showSeconds is toggled", () => {
@@ -1342,9 +1576,7 @@ describe("DatepickerComponent", () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const weekdayHeaders = document.querySelectorAll(
-        ".datepicker-day-name",
-      );
+      const weekdayHeaders = document.querySelectorAll(".datepicker-day-name");
       // Index 0 is KW, Index 1 is Monday
       expect(weekdayHeaders[1].classList.contains("today")).toBeTruthy();
       expect(weekdayHeaders[2].classList.contains("today")).toBeFalsy();
@@ -1369,9 +1601,7 @@ describe("DatepickerComponent", () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const weekdayHeaders = document.querySelectorAll(
-        ".datepicker-day-name",
-      );
+      const weekdayHeaders = document.querySelectorAll(".datepicker-day-name");
       // Index 1 is Monday. It should NOT have 'today' class because we are in June.
       expect(weekdayHeaders[1].classList.contains("today")).toBeFalsy();
     });
@@ -1494,6 +1724,8 @@ describe("DatepickerComponent Forms Compatibility", () => {
     await fixture.whenStable();
 
     expect(host.signalValue() instanceof Date).toBeTruthy();
-    expect(DateTime.fromJSDate(host.signalValue() as Date).toISODate()).toBe("2026-07-14");
+    expect(DateTime.fromJSDate(host.signalValue() as Date).toISODate()).toBe(
+      "2026-07-14",
+    );
   });
 });

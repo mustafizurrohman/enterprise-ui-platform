@@ -3,11 +3,7 @@
 @let invalid = hasInputError();
 @let currentDate = selectedDate();
 
-<div
-  [id]="ids().root"
-  class="datepicker"
-  [attr.data-testid]="testIdFor()"
->
+<div [id]="ids().root" class="datepicker" [attr.data-testid]="testIdFor()">
   <label
     class="datepicker-label"
     [class.datepicker-label--disabled]="disabled"
@@ -44,6 +40,7 @@
       [placeholder]="dateFormatDescription()"
       [disabled]="disabled"
       (keydown)="handleInputKeydown($event, dateInput)"
+      (paste)="handlePaste($event, dateInput)"
       (input)="onManualInput(dateInput)"
       (blur)="commitManualInput(dateInput)"
     />
@@ -103,7 +100,20 @@
     class="visually-hidden"
     [attr.data-testid]="testIdFor('hint')"
   >
-    Erwartetes Format: {{ dateFormatDescription() }}.
+    Erwartetes Format: {{ dateFormatDescription() }}. Beim Einfügen ist „Uhr“
+    optional. Unix-Zeitstempel in Sekunden oder Millisekunden werden ebenfalls
+    unterstützt.
+  </div>
+
+  <div
+    [id]="ids().inputStatus"
+    class="visually-hidden"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+    [attr.data-testid]="testIdFor('input-status')"
+  >
+    {{ inputAnnouncement() }}
   </div>
 
   @if (invalid) {
@@ -152,5 +162,4 @@
       (confirmed)="closeCalendar()"
     />
   </ng-template>
-
 </div>
