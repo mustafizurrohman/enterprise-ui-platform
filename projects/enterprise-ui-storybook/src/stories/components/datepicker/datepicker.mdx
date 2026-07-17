@@ -18,18 +18,6 @@ The `DatepickerComponent` is a robust and accessible date/time selection compone
 - **Accessibility**: ARIA labels, roles, and full keyboard navigation support.
 - **Customizable**: Control labels, display formats, locale, and disabled states.
 
-## Inputs
-
-| Input | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `label` | `string` | `'Datum auswählen'` | The label displayed above the input. |
-| `value` | `Date \| string \| null` | `null` | The current value of the datepicker. |
-| `dateFormat` | `string \| null` | `null` | The Luxon format string for display and parsing. If time tokens are present, time selection is enabled. |
-| `locale` | `string` | `'de-DE'` | The locale used for formatting and names. |
-| `today` | `DateTime` | `DateTime.now()` | The reference "today" date. |
-| `disabled` | `boolean` | `false` | Whether the component is disabled. |
-| `testId` | `string \| null` | `null` | Base ID for automated testing hooks. |
-
 # Interactive Demo
 
 <Canvas of={DateTimeStories.DateTime} />
