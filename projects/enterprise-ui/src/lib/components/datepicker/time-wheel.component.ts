@@ -2,6 +2,8 @@ import { Component, computed, input, output, signal } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 
 export type TimeUnit = "hour" | "minute" | "second";
+export type TimeWheelHourCycle = "h12" | "h23";
+export type TimeWheelMeridiem = "AM" | "PM";
 
 export type TimeWheelContext = Readonly<{
   unit: TimeUnit;
@@ -10,12 +12,15 @@ export type TimeWheelContext = Readonly<{
   labelId: string;
   descriptionId?: string;
   testIdPrefix: string;
+  hourCycle?: TimeWheelHourCycle;
+  meridiem?: TimeWheelMeridiem;
 }>;
 
 type TimeUnitConfiguration = {
   label: string;
   singularLabel: string;
   valueTextSuffix: string;
+  minimum: number;
   maximum: number;
 };
 
@@ -35,18 +40,21 @@ const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
     label: "Stunden",
     singularLabel: "Stunde",
     valueTextSuffix: "Uhr",
+    minimum: 0,
     maximum: 23,
   },
   minute: {
     label: "Minuten",
     singularLabel: "Minute",
     valueTextSuffix: "Minuten",
+    minimum: 0,
     maximum: 59,
   },
   second: {
     label: "Sekunden",
     singularLabel: "Sekunde",
     valueTextSuffix: "Sekunden",
+    minimum: 0,
     maximum: 59,
   },
 };
@@ -65,14 +73,15 @@ export class TimeWheelComponent {
 
   protected readonly unit = computed(() => this.context().unit);
   protected readonly value = computed(() => this.context().value);
+  protected readonly displayValue = computed(() =>
+    this.is12HourWheel() ? to12Hour(this.value()) : this.value(),
+  );
   protected readonly controlId = computed(() => this.context().controlId);
   protected readonly labelId = computed(() => this.context().labelId);
   protected readonly descriptionId = computed(
     () => this.context().descriptionId ?? null,
   );
-  protected readonly testIdPrefix = computed(
-    () => this.context().testIdPrefix,
-  );
+  protected readonly testIdPrefix = computed(() => this.context().testIdPrefix);
   protected readonly wheelId = computed(() => `${this.controlId()}-wheel`);
   protected readonly valueId = computed(() => `${this.controlId()}-value`);
   protected readonly buttonStackId = computed(
@@ -85,9 +94,29 @@ export class TimeWheelComponent {
     () => `${this.controlId()}-decrement`,
   );
 
-  protected readonly configuration = computed(
-    () => TIME_UNIT_CONFIGURATION[this.unit()],
-  );
+  protected readonly configuration = computed<TimeUnitConfiguration>(() => {
+    const configuration = TIME_UNIT_CONFIGURATION[this.unit()];
+
+    if (this.unit() === "hour" && this.context().hourCycle === "h12") {
+      return {
+        ...configuration,
+        minimum: 1,
+        maximum: 12,
+      };
+    }
+
+    return configuration;
+  });
+
+  protected readonly accessibleValueText = computed(() => {
+    const accessibleValue = this.displayValue();
+
+    if (this.is12HourWheel() && this.context().meridiem) {
+      return `${accessibleValue} ${this.context().meridiem}`;
+    }
+
+    return `${accessibleValue} ${this.configuration().valueTextSuffix}`;
+  });
 
   protected readonly animationName = computed(() => {
     const state = this.animationState();
@@ -158,12 +187,18 @@ export class TimeWheelComponent {
 
       case "Home":
         event.preventDefault();
-        this.emitAnimatedValue(0, "decrement");
+        this.emitAnimatedValue(
+          this.toEmittedValue(this.configuration().minimum),
+          "decrement",
+        );
         break;
 
       case "End":
         event.preventDefault();
-        this.emitAnimatedValue(this.configuration().maximum, "increment");
+        this.emitAnimatedValue(
+          this.toEmittedValue(this.configuration().maximum),
+          "increment",
+        );
         break;
     }
   }
@@ -175,9 +210,12 @@ export class TimeWheelComponent {
       return;
     }
 
-    this.valueChange.emit(
-      Math.min(Math.max(value, 0), this.configuration().maximum),
+    const clampedValue = Math.min(
+      Math.max(value, this.configuration().minimum),
+      this.configuration().maximum,
     );
+
+    this.valueChange.emit(this.toEmittedValue(clampedValue));
   }
 
   protected formatValue(value: number): string {
@@ -194,7 +232,7 @@ export class TimeWheelComponent {
     isButtonInteraction = false,
   ): void {
     this.emitAnimatedValue(
-      this.normalize(this.value() + difference),
+      this.normalizeSteppedValue(this.value() + difference),
       direction,
       isButtonInteraction,
     );
@@ -235,9 +273,45 @@ export class TimeWheelComponent {
     });
   }
 
-  private normalize(value: number): number {
-    const range = this.configuration().maximum + 1;
-
-    return ((value % range) + range) % range;
+  private is12HourWheel(): boolean {
+    return this.unit() === "hour" && this.context().hourCycle === "h12";
   }
+
+  private toEmittedValue(displayValue: number): number {
+    if (!this.is12HourWheel()) {
+      return displayValue;
+    }
+
+    return to24Hour(displayValue, this.context().meridiem ?? "AM");
+  }
+
+  private normalizeSteppedValue(value: number): number {
+    if (this.is12HourWheel()) {
+      return normalizeToRange(value, 0, 23);
+    }
+
+    const { minimum, maximum } = this.configuration();
+
+    return normalizeToRange(value, minimum, maximum);
+  }
+}
+
+function to12Hour(hour: number): number {
+  return normalizeToRange(hour, 0, 23) % 12 || 12;
+}
+
+function to24Hour(hour: number, meridiem: TimeWheelMeridiem): number {
+  const normalizedHour = hour % 12;
+
+  return meridiem === "PM" ? normalizedHour + 12 : normalizedHour;
+}
+
+function normalizeToRange(
+  value: number,
+  minimum: number,
+  maximum: number,
+): number {
+  const range = maximum - minimum + 1;
+
+  return ((((value - minimum) % range) + range) % range) + minimum;
 }

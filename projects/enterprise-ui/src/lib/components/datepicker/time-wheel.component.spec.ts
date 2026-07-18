@@ -60,6 +60,80 @@ describe("TimeWheelComponent", () => {
     expect(input.getAttribute("aria-valuetext")).toBe("10 Uhr");
   });
 
+  it("should use a 1 to 12 range and announce the meridiem in 12-hour mode", () => {
+    fixture.componentRef.setInput("context", {
+      ...createContext(13),
+      hourCycle: "h12",
+      meridiem: "PM",
+    } satisfies TimeWheelContext);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-input"]',
+    ) as HTMLInputElement;
+
+    expect(input.value).toBe("01");
+    expect(input.getAttribute("aria-valuemin")).toBe("1");
+    expect(input.getAttribute("aria-valuemax")).toBe("12");
+    expect(input.getAttribute("aria-valuenow")).toBe("1");
+    expect(input.getAttribute("aria-valuetext")).toBe("1 PM");
+  });
+
+  it("should keep 12-hour stepping synchronized with the underlying 24-hour value", () => {
+    const valueChangeSpy = vi.fn();
+    component.valueChange.subscribe(valueChangeSpy);
+
+    fixture.componentRef.setInput("context", {
+      ...createContext(11),
+      hourCycle: "h12",
+      meridiem: "AM",
+    } satisfies TimeWheelContext);
+    fixture.detectChanges();
+    getIncrementButton().click();
+    expect(valueChangeSpy).toHaveBeenLastCalledWith(12);
+
+    fixture.componentRef.setInput("context", {
+      ...createContext(23),
+      hourCycle: "h12",
+      meridiem: "PM",
+    } satisfies TimeWheelContext);
+    fixture.detectChanges();
+    getIncrementButton().click();
+    expect(valueChangeSpy).toHaveBeenLastCalledWith(0);
+
+    fixture.componentRef.setInput("context", {
+      ...createContext(12),
+      hourCycle: "h12",
+      meridiem: "PM",
+    } satisfies TimeWheelContext);
+    fixture.detectChanges();
+    getDecrementButton().click();
+    expect(valueChangeSpy).toHaveBeenLastCalledWith(11);
+  });
+
+  it("should clamp typed 12-hour values and preserve the selected meridiem", () => {
+    const valueChangeSpy = vi.fn();
+    component.valueChange.subscribe(valueChangeSpy);
+
+    fixture.componentRef.setInput("context", {
+      ...createContext(13),
+      hourCycle: "h12",
+      meridiem: "PM",
+    } satisfies TimeWheelContext);
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-input"]',
+    ) as HTMLInputElement;
+    input.value = "0";
+    input.dispatchEvent(new Event("input"));
+    expect(valueChangeSpy).toHaveBeenLastCalledWith(13);
+
+    input.value = "12";
+    input.dispatchEvent(new Event("input"));
+    expect(valueChangeSpy).toHaveBeenLastCalledWith(12);
+  });
+
   it("should expose stable IDs and accessible control relationships", () => {
     const wheel = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-hour-wheel"]',
@@ -102,12 +176,8 @@ describe("TimeWheelComponent", () => {
     );
 
     expect(buttons).toHaveLength(2);
-    expect(buttons[0]?.dataset["testid"]).toBe(
-      "datepicker-hour-increment",
-    );
-    expect(buttons[1]?.dataset["testid"]).toBe(
-      "datepicker-hour-decrement",
-    );
+    expect(buttons[0]?.dataset["testid"]).toBe("datepicker-hour-increment");
+    expect(buttons[1]?.dataset["testid"]).toBe("datepicker-hour-decrement");
   });
 
   it("should use a native label associated with the spinbutton", () => {
@@ -159,17 +229,20 @@ describe("TimeWheelComponent", () => {
     ["PageDown", 0],
     ["Home", 0],
     ["End", 23],
-  ])("should handle %s keyboard input", (key: string, expectedValue: number) => {
-    const valueChangeSpy = vi.fn();
-    component.valueChange.subscribe(valueChangeSpy);
-    const input = fixture.nativeElement.querySelector(
-      "input",
-    ) as HTMLInputElement;
+  ])(
+    "should handle %s keyboard input",
+    (key: string, expectedValue: number) => {
+      const valueChangeSpy = vi.fn();
+      component.valueChange.subscribe(valueChangeSpy);
+      const input = fixture.nativeElement.querySelector(
+        "input",
+      ) as HTMLInputElement;
 
-    input.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
 
-    expect(valueChangeSpy).toHaveBeenLastCalledWith(expectedValue);
-  });
+      expect(valueChangeSpy).toHaveBeenLastCalledWith(expectedValue);
+    },
+  );
 
   it("should set the increment CSS animation on an increment", () => {
     vi.spyOn(Date, "now").mockReturnValue(1_000);
@@ -181,9 +254,7 @@ describe("TimeWheelComponent", () => {
       "increment-a",
     );
     expect(
-      getValueContainer().classList.contains(
-        "datepicker-time-value--rapid",
-      ),
+      getValueContainer().classList.contains("datepicker-time-value--rapid"),
     ).toBeFalsy();
   });
 
@@ -231,9 +302,7 @@ describe("TimeWheelComponent", () => {
     fixture.detectChanges();
 
     expect(
-      getValueContainer().classList.contains(
-        "datepicker-time-value--rapid",
-      ),
+      getValueContainer().classList.contains("datepicker-time-value--rapid"),
     ).toBeTruthy();
   });
 
@@ -249,9 +318,7 @@ describe("TimeWheelComponent", () => {
     fixture.detectChanges();
 
     expect(
-      getValueContainer().classList.contains(
-        "datepicker-time-value--rapid",
-      ),
+      getValueContainer().classList.contains("datepicker-time-value--rapid"),
     ).toBeFalsy();
   });
 
@@ -272,9 +339,7 @@ describe("TimeWheelComponent", () => {
     fixture.detectChanges();
 
     expect(
-      getValueContainer().classList.contains(
-        "datepicker-time-value--rapid",
-      ),
+      getValueContainer().classList.contains("datepicker-time-value--rapid"),
     ).toBeFalsy();
   });
 

@@ -31,14 +31,17 @@ describe("DatepickerDialogComponent", () => {
       hourLabelId: "hour-label",
       minuteLabelId: "minute-label",
       secondLabelId: "second-label",
+      meridiemGroupId: "meridiem",
+      meridiemLabelId: "meridiem-label",
+      meridiemAmId: "meridiem-am",
+      meridiemPmId: "meridiem-pm",
       dialogTitle: "Datum und Uhrzeit auswählen",
       formattedMonth: "Juli 2026",
       months: Info.months("long", { locale: "de" }),
       daysOfWeek: Info.weekdays("short", { locale: "de" }).map(
         (short, index) => ({
           short,
-          long:
-            Info.weekdays("long", { locale: "de" })[index] ?? short,
+          long: Info.weekdays("long", { locale: "de" })[index] ?? short,
           weekday: index + 1,
         }),
       ),
@@ -63,6 +66,9 @@ describe("DatepickerDialogComponent", () => {
       testIdPrefix: "datepicker",
       dateOnly: false,
       showSeconds: false,
+      uses12HourClock: false,
+      showMeridiem: false,
+      locale: "de-DE",
       dateAnnouncement: "",
       timeAnnouncement: "",
     };
@@ -347,9 +353,7 @@ describe("DatepickerDialogComponent", () => {
       ),
     ).toBeTruthy();
     expect(
-      yearPeriodControl.querySelector(
-        '[data-testid="datepicker-year-reset"]',
-      ),
+      yearPeriodControl.querySelector('[data-testid="datepicker-year-reset"]'),
     ).toBeTruthy();
   });
 
@@ -473,6 +477,119 @@ describe("DatepickerDialogComponent", () => {
       expect(button.getAttribute("aria-label")).toBe(label);
       expect(button.getAttribute("aria-controls")).toBe(controlId);
     }
+  });
+
+  it("should hide AM/PM for a 24-hour time format", () => {
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-meridiem-toggle"]',
+      ),
+    ).toBeNull();
+
+    const hourInput = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-input"]',
+    ) as HTMLInputElement;
+
+    expect(hourInput.value).toBe("00");
+    expect(hourInput.getAttribute("aria-valuemin")).toBe("0");
+    expect(hourInput.getAttribute("aria-valuemax")).toBe("23");
+  });
+
+  it("should render an accessible AM/PM toggle after the last time wheel", () => {
+    fixture.componentRef.setInput("context", {
+      ...component.context(),
+      selectedDate: DateTime.fromISO("2026-07-15T13:45:30"),
+      showSeconds: true,
+      uses12HourClock: true,
+      showMeridiem: true,
+    } satisfies DatepickerDialogContext);
+    fixture.detectChanges();
+
+    const hourInput = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-input"]',
+    ) as HTMLInputElement;
+    const secondWheel = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-second-wheel"]',
+    ) as HTMLElement;
+    const group = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-meridiem-toggle"]',
+    ) as HTMLElement;
+    const label = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-meridiem-label"]',
+    ) as HTMLElement;
+    const am = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-meridiem-am"]',
+    ) as HTMLInputElement;
+    const pm = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-meridiem-pm"]',
+    ) as HTMLInputElement;
+
+    expect(hourInput.value).toBe("01");
+    expect(hourInput.getAttribute("aria-valuemin")).toBe("1");
+    expect(hourInput.getAttribute("aria-valuemax")).toBe("12");
+    expect(hourInput.getAttribute("aria-valuetext")).toBe("1 PM");
+    expect(group.id).toBe("meridiem");
+    expect(group.getAttribute("role")).toBe("radiogroup");
+    expect(group.getAttribute("aria-labelledby")).toBe(label.id);
+    expect(am.id).toBe("meridiem-am");
+    expect(pm.id).toBe("meridiem-pm");
+    expect(am.checked).toBeFalsy();
+    expect(pm.checked).toBeTruthy();
+    expect(am.getAttribute("aria-controls")).toBe(hourInput.id);
+    expect(pm.getAttribute("aria-controls")).toBe(hourInput.id);
+    expect(
+      secondWheel.compareDocumentPosition(group) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("should keep 12-hour wheel and AM/PM changes synchronized with 24-hour values", () => {
+    const timeSpy = vi.fn();
+    component.timeChanged.subscribe(timeSpy);
+
+    fixture.componentRef.setInput("context", {
+      ...component.context(),
+      selectedDate: DateTime.fromISO("2026-07-15T13:00:00"),
+      uses12HourClock: true,
+      showMeridiem: true,
+    } satisfies DatepickerDialogContext);
+    fixture.detectChanges();
+
+    (
+      fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-hour-increment"]',
+      ) as HTMLButtonElement
+    ).click();
+
+    expect(timeSpy).toHaveBeenLastCalledWith({ unit: "hour", value: 14 });
+
+    fixture.componentRef.setInput("context", {
+      ...component.context(),
+      selectedDate: DateTime.fromISO("2026-07-15T11:00:00"),
+    } satisfies DatepickerDialogContext);
+    fixture.detectChanges();
+
+    (
+      fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-hour-increment"]',
+      ) as HTMLButtonElement
+    ).click();
+
+    expect(timeSpy).toHaveBeenLastCalledWith({ unit: "hour", value: 12 });
+
+    fixture.componentRef.setInput("context", {
+      ...component.context(),
+      selectedDate: DateTime.fromISO("2026-07-15T10:00:00"),
+    } satisfies DatepickerDialogContext);
+    fixture.detectChanges();
+
+    (
+      fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-meridiem-pm"]',
+      ) as HTMLInputElement
+    ).click();
+
+    expect(timeSpy).toHaveBeenLastCalledWith({ unit: "hour", value: 22 });
   });
 
   it("should provide accessible labels and stable IDs for dialog actions when dateOnly is true", () => {

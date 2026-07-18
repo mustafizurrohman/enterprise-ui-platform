@@ -34,6 +34,7 @@ export type DatepickerGridContext = Readonly<{
   viewDate: DateTime;
   monthHeadingId: string;
   testIdPrefix: string;
+  locale: string;
 }>;
 
 @Component({
@@ -59,9 +60,8 @@ export class DatepickerGridComponent {
   protected readonly monthHeadingId = computed(
     () => this.context().monthHeadingId,
   );
-  protected readonly testIdPrefix = computed(
-    () => this.context().testIdPrefix,
-  );
+  protected readonly testIdPrefix = computed(() => this.context().testIdPrefix);
+  protected readonly locale = computed(() => this.context().locale);
 
   private readonly calendarDayButtons =
     viewChildren<ElementRef<HTMLButtonElement>>("calendarDay");
@@ -118,7 +118,7 @@ export class DatepickerGridComponent {
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {
-    const formattedDate = date.setLocale("de").toLocaleString({
+    const formattedDate = date.setLocale(this.locale()).toLocaleString({
       weekday: "long",
       day: "numeric",
       month: "long",

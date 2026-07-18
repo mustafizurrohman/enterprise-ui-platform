@@ -49,8 +49,7 @@ describe("DatepickerGridComponent", () => {
     daysOfWeek: Info.weekdays("short", { locale: "de" }).map(
       (short, index) => ({
         short,
-        long:
-          Info.weekdays("long", { locale: "de" })[index] ?? short,
+        long: Info.weekdays("long", { locale: "de" })[index] ?? short,
         weekday: index + 1,
       }),
     ),
@@ -61,6 +60,7 @@ describe("DatepickerGridComponent", () => {
     viewDate: selectedDate,
     monthHeadingId: "month-heading",
     testIdPrefix: "datepicker",
+    locale: "de-DE",
   };
 
   beforeEach(async () => {

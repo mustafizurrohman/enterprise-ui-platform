@@ -33,6 +33,8 @@ export type DatepickerTimeChange = {
   value: number;
 };
 
+export type DatepickerMeridiem = "AM" | "PM";
+
 export type DatepickerDialogContext = Readonly<{
   dialogId: string;
   dialogTitleId: string;
@@ -44,6 +46,10 @@ export type DatepickerDialogContext = Readonly<{
   hourLabelId: string;
   minuteLabelId: string;
   secondLabelId: string;
+  meridiemGroupId: string;
+  meridiemLabelId: string;
+  meridiemAmId: string;
+  meridiemPmId: string;
   dialogTitle: string;
   formattedMonth: string;
   months: readonly string[];
@@ -56,6 +62,9 @@ export type DatepickerDialogContext = Readonly<{
   testIdPrefix: string;
   dateOnly: boolean;
   showSeconds: boolean;
+  uses12HourClock: boolean;
+  showMeridiem: boolean;
+  locale: string;
   dateAnnouncement: string;
   timeAnnouncement: string;
 }>;
@@ -113,22 +122,26 @@ export class DatepickerDialogComponent {
   protected readonly formattedMonth = computed(
     () => this.context().formattedMonth,
   );
-  protected readonly selectedDate = computed(
-    () => this.context().selectedDate,
-  );
+  protected readonly selectedDate = computed(() => this.context().selectedDate);
+  protected readonly locale = computed(() => this.context().locale);
   protected readonly shortMonths = computed(() =>
     Info.months("short", {
-      locale: this.context().viewDate.locale ?? undefined,
+      locale: this.locale(),
     }),
   );
-  protected readonly selectedMonth = computed(
-    () => this.context().viewDate.month.toString(),
+  protected readonly selectedMonth = computed(() =>
+    this.context().viewDate.month.toString(),
   );
-  protected readonly testIdPrefix = computed(
-    () => this.context().testIdPrefix,
-  );
+  protected readonly testIdPrefix = computed(() => this.context().testIdPrefix);
   protected readonly dateOnly = computed(() => this.context().dateOnly);
   protected readonly showSeconds = computed(() => this.context().showSeconds);
+  protected readonly uses12HourClock = computed(
+    () => this.context().uses12HourClock,
+  );
+  protected readonly showMeridiem = computed(() => this.context().showMeridiem);
+  protected readonly meridiem = computed<DatepickerMeridiem>(() =>
+    (this.selectedDate()?.hour ?? 0) >= 12 ? "PM" : "AM",
+  );
   protected readonly dateAnnouncement = computed(
     () => this.context().dateAnnouncement,
   );
@@ -136,9 +149,7 @@ export class DatepickerDialogComponent {
     () => this.context().timeAnnouncement,
   );
 
-  protected readonly calendarGridId = computed(
-    () => `${this.dialogId()}-grid`,
-  );
+  protected readonly calendarGridId = computed(() => `${this.dialogId()}-grid`);
 
   protected readonly gridContext = computed<DatepickerGridContext>(() => {
     const context = this.context();
@@ -153,6 +164,7 @@ export class DatepickerDialogComponent {
       viewDate: context.viewDate,
       monthHeadingId: context.monthHeadingId,
       testIdPrefix: context.testIdPrefix,
+      locale: context.locale,
     };
   });
 
@@ -186,6 +198,19 @@ export class DatepickerDialogComponent {
 
   protected emitTimeChange(unit: TimeUnit, value: number): void {
     this.timeChanged.emit({ unit, value });
+  }
+
+  protected selectMeridiem(meridiem: DatepickerMeridiem): void {
+    const selectedDate = this.selectedDate();
+
+    if (selectedDate && meridiem === this.meridiem()) {
+      return;
+    }
+
+    const currentHour = selectedDate?.hour ?? 0;
+    const hour = meridiem === "PM" ? (currentHour % 12) + 12 : currentHour % 12;
+
+    this.timeChanged.emit({ unit: "hour", value: hour });
   }
 
   protected onMonthChange(event: Event): void {
@@ -253,6 +278,8 @@ export class DatepickerDialogComponent {
       labelId: this.getTimeId(context, unit, "label"),
       descriptionId: this.idFor("time-instructions"),
       testIdPrefix: context.testIdPrefix,
+      hourCycle: context.uses12HourClock ? "h12" : "h23",
+      meridiem: this.meridiem(),
     };
   }
 

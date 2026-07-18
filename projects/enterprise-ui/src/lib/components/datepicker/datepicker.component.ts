@@ -78,7 +78,10 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   readonly value = model<Date | string | null>(null);
   readonly today = input<DateTime>(DateTime.now());
   readonly testId = input<string | null>(null);
-  readonly locale = input<string>("de-DE");
+  readonly locale = input<string | null>(null);
+  protected readonly resolvedLocale = computed(() =>
+    resolveLocale(this.locale()),
+  );
   readonly luxonDateFormat = input<string | null>(null);
   readonly dateFormatInput = input<string | null>(null, {
     alias: "dateFormat",
@@ -112,6 +115,10 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
         hourLabel: `${this.componentId()}-hour-label`,
         minuteLabel: `${this.componentId()}-minute-label`,
         secondLabel: `${this.componentId()}-second-label`,
+        meridiemGroup: `${this.componentId()}-meridiem`,
+        meridiemLabel: `${this.componentId()}-meridiem-label`,
+        meridiemAm: `${this.componentId()}-meridiem-am`,
+        meridiemPm: `${this.componentId()}-meridiem-pm`,
       }) as const,
   );
   protected readonly testIdPrefix = computed(
@@ -126,20 +133,26 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     LuxonDateInputAutocomplete.assertValidFormat(
       this.configuredDateFormat() ??
         LuxonDateInputAutocomplete.DEFAULT_DATETIME_FORMAT,
-      this.locale(),
+      this.resolvedLocale(),
     ),
   );
 
   private readonly dateFormatCapabilities = computed(() =>
-    getLuxonFormatCapabilities(this.dateFormat()),
+    getLuxonFormatCapabilities(this.dateFormat(), this.resolvedLocale()),
   );
 
-  readonly dateOnly = computed(
-    () => !this.dateFormatCapabilities().hasTime,
-  );
+  readonly dateOnly = computed(() => !this.dateFormatCapabilities().hasTime);
 
   readonly showSeconds = computed(
     () => this.dateFormatCapabilities().hasSeconds,
+  );
+
+  readonly uses12HourClock = computed(
+    () => this.dateFormatCapabilities().uses12HourClock,
+  );
+
+  readonly showMeridiem = computed(
+    () => this.dateFormatCapabilities().showMeridiem,
   );
 
   protected readonly dateFormatDescription = computed(() => this.dateFormat());
@@ -165,14 +178,15 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   );
 
   protected readonly formattedMonth = computed(() =>
-    this.viewDate().setLocale("de").toFormat("LLLL yyyy"),
+    this.viewDate().setLocale(this.resolvedLocale()).toFormat("LLLL yyyy"),
   );
 
   readonly selectedDate = signal<DateTime | null>(null);
   protected readonly inputDisplayValue = signal("");
   private readonly manualInputError = signal(false);
   private readonly inputAutocomplete = computed(
-    () => new LuxonDateInputAutocomplete(this.dateFormat(), this.locale()),
+    () =>
+      new LuxonDateInputAutocomplete(this.dateFormat(), this.resolvedLocale()),
   );
   readonly viewDate = signal<DateTime>(DateTime.now());
   protected readonly isOpen = signal(false);
@@ -218,13 +232,20 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     },
   ];
 
-  daysOfWeek = Info.weekdays("short", { locale: "de" }).map((short, i) => ({
-    short,
-    long: Info.weekdays("long", { locale: "de" })[i] ?? short,
-    weekday: i + 1,
-  }));
+  readonly daysOfWeek = computed(() => {
+    const locale = this.resolvedLocale();
+    const longWeekdays = Info.weekdays("long", { locale });
 
-  months = Info.months("long", { locale: "de" });
+    return Info.weekdays("short", { locale }).map((short, index) => ({
+      short,
+      long: longWeekdays[index] ?? short,
+      weekday: index + 1,
+    }));
+  });
+
+  readonly months = computed(() =>
+    Info.months("long", { locale: this.resolvedLocale() }),
+  );
 
   readonly grid = computed(() => {
     const startOfMonth = this.viewDate().startOf("month");
@@ -274,10 +295,14 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     hourLabelId: this.ids().hourLabel,
     minuteLabelId: this.ids().minuteLabel,
     secondLabelId: this.ids().secondLabel,
+    meridiemGroupId: this.ids().meridiemGroup,
+    meridiemLabelId: this.ids().meridiemLabel,
+    meridiemAmId: this.ids().meridiemAm,
+    meridiemPmId: this.ids().meridiemPm,
     dialogTitle: this.dialogTitle(),
     formattedMonth: this.formattedMonth(),
-    months: this.months,
-    daysOfWeek: this.daysOfWeek,
+    months: this.months(),
+    daysOfWeek: this.daysOfWeek(),
     weeks: this.grid(),
     selectedDate: this.selectedDate(),
     activeDate: this.activeDate(),
@@ -286,6 +311,9 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     testIdPrefix: this.testIdPrefix(),
     dateOnly: this.dateOnly(),
     showSeconds: this.showSeconds(),
+    uses12HourClock: this.uses12HourClock(),
+    showMeridiem: this.showMeridiem(),
+    locale: this.resolvedLocale(),
     dateAnnouncement: this.dateAnnouncement(),
     timeAnnouncement: this.timeAnnouncement(),
   }));
@@ -327,7 +355,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
     effect(() => {
       const format = this.dateFormat();
-      const locale = this.locale();
+      const locale = this.resolvedLocale();
       const dateOnly = this.dateOnly();
       const showSeconds = this.showSeconds();
       const selectedDate = this.selectedDate();
@@ -690,7 +718,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     const result = this.inputAutocomplete().process(input.value, {
       isDeletion,
       now: this.today(),
-      locale: this.locale(),
+      locale: this.resolvedLocale(),
     });
 
     this.applyManualInputResult(input, result, false);
@@ -700,7 +728,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     const result = this.inputAutocomplete().process(input.value, {
       commit: true,
       now: this.today(),
-      locale: this.locale(),
+      locale: this.resolvedLocale(),
     });
 
     this.applyManualInputResult(input, result, true);
@@ -732,11 +760,11 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       input.value.slice(selectionEnd);
     const combinedResult = this.inputAutocomplete().processPastedValue(
       nextValue,
-      { now: this.today(), locale: this.locale() },
+      { now: this.today(), locale: this.resolvedLocale() },
     );
     const pastedResult = this.inputAutocomplete().processPastedValue(
       pastedValue,
-      { now: this.today(), locale: this.locale() },
+      { now: this.today(), locale: this.resolvedLocale() },
     );
     const shouldUsePastedValue =
       !!pastedResult.date &&
@@ -828,7 +856,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   private formatDate(date: DateTime): string {
-    return date.setLocale(this.locale()).toFormat(this.dateFormat());
+    return date.setLocale(this.resolvedLocale()).toFormat(this.dateFormat());
   }
 
   private announceTime(): void {
@@ -838,11 +866,15 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       return;
     }
 
+    const localizedDate = date.setLocale(this.resolvedLocale());
+    const hourText = this.showMeridiem()
+      ? localizedDate.toFormat("hh a")
+      : `${localizedDate.toFormat("HH")} Uhr`;
     let announcement =
-      `Uhrzeit ${date.toFormat("HH")} Uhr, ` + `${date.toFormat("mm")} Minuten`;
+      `Uhrzeit ${hourText}, ` + `${localizedDate.toFormat("mm")} Minuten`;
 
     if (this.showSeconds()) {
-      announcement += ` und ${date.toFormat("ss")} Sekunden`;
+      announcement += ` und ${localizedDate.toFormat("ss")} Sekunden`;
     }
 
     this.timeAnnouncement.set(announcement);
@@ -944,7 +976,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {
-    const formattedDate = date.setLocale("de").toLocaleString({
+    const formattedDate = date.setLocale(this.resolvedLocale()).toLocaleString({
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -1011,6 +1043,8 @@ function looksLikeCompleteDateOrEpoch(value: string): boolean {
 type LuxonFormatCapabilities = Readonly<{
   hasTime: boolean;
   hasSeconds: boolean;
+  uses12HourClock: boolean;
+  showMeridiem: boolean;
 }>;
 
 const TIME_FIELD_TOKENS = new Set([
@@ -1030,15 +1064,7 @@ const TIME_FIELD_TOKENS = new Set([
   "a",
 ]);
 
-const SECOND_FIELD_TOKENS = new Set([
-  "s",
-  "ss",
-  "S",
-  "SSS",
-  "u",
-  "uu",
-  "uuu",
-]);
+const SECOND_FIELD_TOKENS = new Set(["s", "ss", "S", "SSS", "u", "uu", "uuu"]);
 
 const TIME_MACRO_TOKENS = new Set([
   "t",
@@ -1074,19 +1100,61 @@ const SECOND_MACRO_TOKENS = new Set([
 
 function getLuxonFormatCapabilities(
   format: string,
+  locale = resolveLocale(null),
 ): LuxonFormatCapabilities {
   const tokens = getUnquotedLuxonTokens(format);
+  const hasTimeMacro = tokens.some((token) => TIME_MACRO_TOKENS.has(token));
+  const hasExplicit12HourToken = tokens.some(
+    (token) => token === "h" || token === "hh",
+  );
+  const hasExplicit24HourToken = tokens.some(
+    (token) => token === "H" || token === "HH",
+  );
+  const usesLocale12HourClock =
+    hasTimeMacro && !hasExplicit24HourToken && is12HourLocale(locale);
+  const uses12HourClock = hasExplicit12HourToken || usesLocale12HourClock;
 
   return {
     hasTime: tokens.some(
-      (token) =>
-        TIME_FIELD_TOKENS.has(token) || TIME_MACRO_TOKENS.has(token),
+      (token) => TIME_FIELD_TOKENS.has(token) || TIME_MACRO_TOKENS.has(token),
     ),
     hasSeconds: tokens.some(
       (token) =>
         SECOND_FIELD_TOKENS.has(token) || SECOND_MACRO_TOKENS.has(token),
     ),
+    uses12HourClock,
+    showMeridiem:
+      uses12HourClock &&
+      (tokens.includes("a") || hasExplicit12HourToken || hasTimeMacro),
   };
+}
+
+function resolveLocale(configuredLocale: string | null): string {
+  const normalizedLocale = configuredLocale?.trim();
+
+  if (normalizedLocale) {
+    return normalizedLocale;
+  }
+
+  if (typeof navigator !== "undefined") {
+    const browserLocale =
+      navigator.languages?.find((locale) => locale.trim().length > 0) ??
+      navigator.language;
+
+    if (browserLocale?.trim()) {
+      return browserLocale;
+    }
+  }
+
+  return Intl.DateTimeFormat().resolvedOptions().locale || "en-US";
+}
+
+function is12HourLocale(locale: string): boolean {
+  const hourCycle = new Intl.DateTimeFormat(locale, {
+    hour: "numeric",
+  }).resolvedOptions().hourCycle;
+
+  return hourCycle === "h11" || hourCycle === "h12";
 }
 
 function getUnquotedLuxonTokens(format: string): string[] {
@@ -1124,4 +1192,3 @@ function getUnquotedLuxonTokens(format: string): string[] {
 
   return tokens;
 }
-

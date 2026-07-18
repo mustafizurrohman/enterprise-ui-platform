@@ -33,6 +33,7 @@ describe("DatepickerComponent", () => {
     fixture = TestBed.createComponent(DatepickerComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput("testId", "datepicker");
+    fixture.componentRef.setInput("locale", "de-DE");
     fixture.detectChanges();
     await fixture.whenStable();
   });
@@ -272,7 +273,7 @@ describe("DatepickerComponent", () => {
     );
 
     it("should expose weekday headings in Monday-first order", () => {
-      expect(component.daysOfWeek.map((day) => day.long)).toEqual(
+      expect(component.daysOfWeek().map((day) => day.long)).toEqual(
         Info.weekdays("long", { locale: "de" }),
       );
     });
@@ -345,9 +346,9 @@ describe("DatepickerComponent", () => {
 
   it("should select now from the input-adjacent button", async () => {
     fixture.componentRef.setInput(
-        "luxonDateFormat",
-        "dd.MM.yyyy HH:mm:ss 'Uhr'",
-      );
+      "luxonDateFormat",
+      "dd.MM.yyyy HH:mm:ss 'Uhr'",
+    );
     const onChangeSpy = vi.fn();
     component.registerOnChange(onChangeSpy);
 
@@ -626,10 +627,7 @@ describe("DatepickerComponent", () => {
     );
 
     it("should update the placeholder and formatted value when luxonDateFormat changes after initialization", async () => {
-      fixture.componentRef.setInput(
-        "luxonDateFormat",
-        "dd.MM.yyyy HH:mm:ss",
-      );
+      fixture.componentRef.setInput("luxonDateFormat", "dd.MM.yyyy HH:mm:ss");
       fixture.detectChanges();
 
       component.writeValue("2026-07-15T16:59:11");
@@ -642,10 +640,7 @@ describe("DatepickerComponent", () => {
       expect(input.placeholder).toBe("dd.MM.yyyy HH:mm:ss");
       expect(input.value).toBe("15.07.2026 16:59:11");
 
-      fixture.componentRef.setInput(
-        "luxonDateFormat",
-        "yyyy/MM/dd HH:mm:ss",
-      );
+      fixture.componentRef.setInput("luxonDateFormat", "yyyy/MM/dd HH:mm:ss");
       fixture.detectChanges();
       await fixture.whenStable();
       fixture.detectChanges();
@@ -685,6 +680,32 @@ describe("DatepickerComponent", () => {
       ) as HTMLInputElement;
 
       expect(input.value).toBe("15 July 2026");
+    });
+
+    it("should fall back to the browser locale when locale is not provided", () => {
+      const browserLocale =
+        navigator.languages?.find((locale) => locale.trim().length > 0) ??
+        navigator.language ??
+        Intl.DateTimeFormat().resolvedOptions().locale;
+
+      fixture.componentRef.setInput("dateFormat", "dd MMMM yyyy");
+      fixture.componentRef.setInput("locale", null);
+      component.writeValue("2026-07-15T00:00:00");
+      fixture.detectChanges();
+
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+
+      expect((component as any).resolvedLocale()).toBe(browserLocale);
+      expect(input.value).toBe(
+        DateTime.fromISO("2026-07-15")
+          .setLocale(browserLocale)
+          .toFormat("dd MMMM yyyy"),
+      );
+      expect(component.daysOfWeek().map((day) => day.long)).toEqual(
+        Info.weekdays("long", { locale: browserLocale }),
+      );
     });
 
     it.each([
@@ -771,9 +792,9 @@ describe("DatepickerComponent", () => {
       "should parse pasted epoch %s and display the configured format",
       (_, epoch) => {
         fixture.componentRef.setInput(
-        "luxonDateFormat",
-        "dd.MM.yyyy HH:mm:ss 'Uhr'",
-      );
+          "luxonDateFormat",
+          "dd.MM.yyyy HH:mm:ss 'Uhr'",
+        );
         const input = fixture.nativeElement.querySelector(
           '[data-testid="datepicker-input"]',
         ) as HTMLInputElement;
@@ -1622,6 +1643,238 @@ describe("DatepickerComponent", () => {
       },
     );
 
+    it.each([
+      ["MM/dd/yyyy hh:mm a", true],
+      ["MM/dd/yyyy h:mm:ss a", true],
+      ["dd.MM.yyyy HH:mm", false],
+      ["dd.MM.yyyy HH:mm:ss", false],
+      ["dd.MM.yyyy", false],
+    ])(
+      "should infer AM/PM selection from Luxon format %s",
+      (format, expected) => {
+        fixture.componentRef.setInput("luxonDateFormat", format);
+        fixture.detectChanges();
+
+        expect(component.uses12HourClock()).toBe(expected);
+        expect(component.showMeridiem()).toBe(expected);
+      },
+    );
+
+    it("should use the locale hour cycle for Luxon time macros", () => {
+      fixture.componentRef.setInput("locale", "en-US");
+      fixture.componentRef.setInput("luxonDateFormat", "t");
+      fixture.detectChanges();
+
+      expect(component.uses12HourClock()).toBeTruthy();
+      expect(component.showMeridiem()).toBeTruthy();
+
+      fixture.componentRef.setInput("locale", "de-DE");
+      fixture.detectChanges();
+
+      expect(component.uses12HourClock()).toBeFalsy();
+      expect(component.showMeridiem()).toBeFalsy();
+    });
+
+    it("should render AM/PM directly after the minute wheel when seconds are omitted", async () => {
+      fixture.componentRef.setInput("locale", "en-US");
+      fixture.componentRef.setInput("luxonDateFormat", "MM/dd/yyyy hh:mm a");
+      component.writeValue("2026-07-15T09:45:00");
+      fixture.detectChanges();
+
+      (
+        fixture.nativeElement.querySelector(
+          '[data-testid="datepicker-toggle"]',
+        ) as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const minuteWheel = document.querySelector(
+        '[data-testid="datepicker-minute-wheel"]',
+      ) as HTMLElement;
+      const meridiemToggle = document.querySelector(
+        '[data-testid="datepicker-meridiem-toggle"]',
+      ) as HTMLElement;
+
+      expect(
+        document.querySelector('[data-testid="datepicker-second-wheel"]'),
+      ).toBeNull();
+      expect(
+        minuteWheel.compareDocumentPosition(meridiemToggle) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it("should render AM/PM after the seconds wheel only for a 12-hour format", async () => {
+      fixture.componentRef.setInput("locale", "en-US");
+      fixture.componentRef.setInput("luxonDateFormat", "MM/dd/yyyy hh:mm:ss a");
+      component.writeValue("2026-07-15T13:45:30");
+      fixture.detectChanges();
+
+      (
+        fixture.nativeElement.querySelector(
+          '[data-testid="datepicker-toggle"]',
+        ) as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const hourInput = document.querySelector(
+        '[data-testid="datepicker-hour-input"]',
+      ) as HTMLInputElement;
+      const secondWheel = document.querySelector(
+        '[data-testid="datepicker-second-wheel"]',
+      ) as HTMLElement;
+      const meridiemToggle = document.querySelector(
+        '[data-testid="datepicker-meridiem-toggle"]',
+      ) as HTMLElement;
+      const pm = document.querySelector(
+        '[data-testid="datepicker-meridiem-pm"]',
+      ) as HTMLInputElement;
+
+      expect(hourInput.value).toBe("01");
+      expect(hourInput.getAttribute("aria-valuemin")).toBe("1");
+      expect(hourInput.getAttribute("aria-valuemax")).toBe("12");
+      expect(pm.checked).toBeTruthy();
+      expect(meridiemToggle).toBeTruthy();
+      expect(
+        secondWheel.compareDocumentPosition(meridiemToggle) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+
+      fixture.componentRef.setInput("luxonDateFormat", "dd.MM.yyyy HH:mm:ss");
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(
+        document.querySelector('[data-testid="datepicker-meridiem-toggle"]'),
+      ).toBeNull();
+      expect(component.selectedDate()?.hour).toBe(13);
+      expect(
+        (
+          document.querySelector(
+            '[data-testid="datepicker-hour-input"]',
+          ) as HTMLInputElement
+        ).value,
+      ).toBe("13");
+    });
+
+    it("should switch meridiem when hour stepping crosses noon or midnight", async () => {
+      fixture.componentRef.setInput("locale", "en-US");
+      fixture.componentRef.setInput("luxonDateFormat", "MM/dd/yyyy hh:mm a");
+      component.writeValue("2026-07-15T11:30:00");
+      fixture.detectChanges();
+
+      (
+        fixture.nativeElement.querySelector(
+          '[data-testid="datepicker-toggle"]',
+        ) as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      (
+        document.querySelector(
+          '[data-testid="datepicker-hour-increment"]',
+        ) as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.hour).toBe(12);
+      expect(
+        (
+          document.querySelector(
+            '[data-testid="datepicker-meridiem-pm"]',
+          ) as HTMLInputElement
+        ).checked,
+      ).toBeTruthy();
+      expect(
+        (
+          fixture.nativeElement.querySelector(
+            '[data-testid="datepicker-input"]',
+          ) as HTMLInputElement
+        ).value,
+      ).toBe("07/15/2026 12:30 PM");
+
+      component.writeValue("2026-07-15T23:30:00");
+      fixture.detectChanges();
+
+      (
+        document.querySelector(
+          '[data-testid="datepicker-hour-increment"]',
+        ) as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.hour).toBe(0);
+      expect(
+        (
+          document.querySelector(
+            '[data-testid="datepicker-meridiem-am"]',
+          ) as HTMLInputElement
+        ).checked,
+      ).toBeTruthy();
+      expect(
+        (
+          fixture.nativeElement.querySelector(
+            '[data-testid="datepicker-input"]',
+          ) as HTMLInputElement
+        ).value,
+      ).toBe("07/15/2026 12:30 AM");
+    });
+
+    it("should synchronize AM/PM changes with the selected DateTime and formatted input", async () => {
+      fixture.componentRef.setInput("locale", "en-US");
+      fixture.componentRef.setInput("luxonDateFormat", "MM/dd/yyyy hh:mm a");
+      component.writeValue("2026-07-15T10:30:00");
+      fixture.detectChanges();
+
+      (
+        fixture.nativeElement.querySelector(
+          '[data-testid="datepicker-toggle"]',
+        ) as HTMLButtonElement
+      ).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const pm = document.querySelector(
+        '[data-testid="datepicker-meridiem-pm"]',
+      ) as HTMLInputElement;
+      pm.click();
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.hour).toBe(22);
+      expect(
+        (
+          fixture.nativeElement.querySelector(
+            '[data-testid="datepicker-input"]',
+          ) as HTMLInputElement
+        ).value,
+      ).toBe("07/15/2026 10:30 PM");
+      expect(
+        (
+          document.querySelector(
+            '[data-testid="datepicker-hour-input"]',
+          ) as HTMLInputElement
+        ).getAttribute("aria-valuetext"),
+      ).toBe("10 PM");
+
+      const am = document.querySelector(
+        '[data-testid="datepicker-meridiem-am"]',
+      ) as HTMLInputElement;
+      am.click();
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.hour).toBe(10);
+      expect(
+        (
+          fixture.nativeElement.querySelector(
+            '[data-testid="datepicker-input"]',
+          ) as HTMLInputElement
+        ).value,
+      ).toBe("07/15/2026 10:30 AM");
+    });
+
     it("should hide seconds wheel by default", async () => {
       const button = fixture.nativeElement.querySelector(
         '[data-testid$="toggle"]',
@@ -1672,19 +1925,13 @@ describe("DatepickerComponent", () => {
     });
 
     it("should normalize the selected value when the inferred mode changes", async () => {
-      fixture.componentRef.setInput(
-        "luxonDateFormat",
-        "dd.MM.yyyy HH:mm:ss",
-      );
+      fixture.componentRef.setInput("luxonDateFormat", "dd.MM.yyyy HH:mm:ss");
       component.writeValue("2026-07-15T16:59:45.123");
       fixture.detectChanges();
 
       expect(component.selectedDate()?.second).toBe(45);
 
-      fixture.componentRef.setInput(
-        "luxonDateFormat",
-        "dd.MM.yyyy HH:mm",
-      );
+      fixture.componentRef.setInput("luxonDateFormat", "dd.MM.yyyy HH:mm");
       fixture.detectChanges();
       await fixture.whenStable();
       fixture.detectChanges();

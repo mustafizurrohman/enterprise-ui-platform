@@ -84,7 +84,8 @@
                 [selected]="($index + 1).toString() === selectedMonth()"
                 [attr.data-testid]="testIdFor('month-option-' + ($index + 1))"
               >
-                {{ month }}{{
+                {{ month
+                }}{{
                   isMonthSelectFocused()
                     ? " (" + ($index + 1 < 10 ? "0" : "") + ($index + 1) + ")"
                     : ""
@@ -260,6 +261,10 @@
       >
         Verwenden Sie die Pfeiltasten oder geben Sie zweistellige Werte direkt
         ein.
+        @if (showMeridiem()) {
+          Wählen Sie zusätzlich AM für vormittags oder PM für nachmittags und
+          abends.
+        }
       </p>
 
       <div
@@ -285,6 +290,75 @@
             [context]="secondWheelContext()"
             (valueChange)="emitTimeChange('second', $event)"
           />
+        }
+
+        @if (showMeridiem()) {
+          <div
+            class="datepicker-meridiem-control"
+            [attr.data-testid]="testIdFor('meridiem-control')"
+          >
+            <span
+              [id]="context().meridiemLabelId"
+              class="visually-hidden"
+              [attr.data-testid]="testIdFor('meridiem-label')"
+            >
+              Tageshälfte auswählen
+            </span>
+
+            <div
+              [id]="context().meridiemGroupId"
+              class="datepicker-meridiem-toggle"
+              role="radiogroup"
+              [attr.aria-labelledby]="context().meridiemLabelId"
+              [attr.data-testid]="testIdFor('meridiem-toggle')"
+            >
+              <label class="datepicker-meridiem-choice">
+                <input
+                  [id]="context().meridiemAmId"
+                  type="radio"
+                  class="datepicker-meridiem-input"
+                  [name]="context().meridiemGroupId"
+                  value="AM"
+                  aria-label="AM, vormittags"
+                  [attr.aria-controls]="context().hourSelectId"
+                  [checked]="meridiem() === 'AM'"
+                  [attr.data-testid]="testIdFor('meridiem-am')"
+                  (change)="selectMeridiem('AM')"
+                />
+                <span
+                  class="datepicker-meridiem-option"
+                  [attr.data-testid]="testIdFor('meridiem-am-option')"
+                >
+                  AM
+                </span>
+              </label>
+
+              <label class="datepicker-meridiem-choice">
+                <input
+                  [id]="context().meridiemPmId"
+                  type="radio"
+                  class="datepicker-meridiem-input"
+                  [name]="context().meridiemGroupId"
+                  value="PM"
+                  aria-label="PM, nachmittags und abends"
+                  [attr.aria-controls]="context().hourSelectId"
+                  [checked]="meridiem() === 'PM'"
+                  [attr.data-testid]="testIdFor('meridiem-pm')"
+                  (change)="selectMeridiem('PM')"
+                />
+                <span
+                  class="datepicker-meridiem-option"
+                  [attr.data-testid]="testIdFor('meridiem-pm-option')"
+                >
+                  PM
+                </span>
+              </label>
+            </div>
+
+            <span class="datepicker-meridiem-caption" aria-hidden="true">
+              AM/PM
+            </span>
+          </div>
         }
       </div>
 
