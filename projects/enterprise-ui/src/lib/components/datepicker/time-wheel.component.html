@@ -5,23 +5,6 @@
   [attr.aria-labelledby]="labelId()"
   [attr.data-testid]="testIdFor('wheel')"
 >
-  <button
-    [id]="decrementButtonId()"
-    type="button"
-    class="datepicker-time-button"
-    [attr.aria-controls]="controlId()"
-    [attr.aria-label]="configuration().singularLabel + ' um eins verringern'"
-    [attr.data-testid]="testIdFor('decrement')"
-    (click)="decrement()"
-  >
-    <mat-icon
-      aria-hidden="true"
-      [attr.data-testid]="testIdFor('decrement-icon')"
-    >
-      remove
-    </mat-icon>
-  </button>
-
   <div
     [id]="valueId()"
     class="datepicker-time-value"
@@ -57,28 +40,52 @@
     />
   </div>
 
-  <button
-    [id]="incrementButtonId()"
-    type="button"
-    class="datepicker-time-button"
-    [attr.aria-controls]="controlId()"
-    [attr.aria-label]="configuration().singularLabel + ' um eins erhöhen'"
-    [attr.data-testid]="testIdFor('increment')"
-    (click)="increment()"
+  <div
+    [id]="buttonStackId()"
+    class="datepicker-time-button-stack"
+    [attr.data-testid]="testIdFor('button-stack')"
   >
-    <mat-icon
-      aria-hidden="true"
-      [attr.data-testid]="testIdFor('increment-icon')"
+    <button
+      [id]="incrementButtonId()"
+      type="button"
+      class="datepicker-time-button"
+      [attr.aria-controls]="controlId()"
+      [attr.aria-label]="configuration().singularLabel + ' um eins erhöhen'"
+      [attr.data-testid]="testIdFor('increment')"
+      (click)="increment()"
     >
-      add
-    </mat-icon>
-  </button>
+      <mat-icon
+        aria-hidden="true"
+        [attr.data-testid]="testIdFor('increment-icon')"
+      >
+        add
+      </mat-icon>
+    </button>
 
-  <span
+    <button
+      [id]="decrementButtonId()"
+      type="button"
+      class="datepicker-time-button"
+      [attr.aria-controls]="controlId()"
+      [attr.aria-label]="configuration().singularLabel + ' um eins verringern'"
+      [attr.data-testid]="testIdFor('decrement')"
+      (click)="decrement()"
+    >
+      <mat-icon
+        aria-hidden="true"
+        [attr.data-testid]="testIdFor('decrement-icon')"
+      >
+        remove
+      </mat-icon>
+    </button>
+  </div>
+
+  <label
     [id]="labelId()"
     class="datepicker-time-label"
+    [attr.for]="controlId()"
     [attr.data-testid]="testIdFor('label')"
   >
     {{ configuration().label }}
-  </span>
+  </label>
 </div>

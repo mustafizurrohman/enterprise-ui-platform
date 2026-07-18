@@ -75,6 +75,9 @@ export class TimeWheelComponent {
   );
   protected readonly wheelId = computed(() => `${this.controlId()}-wheel`);
   protected readonly valueId = computed(() => `${this.controlId()}-value`);
+  protected readonly buttonStackId = computed(
+    () => `${this.controlId()}-button-stack`,
+  );
   protected readonly incrementButtonId = computed(
     () => `${this.controlId()}-increment`,
   );

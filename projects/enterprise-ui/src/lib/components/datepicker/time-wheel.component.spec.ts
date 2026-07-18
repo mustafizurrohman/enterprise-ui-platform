@@ -70,6 +70,9 @@ describe("TimeWheelComponent", () => {
     const value = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-hour-value"]',
     ) as HTMLElement;
+    const buttonStack = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-button-stack"]',
+    ) as HTMLElement;
     const label = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-hour-label"]',
     ) as HTMLElement;
@@ -83,10 +86,41 @@ describe("TimeWheelComponent", () => {
     expect(input.getAttribute("aria-labelledby")).toBe(label.id);
     expect(input.getAttribute("aria-describedby")).toBe("time-instructions");
     expect(value.id).toBe("hour-control-value");
+    expect(buttonStack.id).toBe("hour-control-button-stack");
     expect(increment.id).toBe("hour-control-increment");
     expect(increment.getAttribute("aria-controls")).toBe(input.id);
     expect(decrement.id).toBe("hour-control-decrement");
     expect(decrement.getAttribute("aria-controls")).toBe(input.id);
+  });
+
+  it("should render the increment button above the decrement button", () => {
+    const buttonStack = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-button-stack"]',
+    ) as HTMLElement;
+    const buttons = Array.from(
+      buttonStack.querySelectorAll<HTMLButtonElement>("button"),
+    );
+
+    expect(buttons).toHaveLength(2);
+    expect(buttons[0]?.dataset["testid"]).toBe(
+      "datepicker-hour-increment",
+    );
+    expect(buttons[1]?.dataset["testid"]).toBe(
+      "datepicker-hour-decrement",
+    );
+  });
+
+  it("should use a native label associated with the spinbutton", () => {
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-input"]',
+    ) as HTMLInputElement;
+    const label = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-label"]',
+    ) as HTMLLabelElement;
+
+    expect(label.tagName).toBe("LABEL");
+    expect(label.htmlFor).toBe(input.id);
+    expect(label.textContent?.trim()).toBe("Stunden");
   });
 
   it("should emit incremented and decremented values with wrap-around", () => {

@@ -3,55 +3,27 @@
 }
 
 .datepicker-time-wheel {
+  --time-wheel-accent: var(--mat-sys-primary, #005cbb);
+  --time-wheel-field-surface: var(
+    --mat-sys-surface-container-low,
+    #f7f2fa
+  );
+  --time-wheel-button-surface: var(--mat-sys-surface, #fff);
+  --time-wheel-on-surface: var(--mat-sys-on-surface, #1d1b20);
+  --time-wheel-label-color: var(
+    --mat-sys-on-surface-variant,
+    #49454f
+  );
+  --time-wheel-outline: var(--mat-sys-outline-variant, #cac4d0);
+
   display: grid;
-  grid-template-columns: 28px 40px 28px;
+  grid-template-columns: 40px 20px;
   grid-template-rows: 40px auto;
-  justify-items: center;
-  align-items: center;
-  min-width: 104px;
-  column-gap: 4px;
-}
-
-.datepicker-time-button {
-  display: flex;
-  align-items: center;
+  column-gap: 5px;
+  row-gap: 4px;
+  align-items: stretch;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  place-items: center;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  background: #fff;
-  color: #007aff;
-  cursor: pointer;
-  font-size: 22px;
-  line-height: 1;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-
-  &:hover {
-    background: rgb(0 122 255 / 10%);
-  }
-
-  &:active {
-    transform: scale(0.92);
-    background: rgb(0 122 255 / 16%);
-  }
-
-  &:focus-visible {
-    outline: 2px solid #007aff;
-    outline-offset: 2px;
-  }
-
-  mat-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    font-size: 24px;
-    line-height: 24px;
-  }
+  min-width: 65px;
 }
 
 .datepicker-time-value {
@@ -59,56 +31,104 @@
 
   position: relative;
   display: grid;
+  grid-column: 1;
+  grid-row: 1;
   width: 40px;
-  align-items: center;
-  justify-items: center;
+  height: 40px;
   overflow: hidden;
+  border: 1px solid var(--time-wheel-outline);
+  border-radius: 8px;
+  background: var(--time-wheel-field-surface);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
 
   &--rapid {
     --time-wheel-animation-duration: 70ms;
   }
-
-  &::before {
-    position: absolute;
-    inset: 0;
-    border-radius: 10px;
-    background: rgb(118 118 128 / 12%);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    content: "";
-    pointer-events: none;
-  }
 }
 
 .datepicker-time-select {
-  position: relative;
-  z-index: 1;
-  width: 40px;
-  height: 40px;
+  width: 100%;
+  height: 100%;
   padding: 0;
   border: 0;
+  border-radius: inherit;
   outline: 0;
   background: transparent;
-  color: #1c1c1e;
+  color: var(--time-wheel-on-surface);
+  caret-color: var(--time-wheel-accent);
   cursor: text;
   font: inherit;
   font-size: 24px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  line-height: 1;
   text-align: center;
 
   &:focus-visible {
-    border-radius: 10px;
-    outline: 2px solid #007aff;
-    outline-offset: -2px;
+    outline: 3px solid var(--time-wheel-accent);
+    outline-offset: -3px;
+  }
+}
+
+.datepicker-time-button-stack {
+  display: grid;
+  grid-column: 2;
+  grid-row: 1;
+  grid-template-rows: repeat(2, 1fr);
+  gap: 4px;
+  width: 20px;
+  height: 40px;
+}
+
+.datepicker-time-button {
+  display: grid;
+  width: 20px;
+  min-width: 20px;
+  height: 18px;
+  min-height: 18px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--time-wheel-outline);
+  border-radius: 6px;
+  background: var(--time-wheel-button-surface);
+  color: var(--time-wheel-accent);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+
+  &:hover {
+    background: var(--mat-sys-primary-container, #d9e2ff);
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--time-wheel-accent);
+    outline-offset: 2px;
+  }
+
+  mat-icon {
+    display: grid;
+    width: 14px;
+    height: 14px;
+    place-items: center;
+    font-size: 14px;
+    line-height: 14px;
   }
 }
 
 .datepicker-time-label {
+  grid-column: 1;
   grid-row: 2;
-  grid-column: 1 / span 3;
-  margin-top: 4px;
-  color: rgb(60 60 67 / 60%);
+  width: 100%;
+  color: var(--time-wheel-label-color);
+  cursor: pointer;
   font-size: 12px;
+  line-height: 16px;
+  text-align: center;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -126,22 +146,22 @@
   }
 
   .datepicker-time-value[data-animation="increment-a"]
-    .datepicker-time-select {
+  .datepicker-time-select {
     animation-name: datepicker-time-increment-a;
   }
 
   .datepicker-time-value[data-animation="increment-b"]
-    .datepicker-time-select {
+  .datepicker-time-select {
     animation-name: datepicker-time-increment-b;
   }
 
   .datepicker-time-value[data-animation="decrement-a"]
-    .datepicker-time-select {
+  .datepicker-time-select {
     animation-name: datepicker-time-decrement-a;
   }
 
   .datepicker-time-value[data-animation="decrement-b"]
-    .datepicker-time-select {
+  .datepicker-time-select {
     animation-name: datepicker-time-decrement-b;
   }
 }
@@ -149,7 +169,7 @@
 @keyframes datepicker-time-increment-a {
   from {
     opacity: 0.35;
-    transform: translateY(-14px) scale(0.96);
+    transform: translateY(-9px) scale(0.96);
   }
 
   to {
@@ -161,7 +181,7 @@
 @keyframes datepicker-time-increment-b {
   from {
     opacity: 0.35;
-    transform: translateY(-14px) scale(0.96);
+    transform: translateY(-9px) scale(0.96);
   }
 
   to {
@@ -173,7 +193,7 @@
 @keyframes datepicker-time-decrement-a {
   from {
     opacity: 0.35;
-    transform: translateY(14px) scale(0.96);
+    transform: translateY(9px) scale(0.96);
   }
 
   to {
@@ -185,7 +205,7 @@
 @keyframes datepicker-time-decrement-b {
   from {
     opacity: 0.35;
-    transform: translateY(14px) scale(0.96);
+    transform: translateY(9px) scale(0.96);
   }
 
   to {
@@ -195,8 +215,13 @@
 }
 
 @media (forced-colors: active) {
+  .datepicker-time-value,
+  .datepicker-time-button {
+    border-color: CanvasText;
+  }
+
   .datepicker-time-button:focus-visible,
   .datepicker-time-select:focus-visible {
-    outline: 2px solid CanvasText;
+    outline-color: CanvasText;
   }
 }
