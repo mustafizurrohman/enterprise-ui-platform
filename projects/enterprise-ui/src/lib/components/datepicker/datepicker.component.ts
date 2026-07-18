@@ -35,6 +35,9 @@ import {
   DatepickerDialogComponent,
   type DatepickerDialogContext,
 } from "./datepicker-dialog.component";
+import type {
+  DatepickerWeek,
+} from "./datepicker-grid.component";
 import type { TimeUnit } from "./time-wheel.component";
 import {
   type DateInputAutocompleteResult,
@@ -961,6 +964,17 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   isToday(date: DateTime | null): boolean {
     if (!date) return false;
     return date.hasSame(this.today(), "day");
+  }
+
+  isCurrentWeek(week: DatepickerWeek): boolean {
+    return week.days.some((day) => this.isToday(day));
+  }
+
+  isCurrentWeekday(weekday: number): boolean {
+    return (
+      this.today().weekday === weekday &&
+      this.today().hasSame(this.viewDate(), "month")
+    );
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {

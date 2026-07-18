@@ -2049,6 +2049,135 @@ describe("DatepickerComponent", () => {
       expect(weekdayHeaders[1].classList.contains("today")).toBeFalsy();
     });
   });
+
+  describe("additional verification for time and copy-paste", () => {
+    it("should update selectedDate when a day is clicked in the grid", async () => {
+      component.writeValue("2026-07-15T10:30:00");
+      const toggle = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-toggle"]',
+      ) as HTMLButtonElement;
+      toggle.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const targetDay = document.querySelector(
+        '[data-testid="datepicker-day-2026-07-20"]',
+      ) as HTMLButtonElement;
+      expect(targetDay).toBeTruthy();
+      targetDay.click();
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.toISODate()).toBe("2026-07-20");
+      expect(component.selectedDate()?.hour).toBe(10);
+      expect(component.selectedDate()?.minute).toBe(30);
+    });
+
+    it("should update selectedDate when time adjustment buttons are clicked", async () => {
+      component.writeValue("2026-07-15T10:30:00");
+      const toggle = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-toggle"]',
+      ) as HTMLButtonElement;
+      toggle.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const add15Mins = document.querySelector(
+        '[data-testid="datepicker-add-15-mins"]',
+      ) as HTMLButtonElement;
+      expect(add15Mins).toBeTruthy();
+      add15Mins.click();
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.minute).toBe(45);
+
+      const subtract6Hrs = document.querySelector(
+        '[data-testid="datepicker-subtract-6-hrs"]',
+      ) as HTMLButtonElement;
+      expect(subtract6Hrs).toBeTruthy();
+      subtract6Hrs.click();
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.hour).toBe(4);
+    });
+
+    it("should update selectedDate when time wheel buttons are clicked", async () => {
+      component.writeValue("2026-07-15T10:30:00");
+      const toggle = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-toggle"]',
+      ) as HTMLButtonElement;
+      toggle.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const hourIncrement = document.querySelector(
+        '[data-testid="datepicker-hour-increment"]',
+      ) as HTMLButtonElement;
+      expect(hourIncrement).toBeTruthy();
+      hourIncrement.click();
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.hour).toBe(11);
+
+      const minuteDecrement = document.querySelector(
+        '[data-testid="datepicker-minute-decrement"]',
+      ) as HTMLButtonElement;
+      expect(minuteDecrement).toBeTruthy();
+      minuteDecrement.click();
+      fixture.detectChanges();
+
+      expect(component.selectedDate()?.minute).toBe(29);
+    });
+
+    it("should display the invalid character in the input before showing the error", async () => {
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+
+      input.value = "15a";
+      input.dispatchEvent(new Event("input"));
+      fixture.detectChanges();
+
+      expect(input.value).toBe("15a");
+      const error = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-error"]',
+      );
+      expect(error).toBeTruthy();
+    });
+
+    it("should display unexpected trailing input before showing the error", async () => {
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+
+      input.value = "15.07.2026 10:00 extra";
+      input.dispatchEvent(new Event("input"));
+      fixture.detectChanges();
+
+      expect(input.value).toBe("15.07.2026 10:00 extra");
+      const error = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-error"]',
+      );
+      expect(error).toBeTruthy();
+    });
+
+    it("should work when copy-pasting a full date string", async () => {
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+
+      const pastedValue = "20.12.2025 14:45";
+      dispatchPaste(input, pastedValue);
+      fixture.detectChanges();
+
+      expect(input.value).toContain("20.12.2025");
+      expect(input.value).toContain("14:45");
+      expect(component.selectedDate()?.day).toBe(20);
+      expect(component.selectedDate()?.month).toBe(12);
+      expect(component.selectedDate()?.year).toBe(2025);
+      expect(component.selectedDate()?.hour).toBe(14);
+      expect(component.selectedDate()?.minute).toBe(45);
+    });
+  });
 });
 
 @Component({

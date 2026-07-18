@@ -534,7 +534,7 @@ export class LuxonDateInputAutocomplete {
     );
 
     return {
-      value,
+      value: invalidCharacter || unexpectedInput ? rawValue : value,
       fields,
       error: invalidCharacter
         ? {

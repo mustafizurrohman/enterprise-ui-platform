@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from "@angular/common";
 import { CdkTrapFocus } from "@angular/cdk/a11y";
 import { MatIconModule } from "@angular/material/icon";
 import {
@@ -73,7 +72,6 @@ export type DatepickerDialogContext = Readonly<{
   selector: "datepicker-dialog",
   standalone: true,
   imports: [
-    NgTemplateOutlet,
     CdkTrapFocus,
     MatIconModule,
     MatInputModule,
@@ -146,6 +144,12 @@ export class DatepickerDialogComponent {
   );
   protected readonly timeAnnouncement = computed(
     () => this.context().timeAnnouncement,
+  );
+
+  protected readonly selectNowLabel = computed(() =>
+    this.dateOnly()
+      ? "Heutiges Datum auswählen"
+      : "Aktuelles Datum und aktuelle Uhrzeit auswählen",
   );
 
   protected readonly calendarGridId = computed(() => `${this.dialogId()}-grid`);

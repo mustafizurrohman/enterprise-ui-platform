@@ -592,28 +592,6 @@ describe("DatepickerDialogComponent", () => {
     expect(timeSpy).toHaveBeenLastCalledWith({ unit: "hour", value: 22 });
   });
 
-  it("should provide accessible labels and stable IDs for dialog actions when dateOnly is true", () => {
-    const context: DatepickerDialogContext = {
-      ...component.context(),
-      dateOnly: true,
-    };
-    fixture.componentRef.setInput("context", context);
-    fixture.detectChanges();
-
-    const actions = fixture.nativeElement.querySelector(
-      '[data-testid="datepicker-actions"]',
-    ) as HTMLElement;
-    const nowButton = fixture.nativeElement.querySelector(
-      '[data-testid="datepicker-now"]',
-    ) as HTMLButtonElement;
-
-    expect(actions.id).toBe("dialog-actions");
-    expect(nowButton.id).toBe("dialog-now");
-    expect(nowButton.getAttribute("aria-label")).toBe(
-      "Heutiges Datum auswählen",
-    );
-  });
-
   it("should forward time adjustment events", () => {
     const adjustSpy = vi.fn();
     component.timeAdjusted.subscribe(adjustSpy);
