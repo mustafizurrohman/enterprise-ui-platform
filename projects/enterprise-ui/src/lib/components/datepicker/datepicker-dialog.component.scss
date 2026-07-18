@@ -95,7 +95,7 @@ $divider: rgba(0, 0, 0, 0.12);
     min-width: 0;
     height: 40px;
     overflow: hidden;
-    border: 0;
+    border: 1px solid $divider;
     border-radius: 6px;
     background: $background-card;
     transition:
@@ -122,6 +122,7 @@ $divider: rgba(0, 0, 0, 0.12);
     width: 32px;
     padding: 0;
     border: 0;
+    border-left: 1px solid $divider;
     background: transparent;
     color: $primary;
     cursor: pointer;
@@ -370,7 +371,7 @@ $divider: rgba(0, 0, 0, 0.12);
 
   .datepicker-adjustment-buttons {
     display: flex;
-    border: 0;
+    border: 1px solid $divider;
     border-radius: 6px;
     background: #fff;
     overflow: hidden;
@@ -383,6 +384,7 @@ $divider: rgba(0, 0, 0, 0.12);
     width: 44px;
     min-height: 32px;
     border: 0;
+    border-right: 1px solid $divider;
     background: transparent;
     color: #007aff;
     cursor: pointer;
