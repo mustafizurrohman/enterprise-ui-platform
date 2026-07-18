@@ -8,6 +8,12 @@ $foreground-disabled: rgba(0, 0, 0, 0.38);
 $background-card: #fff;
 $hover-background: rgba(0, 0, 0, 0.04);
 $divider: rgba(0, 0, 0, 0.12);
+$calendar-header-background: #f5f5f5; // Added this line to ensure $calendar-header-background is defined
+
+:host {
+  display: block;
+  margin-bottom: 21px;
+}
 
 .visually-hidden {
   position: absolute;
@@ -141,9 +147,29 @@ $divider: rgba(0, 0, 0, 0.12);
       }
     }
   }
+
+  .datepicker-grid {
+    border: 1px solid $divider;
+    border-bottom: none;
+    border-radius: 6px;
+    overflow: hidden;
+
+    .datepicker-weekday-row,
+    .datepicker-week {
+      display: grid;
+      grid-template-columns: 32px repeat(7, minmax(0, 1fr));
+    }
+
+    .datepicker-weekday-row {
+      background-color: $calendar-header-background;
+      border-bottom: 1px solid $divider;
+    }
+
+    .datepicker-week:not(:last-child) {
+      border-bottom: 1px solid $divider;
+    }
+  }
 }
-
-
 
 @media (forced-colors: active) {
   .datepicker-input:focus-within,
