@@ -1,7 +1,12 @@
 import { DateTime } from "luxon";
 
 export type LuxonDateField =
-  "year" | "month" | "day" | "hour" | "minute" | "second";
+  | "year"
+  | "month"
+  | "day"
+  | "hour"
+  | "minute"
+  | "second";
 
 type FieldToken = Readonly<{
   type: "field";
@@ -309,13 +314,18 @@ export class LuxonDateInputAutocomplete {
       }
     }
 
-    const suggestedValue = this.buildSuggestion(normalized.fields, now);
+    const value = date
+      ? formatInputValue(date, this.dateFormat, locale)
+      : normalized.value;
+    const suggestedValue = date
+      ? value
+      : this.buildSuggestion(normalized.fields, now);
 
     return {
-      value: normalized.value,
+      value,
       suggestedValue,
-      completionSuffix: suggestedValue.startsWith(normalized.value)
-        ? suggestedValue.slice(normalized.value.length)
+      completionSuffix: suggestedValue.startsWith(value)
+        ? suggestedValue.slice(value.length)
         : "",
       complete,
       valid: !parseError,
