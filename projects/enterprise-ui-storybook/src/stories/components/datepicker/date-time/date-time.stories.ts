@@ -1,3 +1,4 @@
+import { Component, Input } from '@angular/core';
 import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
 import { DatepickerComponent } from '../../../../../../enterprise-ui/src/lib/components/datepicker/datepicker.component';
 import template from './date-time.stories.html?raw';
@@ -159,9 +160,24 @@ const COMMON_LUXON_DATE_FORMATS = [
   'cccc, MMMM dd, yyyy hh:mm a',
   'cccc, MMMM dd, yyyy hh:mm:ss a',
 ] as const;
+
+@Component({
+  selector: 'date-time-story-host',
+  standalone: true,
+  imports: [DatepickerComponent],
+  template,
+})
+class DateTimeStoryHostComponent {
+  @Input() label: string = 'Datum auswählen';
+  @Input() disabled: boolean = false;
+  @Input() locale: string = 'de-DE';
+  @Input() luxonDateFormat: string = DEFAULT_DATETIME_FORMAT;
+  @Input() value: Date | string | null = null;
+}
+
 const meta = {
   title: 'Components/Datepicker',
-  component: DatepickerComponent,
+  component: DateTimeStoryHostComponent,
   decorators: [
     moduleMetadata({
       imports: [DatepickerComponent],
@@ -216,7 +232,7 @@ const meta = {
     luxonDateFormat: DEFAULT_DATETIME_FORMAT,
     value: null,
   },
-} satisfies Meta<DatepickerComponent>;
+} satisfies Meta<DateTimeStoryHostComponent>;
 
 export default meta;
 
