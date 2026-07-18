@@ -1,0 +1,15 @@
+<datepicker
+  [label]="label"
+  [disabled]="disabled"
+  [locale]="locale"
+  [luxonDateFormat]="luxonDateFormat"
+  [(value)]="value"
+/>
+
+<div style="margin-top: 1rem;">
+  @if (value === null) {
+    <i>null</i>
+  } @else {
+    {{ value }}
+  }
+</div>

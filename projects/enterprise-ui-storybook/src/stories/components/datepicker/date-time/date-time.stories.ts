@@ -1,5 +1,6 @@
 import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
 import { DatepickerComponent } from '../../../../../../enterprise-ui/src/lib/components/datepicker/datepicker.component';
+import template from './date-time.stories.html?raw';
 
 const DEFAULT_DATETIME_FORMAT = "dd.MM.yyyy HH:mm 'Uhr'";
 
@@ -75,12 +76,17 @@ const meta = {
         },
       },
     },
+    value: {
+      control: 'text',
+      description: 'The current value of the datepicker',
+    },
   },
   args: {
     label: 'Datum auswählen',
     disabled: false,
     locale: 'de-DE',
     luxonDateFormat: DEFAULT_DATETIME_FORMAT,
+    value: null,
   },
 } satisfies Meta<DatepickerComponent>;
 
@@ -91,13 +97,6 @@ type Story = StoryObj<typeof meta>;
 export const DateTime: Story = {
   render: (args) => ({
     props: args,
-    template: `
-      <datepicker
-        [label]="label"
-        [disabled]="disabled"
-        [locale]="locale"
-        [luxonDateFormat]="luxonDateFormat"
-      />
-    `,
+    template,
   }),
 };
