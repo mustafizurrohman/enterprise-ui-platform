@@ -251,6 +251,124 @@ describe("LuxonDateInputAutocomplete", () => {
       );
     });
 
+    it.each([
+      ["abbreviated era", "G y-MM-dd", "AD 2026-07-15", "en-US", "2026-07-15"],
+      [
+        "full era",
+        "GG y-MM-dd",
+        "Anno Domini 2026-07-15",
+        "en-US",
+        "2026-07-15",
+      ],
+      [
+        "four-to-six-digit year",
+        "yyyyy-MM-dd",
+        "02026-07-15",
+        "en-US",
+        "2026-07-15",
+      ],
+      ["six-digit year", "yyyyyy-MM-dd", "002026-07-15", "en-US", "2026-07-15"],
+      [
+        "localized short weekday",
+        "yyyy-MM-dd EEE",
+        "2026-07-15 Mi",
+        "de-DE",
+        "2026-07-15",
+      ],
+      [
+        "localized long weekday",
+        "yyyy-MM-dd EEEE",
+        "2026-07-15 Mittwoch",
+        "de-DE",
+        "2026-07-15",
+      ],
+      [
+        "standalone short weekday",
+        "yyyy-MM-dd ccc",
+        "2026-07-15 Mi",
+        "de-DE",
+        "2026-07-15",
+      ],
+      [
+        "standalone long weekday",
+        "yyyy-MM-dd cccc",
+        "2026-07-15 Mittwoch",
+        "de-DE",
+        "2026-07-15",
+      ],
+      ["quarter", "yyyy-'Q'q", "2026-Q3", "en-US", "2026-07-01"],
+      ["padded quarter", "yyyy-'Q'qq", "2026-Q03", "en-US", "2026-07-01"],
+      [
+        "milliseconds",
+        "yyyy-MM-dd HH:mm:ss.SSS",
+        "2026-07-15 16:59:12.125",
+        "en-US",
+        "2026-07-15",
+      ],
+      [
+        "fractional seconds",
+        "yyyy-MM-dd HH:mm:ss.u",
+        "2026-07-15 16:59:12.125",
+        "en-US",
+        "2026-07-15",
+      ],
+      [
+        "two-digit fractional seconds",
+        "yyyy-MM-dd HH:mm:ss.uu",
+        "2026-07-15 16:59:12.12",
+        "en-US",
+        "2026-07-15",
+      ],
+      [
+        "one-digit fractional seconds",
+        "yyyy-MM-dd HH:mm:ss.uuu",
+        "2026-07-15 16:59:12.1",
+        "en-US",
+        "2026-07-15",
+      ],
+    ])(
+      "parses a %s parser-compatible format",
+      (_, format, value, locale, expectedIsoDate) => {
+        const result = new LuxonDateInputAutocomplete(format, locale).process(
+          value,
+          { commit: true, locale, now },
+        );
+
+        expect(result.valid).toBe(true);
+        expect(result.complete).toBe(true);
+        expect(result.date?.toISODate()).toBe(expectedIsoDate);
+        expect(
+          DateTime.fromFormat(result.value, format, {
+            locale,
+            setZone: true,
+          }).isValid,
+        ).toBe(true);
+      },
+    );
+
+    it.each([
+      ["localized time with short zone", "ttt", "16:59:12 +0200"],
+      [
+        "localized date-time with short zone",
+        "fff",
+        "15. Juli 2026 um 16:59 +0200",
+      ],
+    ])("keeps a %s value parser-compatible", (_, format, value) => {
+      const result = new LuxonDateInputAutocomplete(format, "de-DE").process(
+        value,
+        { commit: true, locale: "de-DE", now },
+      );
+
+      expect(result.valid).toBe(true);
+      expect(result.complete).toBe(true);
+      expect(
+        DateTime.fromFormat(result.value, format, {
+          locale: "de-DE",
+          setZone: true,
+        }).isValid,
+      ).toBe(true);
+    });
+
     it("keeps an incomplete generic-format value editable until commit", () => {
       const autocomplete = new LuxonDateInputAutocomplete("dd MMMM yyyy");
 

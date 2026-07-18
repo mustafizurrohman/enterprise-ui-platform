@@ -78,6 +78,7 @@ const PARSEABLE_LUXON_TOKENS = new Set([
   "y",
   "yy",
   "yyyy",
+  "yyyyy",
   "yyyyyy",
   // Months
   "M",
@@ -126,29 +127,6 @@ const PARSEABLE_LUXON_TOKENS = new Set([
   "ZZ",
   "ZZZ",
   "z",
-]);
-
-const LUXON_MACRO_TOKENS = new Set([
-  "D",
-  "DD",
-  "DDD",
-  "DDDD",
-  "t",
-  "tt",
-  "ttt",
-  "tttt",
-  "T",
-  "TT",
-  "TTT",
-  "TTTT",
-  "f",
-  "ff",
-  "fff",
-  "ffff",
-  "F",
-  "FF",
-  "FFF",
-  "FFFF",
 ]);
 
 const FORMAT_VALIDATION_DATE = DateTime.fromObject(
@@ -210,33 +188,43 @@ export class LuxonDateInputAutocomplete {
       throw invalidFormatError(dateFormat, "the format must not be empty");
     }
 
-    const parts = parseLuxonFormat(normalizedFormat);
-    const meaningfulTokens = parts.filter((part) => !part.literal);
-
-    if (meaningfulTokens.length === 0) {
-      throw invalidFormatError(
-        dateFormat,
-        "the format must contain at least one Luxon date or time token",
-      );
-    }
-
-    for (const part of meaningfulTokens) {
-      if (
-        !PARSEABLE_LUXON_TOKENS.has(part.value) &&
-        !LUXON_MACRO_TOKENS.has(part.value)
-      ) {
-        throw invalidFormatError(
-          dateFormat,
-          `unsupported or non-parseable token "${part.value}"`,
-        );
-      }
-    }
+    // Parse once here as well to reject unclosed apostrophe-delimited literals
+    // with a clearer error than Luxon provides.
+    parseLuxonFormat(normalizedFormat);
 
     try {
       const validationDate = FORMAT_VALIDATION_DATE.setLocale(locale);
-      const formattedValue = validationDate.toFormat(normalizedFormat);
+      const explanation = DateTime.fromFormatExplain("", normalizedFormat, {
+        locale,
+        setZone: true,
+      });
+      const parserTokens = explanation.tokens;
+      const meaningfulTokens = parserTokens.filter(
+        (token) => !token.literal && /^\p{L}+$/u.test(token.val),
+      );
+
+      if (meaningfulTokens.length === 0) {
+        throw invalidFormatError(
+          dateFormat,
+          "the format must contain at least one Luxon date or time token",
+        );
+      }
+
+      for (const token of meaningfulTokens) {
+        if (!PARSEABLE_LUXON_TOKENS.has(token.val)) {
+          throw invalidFormatError(
+            dateFormat,
+            `unsupported or non-parseable token "${token.val}"`,
+          );
+        }
+      }
+
+      const validationValue = buildParserCompatibleValue(
+        parserTokens,
+        validationDate,
+      );
       const parsedValue = DateTime.fromFormat(
-        formattedValue,
+        validationValue,
         normalizedFormat,
         {
           locale,
@@ -249,7 +237,7 @@ export class LuxonDateInputAutocomplete {
           dateFormat,
           parsedValue.invalidExplanation ??
             parsedValue.invalidReason ??
-            "the formatted value cannot be parsed back by Luxon",
+            "the format cannot produce a valid Luxon DateTime",
         );
       }
     } catch (error) {
@@ -370,7 +358,7 @@ export class LuxonDateInputAutocomplete {
       return fallbackResult;
     }
 
-    const value = epochDate.setLocale(locale).toFormat(this.dateFormat);
+    const value = formatInputValue(epochDate, this.dateFormat, locale);
 
     return {
       value,
@@ -391,7 +379,7 @@ export class LuxonDateInputAutocomplete {
     const now = (options.now ?? DateTime.now()).setLocale(locale);
     const commit = options.commit === true;
     const value = commit ? rawValue.trim() : rawValue;
-    const suggestedValue = now.toFormat(this.dateFormat);
+    const suggestedValue = formatInputValue(now, this.dateFormat, locale);
 
     if (!value) {
       return {
@@ -424,7 +412,7 @@ export class LuxonDateInputAutocomplete {
         continue;
       }
 
-      const formattedValue = parsed.setLocale(locale).toFormat(this.dateFormat);
+      const formattedValue = formatInputValue(parsed, this.dateFormat, locale);
       return {
         value: formattedValue,
         suggestedValue: formattedValue,
@@ -635,6 +623,138 @@ export class LuxonDateInputAutocomplete {
       })
       .join("");
   }
+}
+
+function formatInputValue(
+  date: DateTime,
+  format: string,
+  locale: string,
+): string {
+  const localizedDate = date.setLocale(locale);
+  const formattedValue = localizedDate.toFormat(format);
+  const roundTrip = DateTime.fromFormat(formattedValue, format, {
+    locale,
+    setZone: true,
+  });
+
+  if (roundTrip.isValid) {
+    return formattedValue;
+  }
+
+  const explanation = DateTime.fromFormatExplain("", format, {
+    locale,
+    setZone: true,
+  });
+  return buildParserCompatibleValue(explanation.tokens, localizedDate);
+}
+
+function buildParserCompatibleValue(
+  tokens: ReadonlyArray<Readonly<{ literal: boolean; val: string }>>,
+  date: DateTime,
+): string {
+  return tokens
+    .map((token) => {
+      if (token.literal || token.val === " " || !/^\p{L}+$/u.test(token.val)) {
+        return token.val;
+      }
+
+      return parserTokenValue(token.val, date);
+    })
+    .join("");
+}
+
+function parserTokenValue(token: string, date: DateTime): string {
+  switch (token) {
+    case "y":
+      return String(date.year);
+    case "yy":
+      return String(Math.abs(date.year) % 100).padStart(2, "0");
+    case "yyyy":
+      return formatSignedYear(date.year, 4);
+    case "yyyyy":
+      return formatSignedYear(date.year, 4);
+    case "yyyyyy":
+      return formatSignedYear(date.year, 6);
+    case "M":
+    case "L":
+      return String(date.month);
+    case "MM":
+    case "LL":
+      return String(date.month).padStart(2, "0");
+    case "d":
+      return String(date.day);
+    case "dd":
+      return String(date.day).padStart(2, "0");
+    case "o":
+      return String(date.ordinal);
+    case "ooo":
+      return String(date.ordinal).padStart(3, "0");
+    case "H":
+      return String(date.hour);
+    case "HH":
+      return String(date.hour).padStart(2, "0");
+    case "h":
+      return String(date.hour % 12 || 12);
+    case "hh":
+      return String(date.hour % 12 || 12).padStart(2, "0");
+    case "m":
+      return String(date.minute);
+    case "mm":
+      return String(date.minute).padStart(2, "0");
+    case "s":
+      return String(date.second);
+    case "ss":
+      return String(date.second).padStart(2, "0");
+    case "S":
+      return String(date.millisecond);
+    case "SSS":
+      return String(date.millisecond).padStart(3, "0");
+    case "u":
+      return String(date.millisecond).padStart(3, "0");
+    case "uu":
+      return String(Math.floor(date.millisecond / 10)).padStart(2, "0");
+    case "uuu":
+      return String(Math.floor(date.millisecond / 100));
+    case "q":
+      return String(date.quarter);
+    case "qq":
+      return String(date.quarter).padStart(2, "0");
+    case "kk":
+      return String(Math.abs(date.weekYear) % 100).padStart(2, "0");
+    case "kkkk":
+      return formatSignedYear(date.weekYear, 4);
+    case "W":
+      return String(date.weekNumber);
+    case "WW":
+      return String(date.weekNumber).padStart(2, "0");
+    case "E":
+    case "c":
+      return String(date.weekday);
+    case "Z":
+    case "ZZ":
+    case "ZZZ":
+    case "z":
+      return date.toFormat(token);
+    case "G":
+    case "GG":
+    case "MMM":
+    case "MMMM":
+    case "LLL":
+    case "LLLL":
+    case "EEE":
+    case "EEEE":
+    case "ccc":
+    case "cccc":
+    case "a":
+      return date.toFormat(token).replace(/\./gu, "");
+    default:
+      throw new Error(`Unsupported Luxon parser token "${token}".`);
+  }
+}
+
+function formatSignedYear(year: number, width: number): string {
+  const absoluteYear = String(Math.abs(year)).padStart(width, "0");
+  return year < 0 ? `-${absoluteYear}` : absoluteYear;
 }
 
 function removeOptionalUhrSuffix(value: string): string {
