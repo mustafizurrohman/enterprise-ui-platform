@@ -191,6 +191,40 @@ describe("DatepickerDialogComponent", () => {
     expect(select.options).toHaveLength(12);
   });
 
+  it("should show month numbers on open (click/keyboard) and hide them on blur or change", () => {
+    const select = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-month-select"]',
+    ) as HTMLSelectElement;
+    const julyOption = select.options[6];
+    const shortJuly = Info.months("short", { locale: "de" })[6];
+
+    expect(julyOption.textContent?.trim()).toBe(shortJuly);
+
+    // Focus alone should not show numbers
+    select.dispatchEvent(new Event("focus"));
+    fixture.detectChanges();
+    expect(julyOption.textContent?.trim()).toBe(shortJuly);
+
+    // Mousedown (click) should show numbers
+    select.dispatchEvent(new MouseEvent("mousedown"));
+    fixture.detectChanges();
+    expect(julyOption.textContent?.trim()).toBe(`${shortJuly} (07)`);
+
+    select.dispatchEvent(new Event("blur"));
+    fixture.detectChanges();
+    expect(julyOption.textContent?.trim()).toBe(shortJuly);
+
+    // Keyboard (Space) should show numbers
+    select.dispatchEvent(new KeyboardEvent("keydown", { key: " " }));
+    fixture.detectChanges();
+    expect(julyOption.textContent?.trim()).toBe(`${shortJuly} (07)`);
+
+    select.value = "5";
+    select.dispatchEvent(new Event("change"));
+    fixture.detectChanges();
+    expect(julyOption.textContent?.trim()).toBe(shortJuly);
+  });
+
   it("should expose stable IDs and test IDs for month options", () => {
     const option = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-month-option-7"]',

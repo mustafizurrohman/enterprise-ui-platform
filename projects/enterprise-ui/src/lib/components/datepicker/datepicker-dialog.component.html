@@ -71,6 +71,11 @@
             [attr.aria-controls]="calendarGridId()"
             [attr.data-testid]="testIdFor('month-select')"
             (change)="onMonthChange($event)"
+            (blur)="isMonthSelectFocused.set(false)"
+            (mousedown)="isMonthSelectFocused.set(true)"
+            (keydown.enter)="isMonthSelectFocused.set(true)"
+            (keydown.space)="isMonthSelectFocused.set(true)"
+            (keydown.alt.arrowdown)="isMonthSelectFocused.set(true)"
           >
             @for (month of shortMonths(); track $index) {
               <option
@@ -79,7 +84,11 @@
                 [selected]="($index + 1).toString() === selectedMonth()"
                 [attr.data-testid]="testIdFor('month-option-' + ($index + 1))"
               >
-                {{ month }}
+                {{ month }}{{
+                  isMonthSelectFocused()
+                    ? " (" + ($index + 1 < 10 ? "0" : "") + ($index + 1) + ")"
+                    : ""
+                }}
               </option>
             }
           </select>

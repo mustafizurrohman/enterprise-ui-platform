@@ -7,6 +7,7 @@ import {
   effect,
   input,
   output,
+  signal,
   untracked,
   viewChild,
 } from "@angular/core";
@@ -91,6 +92,8 @@ export class DatepickerDialogComponent {
   readonly confirmed = output<void>();
   readonly monthSelected = output<number>();
   readonly yearSelected = output<number>();
+
+  protected readonly isMonthSelectFocused = signal(false);
 
   protected readonly yearControl = new FormControl<string>("", {
     nonNullable: true,
@@ -194,6 +197,8 @@ export class DatepickerDialogComponent {
     if (Number.isInteger(month) && month >= 1 && month <= 12) {
       this.monthSelected.emit(month);
     }
+
+    this.isMonthSelectFocused.set(false);
   }
 
   protected onYearInput(event: Event): void {
