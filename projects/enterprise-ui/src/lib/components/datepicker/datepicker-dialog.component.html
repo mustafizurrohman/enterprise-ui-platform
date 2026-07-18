@@ -263,7 +263,7 @@
         ein.
         @if (showMeridiem()) {
           Wählen Sie zusätzlich AM für vormittags oder PM für nachmittags und
-          abends.
+            abends.
         }
       </p>
 
@@ -278,7 +278,9 @@
           [context]="hourWheelContext()"
           (valueChange)="emitTimeChange('hour', $event)"
         />
+
         <span class="datepicker-time-separator" aria-hidden="true">:</span>
+
         <time-wheel
           [context]="minuteWheelContext()"
           (valueChange)="emitTimeChange('minute', $event)"
@@ -286,6 +288,7 @@
 
         @if (showSeconds()) {
           <span class="datepicker-time-separator" aria-hidden="true">:</span>
+
           <time-wheel
             [context]="secondWheelContext()"
             (valueChange)="emitTimeChange('second', $event)"
@@ -325,6 +328,7 @@
                   [attr.data-testid]="testIdFor('meridiem-am')"
                   (change)="selectMeridiem('AM')"
                 />
+
                 <span
                   class="datepicker-meridiem-option"
                   [attr.data-testid]="testIdFor('meridiem-am-option')"
@@ -346,6 +350,7 @@
                   [attr.data-testid]="testIdFor('meridiem-pm')"
                   (change)="selectMeridiem('PM')"
                 />
+
                 <span
                   class="datepicker-meridiem-option"
                   [attr.data-testid]="testIdFor('meridiem-pm-option')"
@@ -390,6 +395,7 @@
             >
               -30
             </button>
+
             <button
               [id]="idFor('subtract-15-mins')"
               type="button"
@@ -401,6 +407,7 @@
             >
               -15
             </button>
+
             <button
               [id]="idFor('add-15-mins')"
               type="button"
@@ -412,6 +419,7 @@
             >
               +15
             </button>
+
             <button
               [id]="idFor('add-30-mins')"
               type="button"
@@ -424,6 +432,7 @@
               +30
             </button>
           </div>
+
           <div
             [id]="idFor('minute-adjustment-label')"
             class="datepicker-adjustment-label"
@@ -457,6 +466,7 @@
             >
               -12
             </button>
+
             <button
               [id]="idFor('subtract-6-hrs')"
               type="button"
@@ -468,6 +478,7 @@
             >
               -6
             </button>
+
             <button
               [id]="idFor('add-6-hrs')"
               type="button"
@@ -479,6 +490,7 @@
             >
               +6
             </button>
+
             <button
               [id]="idFor('add-12-hrs')"
               type="button"
@@ -491,6 +503,7 @@
               +12
             </button>
           </div>
+
           <div
             [id]="idFor('hour-adjustment-label')"
             class="datepicker-adjustment-label"
@@ -512,44 +525,6 @@
       >
         {{ timeAnnouncement() }}
       </div>
-
-      <ng-container
-        [ngTemplateOutlet]="actions"
-        [ngTemplateOutletContext]="{ withoutTime: false }"
-      />
     </fieldset>
-  } @else {
-    <div
-      [id]="idFor('date-only-actions')"
-      class="datepicker-time-picker"
-      [attr.data-testid]="testIdFor('date-only-actions')"
-    >
-      <ng-container
-        [ngTemplateOutlet]="actions"
-        [ngTemplateOutletContext]="{ withoutTime: true }"
-      />
-    </div>
   }
 </div>
-
-<ng-template #actions let-withoutTime="withoutTime">
-  <div
-    [id]="idFor('actions')"
-    class="datepicker-actions"
-    [class.datepicker-actions--without-time]="withoutTime"
-    [attr.data-testid]="testIdFor('actions')"
-  >
-    @if (dateOnly()) {
-      <button
-        [id]="idFor('now')"
-        type="button"
-        class="datepicker-now"
-        aria-label="Heutiges Datum auswählen"
-        [attr.data-testid]="testIdFor('now')"
-        (click)="nowSelected.emit()"
-      >
-        Heute
-      </button>
-    }
-  </div>
-</ng-template>
