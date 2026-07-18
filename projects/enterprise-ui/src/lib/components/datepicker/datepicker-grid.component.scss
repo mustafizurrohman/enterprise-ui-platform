@@ -5,16 +5,30 @@ $foreground-secondary: rgba(0, 0, 0, 0.54);
 $foreground-disabled: rgba(0, 0, 0, 0.38);
 $hover-background: rgba(0, 0, 0, 0.04);
 $divider: rgba(0, 0, 0, 0.12);
+$calendar-header-background: rgba(63, 81, 181, 0.06);
 
 :host {
   display: block;
 }
 
 .datepicker-grid {
+  border: 1px solid $divider;
+  border-radius: 6px;
+  overflow: hidden;
+
   .datepicker-weekday-row,
   .datepicker-week {
     display: grid;
     grid-template-columns: 32px repeat(7, minmax(0, 1fr));
+  }
+
+  .datepicker-weekday-row {
+    background-color: $calendar-header-background;
+    border-bottom: 1px solid $divider;
+  }
+
+  .datepicker-week:not(:last-child) {
+    border-bottom: 1px solid $divider;
   }
 
   .datepicker-gridcell {
@@ -30,8 +44,11 @@ $divider: rgba(0, 0, 0, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 40px;
-    margin: 1px;
+    min-height: 42px;
+    margin: 0;
+    border-right: 1px solid $divider;
+    box-sizing: border-box;
+    background-color: $calendar-header-background;
 
     &.today {
       color: $primary;
