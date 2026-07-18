@@ -75,22 +75,24 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   private lastFocusedTrigger: HTMLElement | null = null;
 
   readonly label = input<string>("Datum auswählen");
-  readonly value = model<Date | string | null>(null);
   readonly today = input<DateTime>(DateTime.now());
   readonly testId = input<string | null>(null);
   readonly locale = input<string | null>(null);
-  protected readonly resolvedLocale = computed(() =>
-    resolveLocale(this.locale()),
-  );
   readonly luxonDateFormat = input<string | null>(null);
   readonly dateFormatInput = input<string | null>(null, {
     alias: "dateFormat",
   });
-
   readonly disabled = input(false, { transform: booleanAttribute });
+  readonly value = model<Date | string | null>(null);
+
   private readonly _disabledForm = signal(false);
+
   protected readonly computedDisabled = computed(
     () => this.disabled() || this._disabledForm(),
+  );
+
+  protected readonly resolvedLocale = computed(() =>
+    resolveLocale(this.locale()),
   );
 
   protected readonly ids = computed(
@@ -384,6 +386,77 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
         );
       });
     });
+  }
+
+  writeValue(value: Date | string | null): void {
+    if (this.value() !== value) {
+      this.value.set(value);
+    }
+    if (value) {
+      let date: DateTime;
+      if (value instanceof Date) {
+        date = DateTime.fromJSDate(value);
+      } else {
+        date = DateTime.fromISO(value);
+        if (!date.isValid) {
+          date = DateTime.fromSQL(value); // Fallback for some formats
+        }
+      }
+      if (date.isValid) {
+        if (this.dateOnly()) {
+          date = date.startOf("day");
+        } else if (!this.showSeconds()) {
+          date = date.set({ second: 0, millisecond: 0 });
+        }
+
+        this.selectedDate.set(date);
+        this.inputDisplayValue.set(this.formatDate(date));
+        this.manualInputError.set(false);
+        this.inputAnnouncement.set("");
+        this.viewDate.set(date);
+      } else {
+        this.selectedDate.set(null);
+        this.inputDisplayValue.set("");
+        this.manualInputError.set(true);
+        this.inputAnnouncement.set("");
+        this.viewDate.set(DateTime.now());
+      }
+    } else {
+      this.selectedDate.set(null);
+      this.inputDisplayValue.set("");
+      this.manualInputError.set(false);
+      this.inputAnnouncement.set("");
+      this.viewDate.set(DateTime.now());
+    }
+  }
+
+  registerOnChange(fn: (value: Date | null) => void): void {
+    this.onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this._disabledForm.set(isDisabled);
+  }
+
+  validate(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) {
+      return null;
+    }
+    let date: DateTime;
+    if (value instanceof Date) {
+      date = DateTime.fromJSDate(value);
+    } else {
+      date = DateTime.fromISO(value);
+      if (!date.isValid) {
+        date = DateTime.fromSQL(value);
+      }
+    }
+    return date.isValid ? null : { invalidDate: true };
   }
 
   protected openCalendar(trigger?: HTMLElement): void {
@@ -880,77 +953,6 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     this.timeAnnouncement.set(announcement);
   }
 
-  writeValue(value: Date | string | null): void {
-    if (this.value() !== value) {
-      this.value.set(value);
-    }
-    if (value) {
-      let date: DateTime;
-      if (value instanceof Date) {
-        date = DateTime.fromJSDate(value);
-      } else {
-        date = DateTime.fromISO(value);
-        if (!date.isValid) {
-          date = DateTime.fromSQL(value); // Fallback for some formats
-        }
-      }
-      if (date.isValid) {
-        if (this.dateOnly()) {
-          date = date.startOf("day");
-        } else if (!this.showSeconds()) {
-          date = date.set({ second: 0, millisecond: 0 });
-        }
-
-        this.selectedDate.set(date);
-        this.inputDisplayValue.set(this.formatDate(date));
-        this.manualInputError.set(false);
-        this.inputAnnouncement.set("");
-        this.viewDate.set(date);
-      } else {
-        this.selectedDate.set(null);
-        this.inputDisplayValue.set("");
-        this.manualInputError.set(true);
-        this.inputAnnouncement.set("");
-        this.viewDate.set(DateTime.now());
-      }
-    } else {
-      this.selectedDate.set(null);
-      this.inputDisplayValue.set("");
-      this.manualInputError.set(false);
-      this.inputAnnouncement.set("");
-      this.viewDate.set(DateTime.now());
-    }
-  }
-
-  registerOnChange(fn: (value: Date | null) => void): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: () => void): void {
-    this.onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    this._disabledForm.set(isDisabled);
-  }
-
-  validate(control: AbstractControl): ValidationErrors | null {
-    const value = control.value;
-    if (!value) {
-      return null;
-    }
-    let date: DateTime;
-    if (value instanceof Date) {
-      date = DateTime.fromJSDate(value);
-    } else {
-      date = DateTime.fromISO(value);
-      if (!date.isValid) {
-        date = DateTime.fromSQL(value);
-      }
-    }
-    return date.isValid ? null : { invalidDate: true };
-  }
-
   isSelected(date: DateTime | null): boolean {
     if (!date || !this.selectedDate()) return false;
     return date.hasSame(this.selectedDate()!, "day");
@@ -959,20 +961,6 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   isToday(date: DateTime | null): boolean {
     if (!date) return false;
     return date.hasSame(this.today(), "day");
-  }
-
-  protected isCurrentWeek(weekInfo: {
-    weekNumber: number;
-    days: (DateTime | null)[];
-  }): boolean {
-    return weekInfo.days.some((day) => this.isToday(day));
-  }
-
-  protected isCurrentWeekday(weekday: number): boolean {
-    return (
-      this.today().weekday === weekday &&
-      this.today().hasSame(this.viewDate(), "month")
-    );
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {

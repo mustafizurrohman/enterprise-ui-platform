@@ -382,10 +382,6 @@ $divider: rgba(0, 0, 0, 0.12);
       border-right: 0;
     }
 
-    &--highlighted {
-      background-color: rgba(0, 122, 255, 0.1);
-    }
-
     &:hover {
       background-color: $hover-background;
     }
@@ -409,56 +405,6 @@ $divider: rgba(0, 0, 0, 0.12);
     font-size: 28px;
     font-weight: 800;
     line-height: 36px;
-  }
-
-  .datepicker-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 12px;
-
-    &.datepicker-actions--without-time {
-      margin-top: 0;
-    }
-  }
-
-  .datepicker-now,
-  .datepicker-confirm {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    min-height: 38px;
-    border-radius: 10px;
-    border: 0;
-    cursor: pointer;
-    font: inherit;
-    font-weight: 600;
-    transition:
-      filter 150ms ease,
-      transform 100ms ease;
-
-    &:hover {
-      filter: brightness(0.95);
-    }
-
-    &:active {
-      transform: scale(0.98);
-    }
-
-    &:focus-visible {
-      outline: 2px solid #007aff;
-      outline-offset: 3px;
-    }
-  }
-
-  .datepicker-now {
-    background: #f2f2f7;
-    color: #007aff;
-  }
-
-  .datepicker-confirm {
-    background: #007aff;
-    color: #fff;
   }
 }
 

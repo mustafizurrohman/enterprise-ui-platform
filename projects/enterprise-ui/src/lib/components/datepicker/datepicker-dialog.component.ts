@@ -103,7 +103,6 @@ export class DatepickerDialogComponent {
   readonly yearSelected = output<number>();
 
   protected readonly isMonthSelectFocused = signal(false);
-
   protected readonly yearControl = new FormControl<string>("", {
     nonNullable: true,
   });
