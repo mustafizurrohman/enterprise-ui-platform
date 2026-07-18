@@ -208,10 +208,6 @@ const meta = {
         },
       },
     },
-    value: {
-      control: 'text',
-      description: 'The current value of the datepicker',
-    },
   },
   args: {
     label: 'Datum auswählen',
