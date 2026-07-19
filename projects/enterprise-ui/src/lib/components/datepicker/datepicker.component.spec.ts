@@ -649,6 +649,20 @@ describe("DatepickerComponent", () => {
       expect(input.value).toBe("2026/07/15 16:59:11");
     });
 
+    it("should remove single quotes from the placeholder", () => {
+      fixture.componentRef.setInput(
+        "luxonDateFormat",
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+      );
+      fixture.detectChanges();
+
+      const input = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-input"]',
+      ) as HTMLInputElement;
+
+      expect(input.placeholder).toBe("dd.MM.yyyy HH:mm:ss Uhr");
+    });
+
     it("should keep the dateFormat alias reactive after initialization", async () => {
       fixture.componentRef.setInput("dateFormat", "dd.MM.yyyy HH:mm:ss");
       fixture.detectChanges();

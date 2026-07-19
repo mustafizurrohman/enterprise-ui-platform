@@ -165,6 +165,10 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
   protected readonly dateFormatDescription = computed(() => this.dateFormat());
 
+  protected readonly placeholder = computed(() =>
+    this.dateFormat().replace(/'/g, ""),
+  );
+
   protected readonly calendarToggleLabel = computed(() => {
     if (this.isOpen()) {
       return "Kalender schließen";

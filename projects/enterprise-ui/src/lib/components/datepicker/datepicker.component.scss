@@ -82,9 +82,13 @@ $calendar-header-background: #f5f5f5; // Added this line to ensure $calendar-hea
       min-width: 0;
       background: transparent;
       cursor: pointer;
+      text-overflow: ellipsis;
 
       &::placeholder {
         color: $foreground-secondary;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
       }
     }
 

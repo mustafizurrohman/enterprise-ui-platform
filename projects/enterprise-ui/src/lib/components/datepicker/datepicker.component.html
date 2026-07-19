@@ -38,7 +38,7 @@
       [attr.aria-invalid]="invalid"
       [attr.data-testid]="testIdFor('input')"
       [value]="inputDisplayValue()"
-      [placeholder]="dateFormatDescription()"
+      [placeholder]="placeholder()"
       [disabled]="disabled"
       (keydown)="handleInputKeydown($event, dateInput)"
       (paste)="handlePaste($event, dateInput)"
