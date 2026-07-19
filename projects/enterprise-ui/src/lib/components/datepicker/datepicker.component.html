@@ -56,6 +56,7 @@
         aria-label="Ausgewähltes Datum löschen"
         [attr.aria-controls]="ids().input"
         [attr.data-testid]="testIdFor('clear')"
+        (mousedown)="$event.preventDefault()"
         (click)="clearValue($event, dateInput)"
       >
         <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('clear-icon')">close</mat-icon>
@@ -72,6 +73,7 @@
         [attr.aria-label]="selectNowLabel()"
         [attr.aria-controls]="ids().input"
         [attr.data-testid]="testIdFor('now-input')"
+        (mousedown)="$event.preventDefault()"
         (click)="selectNow()"
       >
         <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('now-icon')">
