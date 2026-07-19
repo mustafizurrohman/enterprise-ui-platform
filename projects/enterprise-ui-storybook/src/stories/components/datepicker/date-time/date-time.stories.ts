@@ -1,6 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { type Meta, type StoryObj } from '@storybook/angular';
+// @ts-ignore
 import { DatepickerComponent } from '../../../../../../enterprise-ui/src/lib/components/datepicker/datepicker.component';
+// @ts-ignore
 import template from './date-time.stories.html?raw';
 import { MatIconModule } from '@angular/material/icon';
 
