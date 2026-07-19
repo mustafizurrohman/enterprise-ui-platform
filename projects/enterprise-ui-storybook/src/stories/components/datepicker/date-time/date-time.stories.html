@@ -12,7 +12,7 @@
 <div class="datepicker-value" data-testid="datepicker-value">
   <mat-icon aria-hidden="true">event</mat-icon>
 
-  @if (value === null) {
+  @if (value === null || value === '' || value === undefined) {
     <i>null</i>
   } @else {
     <span>{{ value }}</span>
