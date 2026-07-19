@@ -1,7 +1,8 @@
 import { Component, Input } from '@angular/core';
-import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular';
+import { type Meta, type StoryObj } from '@storybook/angular';
 import { DatepickerComponent } from '../../../../../../enterprise-ui/src/lib/components/datepicker/datepicker.component';
 import template from './date-time.stories.html?raw';
+import { MatIconModule } from '@angular/material/icon';
 
 const DEFAULT_DATETIME_FORMAT = "dd.MM.yyyy HH:mm 'Uhr'";
 
@@ -26,7 +27,6 @@ const COMMON_LUXON_DATE_FORMATS = [
   'yyyy-MM-dd HH:mm:ss',
 
   // ISO 8601-style — T separator
-  'yyyy-MM-dd',
   "yyyy-MM-dd'T'HH:mm",
   "yyyy-MM-dd'T'HH:mm:ss",
 
@@ -164,7 +164,8 @@ const COMMON_LUXON_DATE_FORMATS = [
 @Component({
   selector: 'date-time-story-host',
   standalone: true,
-  imports: [DatepickerComponent],
+  imports: [DatepickerComponent, MatIconModule],
+  styleUrl: './date-time.scss',
   template,
 })
 class DateTimeStoryHostComponent {
@@ -179,11 +180,6 @@ class DateTimeStoryHostComponent {
 const meta = {
   title: 'Components/Datepicker',
   component: DateTimeStoryHostComponent,
-  decorators: [
-    moduleMetadata({
-      imports: [DatepickerComponent],
-    }),
-  ],
   argTypes: {
     label: {
       control: 'text',
@@ -249,9 +245,4 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const DateTime: Story = {
-  render: (args) => ({
-    props: args,
-    template,
-  }),
-};
+export const DateTime: Story = {};

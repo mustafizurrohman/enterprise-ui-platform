@@ -1,0 +1,29 @@
+:host {
+  display: block;
+}
+
+.datepicker-slot {
+  --datepicker-control-height: 56px;
+  --datepicker-message-space: 4.5rem;
+
+  height: calc(
+    var(--datepicker-control-height) + var(--datepicker-message-space)
+  );
+}
+
+.datepicker-slot datepicker {
+  display: block;
+}
+
+.datepicker-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 24px;
+  line-height: 1.5rem;
+  white-space: nowrap;
+}
+
+.datepicker-value mat-icon {
+  flex: 0 0 auto;
+}

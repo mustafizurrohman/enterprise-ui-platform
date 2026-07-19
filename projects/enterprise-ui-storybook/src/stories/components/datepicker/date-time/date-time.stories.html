@@ -1,16 +1,20 @@
-<datepicker
-  [label]="label"
-  [disabled]="disabled"
-  [locale]="locale"
-  [luxonDateFormat]="luxonDateFormat"
-  [showQuickTimeControls]="showQuickTimeControls"
-  [(value)]="value"
-/>
+<div class="datepicker-slot">
+  <datepicker
+    [label]="label"
+    [disabled]="disabled"
+    [locale]="locale"
+    [luxonDateFormat]="luxonDateFormat"
+    [showQuickTimeControls]="showQuickTimeControls"
+    [(value)]="value"
+  />
+</div>
 
-<div style="margin-top: 1rem;">
+<div class="datepicker-value" data-testid="datepicker-value">
+  <mat-icon aria-hidden="true">event</mat-icon>
+
   @if (value === null) {
     <i>null</i>
   } @else {
-    {{ value }}
+    <span>{{ value }}</span>
   }
 </div>
