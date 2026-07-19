@@ -176,7 +176,6 @@ class DateTimeStoryHostComponent {
   @Input() locale: string = 'de-DE';
   @Input() luxonDateFormat: string = DEFAULT_DATETIME_FORMAT;
   @Input() showQuickTimeControls: boolean = false;
-  @Input() value: Date | string | null = null;
 }
 
 const meta = {
@@ -198,15 +197,6 @@ const meta = {
       table: {
         defaultValue: {
           summary: 'false',
-        },
-      },
-    },
-    locale: {
-      control: 'text',
-      description: 'Locale used by Luxon for parsing and formatting',
-      table: {
-        defaultValue: {
-          summary: 'de-DE',
         },
       },
     },
@@ -236,10 +226,8 @@ const meta = {
   args: {
     label: 'Datum auswählen',
     disabled: false,
-    locale: 'de-DE',
     luxonDateFormat: DEFAULT_DATETIME_FORMAT,
     showQuickTimeControls: false,
-    value: null,
   },
 } satisfies Meta<DateTimeStoryHostComponent>;
 
