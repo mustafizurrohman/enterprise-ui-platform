@@ -5,42 +5,58 @@ import * as DateTimeStories from './date-time/date-time.stories';
 
 # Testability
 
-Designed with automated testing in mind, the component provides robust hooks for unit and End-to-End (E2E) testing.
+The `DatepickerComponent` is designed for seamless integration into automated testing workflows, providing stable hooks for unit, integration, and End-to-End (E2E) testing.
 
 ## Automated Testing Hooks
 
-The component exposes a `testId` input which generates stable `data-testid` attributes across the internal DOM structure. This ensures that test suites remain resilient to changes in the component's internal implementation.
+The component supports a `testId` input which serves as a prefix for all internal `data-testid` attributes. This ensures a stable and predictable DOM structure for test selectors, insulating test suites from internal implementation changes.
+
+### Root & Input Elements
 
 | Selector | Description |
 | :--- | :--- |
-| `[data-testid="your-id"]` | The root component element. |
-| `[data-testid="your-id-label"]` | The label element. |
-| `[data-testid="your-id-input-wrapper"]` | The container for the input and icons. |
-| `[data-testid="your-id-input"]` | The native input element for manual entry. |
-| `[data-testid="your-id-clear"]` | The clear button (visible when a value is present). |
-| `[data-testid="your-id-now-input"]` | The "Now" shortcut button next to the input. |
-| `[data-testid="your-id-toggle"]` | The calendar trigger button. |
-| `[data-testid="your-id-hint"]` | The visually hidden element containing format instructions. |
-| `[data-testid="your-id-input-status"]` | The live region announcing manual input updates. |
-| `[data-testid="your-id-error"]` | The error message display (visible when invalid). |
-| `[data-testid="your-id-dialog"]` | The calendar overlay/dialog container. |
-| `[data-testid="your-id-previous-month"]` / `your-id-next-month` | Month navigation buttons in the dialog. |
-| `[data-testid="your-id-month-select"]` | The month selection dropdown in the dialog. |
-| `[data-testid="your-id-previous-year"]` / `your-id-next-year` | Year navigation buttons in the dialog. |
-| `[data-testid="your-id-year-display"]` | The year input field in the dialog. |
-| `[data-testid="your-id-month-heading"]` | The current month/year display in the dialog. |
-| `[data-testid="your-id-calendar-grid"]` | The date selection grid. |
-| `[data-testid="your-id-day-YYYY-MM-DD"]` | Individual day buttons (e.g., `your-id-day-2026-07-17`). |
-| `[data-testid="your-id-date-status"]` | The live region announcing date selection changes. |
-| `[data-testid="your-id-time-picker"]` | The container for time selection controls. |
-| `[data-testid="your-id-time-wheels"]` | The group containing hour and minute selection. |
-| `[data-testid="your-id-meridiem-toggle"]` | The AM/PM selection group (when applicable). |
-| `[data-testid="your-id-time-adjustments"]` | The container for quick time adjustment buttons. |
-| `[data-testid="your-id-time-status"]` | The live region announcing time selection updates. |
+| `[data-testid="your-id"]` | The root component container. |
+| `[data-testid="your-id-label"]` | The associated label element. |
+| `[data-testid="your-id-input-wrapper"]` | The container for the input and integrated action buttons. |
+| `[data-testid="your-id-input"]` | The interactive text input for manual entry. |
+| `[data-testid="your-id-clear"]` | The button to reset the current value. |
+| `[data-testid="your-id-now-input"]` | The "Now" or "Today" shortcut button. |
+| `[data-testid="your-id-toggle"]` | The trigger button to open the calendar dialog. |
+| `[data-testid="your-id-hint"]` | Visually hidden instructions regarding supported formats. |
+| `[data-testid="your-id-input-status"]` | Live region for manual input feedback. |
+| `[data-testid="your-id-error"]` | Validation error message display. |
 
-## Integration Testing
+### Calendar Dialog & Navigation
 
-As a native Angular component implementing `ControlValueAccessor` and `Validator`, it integrates seamlessly with:
-- **Reactive Forms**: Full support for `FormControl` and validation states.
-- **Template-driven Forms**: Supports `ngModel` and standard validation attributes.
-- **Signal-based state**: Compatible with modern Angular signal-based architectures.
+| Selector | Description |
+| :--- | :--- |
+| `[data-testid="your-id-dialog"]` | The main calendar overlay container. |
+| `[data-testid="your-id-month-navigation"]` | Container for month switching controls. |
+| `[data-testid="your-id-previous-month"]` / `next-month` | Buttons for month-by-month navigation. |
+| `[data-testid="your-id-month-select"]` | Dropdown for direct month selection. |
+| `[data-testid="your-id-year-navigation"]` | Container for year switching controls. |
+| `[data-testid="your-id-previous-year"]` / `next-year` | Buttons for year-by-year navigation. |
+| `[data-testid="your-id-year-display"]` | Input field for direct year entry. |
+| `[data-testid="your-id-calendar-grid"]` | The interactive date selection grid. |
+| `[data-testid="your-id-day-YYYY-MM-DD"]` | Individual day cells (e.g., `your-id-day-2026-07-19`). |
+| `[data-testid="your-id-date-status"]` | Live region for date selection updates. |
+
+### Time Selection Controls
+
+| Selector | Description |
+| :--- | :--- |
+| `[data-testid="your-id-time-picker"]` | Container for all time-related selection components. |
+| `[data-testid="your-id-time-wheels"]` | Group containing hour, minute, and second controls. |
+| `[data-testid="your-id-hour-input"]` / `minute-input` / `second-input` | Interactive inputs for specific time units. |
+| `[data-testid="your-id-hour-increment"]` / `decrement` | Buttons for stepping time units. |
+| `[data-testid="your-id-meridiem-toggle"]` | Radio group for AM/PM selection. |
+| `[data-testid="your-id-meridiem-am"]` / `meridiem-pm` | Individual AM/PM radio options. |
+| `[data-testid="your-id-time-adjustments"]` | Container for quick-adjustment buttons. |
+| `[data-testid="your-id-time-status"]` | Live region for time selection updates. |
+
+## Integration Standards
+
+Leveraging standard Angular protocols, the component ensures robust compatibility with modern testing frameworks:
+- **Reactive & Template-driven Forms**: Full support for state tracking and validation testing.
+- **Async Testing**: Compatible with `fakeAsync` and `waitForAsync` for overlay and animation handling.
+- **Signal-based Architecture**: Optimized for modern Angular change detection strategies.

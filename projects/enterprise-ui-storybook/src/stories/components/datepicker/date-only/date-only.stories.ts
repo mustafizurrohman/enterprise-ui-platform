@@ -16,17 +16,9 @@ const meta: Meta<DatepickerComponent> = {
       control: 'text',
       description: 'The label for the datepicker input',
     },
-    dateOnly: {
-      control: 'boolean',
-      description: 'Whether to show only the date or also the time',
-    },
     disabled: {
       control: 'boolean',
       description: 'Whether the datepicker is disabled',
-    },
-    showSeconds: {
-      control: 'boolean',
-      description: 'Whether to show seconds in the time picker',
     },
     showQuickTimeControls: {
       control: 'boolean',
@@ -40,7 +32,6 @@ type Story = StoryObj<DatepickerComponent>;
 
 export const DateOnly: Story = {
   args: {
-    dateOnly: true,
     disabled: false,
   },
 };

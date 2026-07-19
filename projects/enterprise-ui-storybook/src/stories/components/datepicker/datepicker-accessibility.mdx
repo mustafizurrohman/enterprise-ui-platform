@@ -11,18 +11,18 @@ The `DatepickerComponent` is engineered for high accessibility, adhering to WCAG
 
 Full keyboard support is provided for efficient, mouse-free operation:
 
-### Input Focus
+### Focus Management
 
 | Key | Action |
 | :--- | :--- |
-| **Enter** / **ArrowDown** | Opens the calendar dialog. |
-| **Escape** | Closes the calendar and returns focus to the trigger element. |
+| **Enter** | Commits manual input when the input field is focused. |
+| **Escape** | Closes the calendar and returns focus to the last active trigger element. |
 
 ### Calendar Navigation
 
 | Key | Action |
 | :--- | :--- |
-| **Arrow Keys** | Navigates between days in the calendar grid. |
+| **Arrow Keys** | Navigates between days (Left/Right) or weeks (Up/Down) in the calendar grid. |
 | **Home** / **End** | Moves focus to the first or last day of the current week. |
 | **PageUp** / **PageDown** | Switches to the previous or next month. |
 | **Shift + PageUp** / **Shift + PageDown** | Switches to the previous or next year. |
@@ -33,16 +33,18 @@ Full keyboard support is provided for efficient, mouse-free operation:
 
 | Key | Action |
 | :--- | :--- |
-| **Arrow Keys** | Adjusts the value of the focused time wheel. |
+| **ArrowUp** / **ArrowDown** | Increments or decrements the value of the focused time wheel. |
+| **PageUp** / **PageDown** | Adjusts the value by a factor of 10. |
+| **Home** / **End** | Jumps to the minimum or maximum value of the unit. |
 | **Numeric Keys** | Directly enters values for hours, minutes, or seconds. |
 
 ## Screen Reader Support
 
 - **ARIA Roles**: Utilizes appropriate ARIA roles including `combobox` for the input, `dialog` for the overlay, `grid` for the calendar grid, and `status`/`alert` for dynamic updates and errors.
 - **Live Regions**: Employs multiple `aria-live` regions to announce:
-  - **Manual Input**: Feedback during text entry and autocomplete.
+  - **Manual Input**: Feedback during text entry, autocomplete status, and Unix timestamp conversion.
   - **Navigation**: Announcements for month and year changes.
-  - **Selection**: Confirmation of selected dates and times.
-- **Descriptive Labels**: Every date button features a localized, descriptive label (e.g., "Montag, 12. Juli 2026") including information about whether it is today or the currently selected date.
-- **Keyboard Shortcuts**: Common actions are mapped to standard keyboard shortcuts and announced via `aria-keyshortcuts` where appropriate.
+  - **Selection**: Confirmation of selected dates, times, and clear actions.
+- **Descriptive Labels**: Every date button features a localized, descriptive label (e.g., "Montag, 12. Juli 2026") including information about today's date and selection status.
+- **Keyboard Shortcuts**: Common actions are mapped to standard keyboard shortcuts and announced via `aria-keyshortcuts` (e.g., "PageUp", "Escape") where appropriate.
 - **Visual Feedback**: Focus is managed explicitly, ensuring that the active element is always clear to both keyboard and screen reader users.

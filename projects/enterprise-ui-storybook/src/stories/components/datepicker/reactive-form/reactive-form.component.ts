@@ -11,9 +11,7 @@ import { DatepickerComponent } from '../../../../../../enterprise-ui/src/lib/com
 })
 export class ReactiveFormWrapperComponent implements OnInit {
   @Input() label = '';
-  @Input() dateOnly = false;
   @Input() disabled = false;
-  @Input() showSeconds = false;
   @Input() showQuickTimeControls = false;
 
   form = new FormGroup({
