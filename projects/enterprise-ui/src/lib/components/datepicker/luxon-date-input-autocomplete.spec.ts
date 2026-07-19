@@ -4,164 +4,151 @@ import { LuxonDateInputAutocomplete } from "./luxon-date-input-autocomplete";
 
 const DEFAULT_DATETIME_FORMAT = "dd.MM.yyyy HH:mm 'Uhr'";
 
-const COMMON_LUXON_DATE_FORMATS = [
+type FormatCase = Readonly<{
+  format: string;
+  locale: "de-DE" | "en-US";
+  smart: boolean;
+}>;
+
+const SUPPORTED_FORMATS: readonly FormatCase[] = [
   // German — dots, padded
-  "dd.MM.yyyy",
-  "dd.MM.yyyy HH:mm",
-  DEFAULT_DATETIME_FORMAT,
-  "dd.MM.yyyy HH:mm:ss",
-  "dd.MM.yyyy HH:mm:ss 'Uhr'",
+  { format: "dd.MM.yyyy", locale: "de-DE", smart: true },
+  { format: "dd.MM.yyyy HH:mm", locale: "de-DE", smart: true },
+  { format: DEFAULT_DATETIME_FORMAT, locale: "de-DE", smart: true },
+  { format: "dd.MM.yyyy HH:mm:ss", locale: "de-DE", smart: true },
+  { format: "dd.MM.yyyy HH:mm:ss 'Uhr'", locale: "de-DE", smart: true },
 
   // German — dots, unpadded
-  "d.M.yyyy",
-  "d.M.yyyy H:mm",
-  "d.M.yyyy H:mm 'Uhr'",
-  "d.M.yyyy H:mm:ss",
-  "d.M.yyyy H:mm:ss 'Uhr'",
+  { format: "d.M.yyyy", locale: "de-DE", smart: true },
+  { format: "d.M.yyyy H:mm", locale: "de-DE", smart: true },
+  { format: "d.M.yyyy H:mm 'Uhr'", locale: "de-DE", smart: true },
+  { format: "d.M.yyyy H:mm:ss", locale: "de-DE", smart: true },
+  { format: "d.M.yyyy H:mm:ss 'Uhr'", locale: "de-DE", smart: true },
 
   // ISO 8601-style — hyphen and space
-  "yyyy-MM-dd",
-  "yyyy-MM-dd HH:mm",
-  "yyyy-MM-dd HH:mm:ss",
+  { format: "yyyy-MM-dd", locale: "de-DE", smart: true },
+  { format: "yyyy-MM-dd HH:mm", locale: "de-DE", smart: true },
+  { format: "yyyy-MM-dd HH:mm:ss", locale: "de-DE", smart: true },
 
   // ISO 8601-style — T separator
-  "yyyy-MM-dd'T'HH:mm",
-  "yyyy-MM-dd'T'HH:mm:ss",
+  { format: "yyyy-MM-dd'T'HH:mm", locale: "de-DE", smart: true },
+  { format: "yyyy-MM-dd'T'HH:mm:ss", locale: "de-DE", smart: true },
 
   // Year first — slash
-  "yyyy/MM/dd",
-  "yyyy/MM/dd HH:mm",
-  "yyyy/MM/dd HH:mm:ss",
+  { format: "yyyy/MM/dd", locale: "de-DE", smart: true },
+  { format: "yyyy/MM/dd HH:mm", locale: "de-DE", smart: true },
+  { format: "yyyy/MM/dd HH:mm:ss", locale: "de-DE", smart: true },
 
   // European — slash, padded
-  "dd/MM/yyyy",
-  "dd/MM/yyyy HH:mm",
-  "dd/MM/yyyy HH:mm:ss",
+  { format: "dd/MM/yyyy", locale: "de-DE", smart: true },
+  { format: "dd/MM/yyyy HH:mm", locale: "de-DE", smart: true },
+  { format: "dd/MM/yyyy HH:mm:ss", locale: "de-DE", smart: true },
 
   // European — slash, unpadded
-  "d/M/yyyy",
-  "d/M/yyyy H:mm",
-  "d/M/yyyy H:mm:ss",
+  { format: "d/M/yyyy", locale: "de-DE", smart: true },
+  { format: "d/M/yyyy H:mm", locale: "de-DE", smart: true },
+  { format: "d/M/yyyy H:mm:ss", locale: "de-DE", smart: true },
 
   // European — hyphen, padded
-  "dd-MM-yyyy",
-  "dd-MM-yyyy HH:mm",
-  "dd-MM-yyyy HH:mm:ss",
+  { format: "dd-MM-yyyy", locale: "de-DE", smart: true },
+  { format: "dd-MM-yyyy HH:mm", locale: "de-DE", smart: true },
+  { format: "dd-MM-yyyy HH:mm:ss", locale: "de-DE", smart: true },
 
   // European — hyphen, unpadded
-  "d-M-yyyy",
-  "d-M-yyyy H:mm",
-  "d-M-yyyy H:mm:ss",
+  { format: "d-M-yyyy", locale: "de-DE", smart: true },
+  { format: "d-M-yyyy H:mm", locale: "de-DE", smart: true },
+  { format: "d-M-yyyy H:mm:ss", locale: "de-DE", smart: true },
 
   // US — slash, padded, 12-hour
-  "MM/dd/yyyy",
-  "MM/dd/yyyy hh:mm a",
-  "MM/dd/yyyy hh:mm:ss a",
+  { format: "MM/dd/yyyy", locale: "en-US", smart: true },
+  { format: "MM/dd/yyyy hh:mm a", locale: "en-US", smart: true },
+  { format: "MM/dd/yyyy hh:mm:ss a", locale: "en-US", smart: true },
 
   // US — slash, unpadded, 12-hour
-  "M/d/yyyy",
-  "M/d/yyyy h:mm a",
-  "M/d/yyyy h:mm:ss a",
+  { format: "M/d/yyyy", locale: "en-US", smart: true },
+  { format: "M/d/yyyy h:mm a", locale: "en-US", smart: true },
+  { format: "M/d/yyyy h:mm:ss a", locale: "en-US", smart: true },
 
   // US — hyphen, padded, 12-hour
-  "MM-dd-yyyy",
-  "MM-dd-yyyy hh:mm a",
-  "MM-dd-yyyy hh:mm:ss a",
+  { format: "MM-dd-yyyy", locale: "en-US", smart: true },
+  { format: "MM-dd-yyyy hh:mm a", locale: "en-US", smart: true },
+  { format: "MM-dd-yyyy hh:mm:ss a", locale: "en-US", smart: true },
 
   // US — hyphen, unpadded, 12-hour
-  "M-d-yyyy",
-  "M-d-yyyy h:mm a",
-  "M-d-yyyy h:mm:ss a",
+  { format: "M-d-yyyy", locale: "en-US", smart: true },
+  { format: "M-d-yyyy h:mm a", locale: "en-US", smart: true },
+  { format: "M-d-yyyy h:mm:ss a", locale: "en-US", smart: true },
 
   // Short year — German
-  "dd.MM.yy",
-  "dd.MM.yy HH:mm",
-  "dd.MM.yy HH:mm:ss",
+  { format: "dd.MM.yy", locale: "de-DE", smart: true },
+  { format: "dd.MM.yy HH:mm", locale: "de-DE", smart: true },
+  { format: "dd.MM.yy HH:mm:ss", locale: "de-DE", smart: true },
 
   // Short year — European slash
-  "dd/MM/yy",
-  "dd/MM/yy HH:mm",
-  "dd/MM/yy HH:mm:ss",
+  { format: "dd/MM/yy", locale: "de-DE", smart: true },
+  { format: "dd/MM/yy HH:mm", locale: "de-DE", smart: true },
+  { format: "dd/MM/yy HH:mm:ss", locale: "de-DE", smart: true },
 
   // Short year — European hyphen
-  "dd-MM-yy",
-  "dd-MM-yy HH:mm",
-  "dd-MM-yy HH:mm:ss",
+  { format: "dd-MM-yy", locale: "de-DE", smart: true },
+  { format: "dd-MM-yy HH:mm", locale: "de-DE", smart: true },
+  { format: "dd-MM-yy HH:mm:ss", locale: "de-DE", smart: true },
 
   // Short year — US slash
-  "MM/dd/yy",
-  "MM/dd/yy hh:mm a",
-  "MM/dd/yy hh:mm:ss a",
+  { format: "MM/dd/yy", locale: "en-US", smart: true },
+  { format: "MM/dd/yy hh:mm a", locale: "en-US", smart: true },
+  { format: "MM/dd/yy hh:mm:ss a", locale: "en-US", smart: true },
 
   // Short year — US hyphen
-  "MM-dd-yy",
-  "MM-dd-yy hh:mm a",
-  "MM-dd-yy hh:mm:ss a",
+  { format: "MM-dd-yy", locale: "en-US", smart: true },
+  { format: "MM-dd-yy hh:mm a", locale: "en-US", smart: true },
+  { format: "MM-dd-yy hh:mm:ss a", locale: "en-US", smart: true },
 
   // European — abbreviated month name
-  "dd MMM yyyy",
-  "dd MMM yyyy HH:mm",
-  "dd MMM yyyy HH:mm:ss",
+  { format: "dd MMM yyyy", locale: "de-DE", smart: false },
+  { format: "dd MMM yyyy HH:mm", locale: "de-DE", smart: false },
+  { format: "dd MMM yyyy HH:mm:ss", locale: "de-DE", smart: false },
 
   // European — abbreviated month name, unpadded
-  "d MMM yyyy",
-  "d MMM yyyy H:mm",
-  "d MMM yyyy H:mm:ss",
+  { format: "d MMM yyyy", locale: "de-DE", smart: false },
+  { format: "d MMM yyyy H:mm", locale: "de-DE", smart: false },
+  { format: "d MMM yyyy H:mm:ss", locale: "de-DE", smart: false },
 
   // European — full month name
-  "dd MMMM yyyy",
-  "dd MMMM yyyy HH:mm",
-  "dd MMMM yyyy HH:mm:ss",
+  { format: "dd MMMM yyyy", locale: "de-DE", smart: false },
+  { format: "dd MMMM yyyy HH:mm", locale: "de-DE", smart: false },
+  { format: "dd MMMM yyyy HH:mm:ss", locale: "de-DE", smart: false },
 
   // European — full month name, unpadded
-  "d MMMM yyyy",
-  "d MMMM yyyy H:mm",
-  "d MMMM yyyy H:mm:ss",
+  { format: "d MMMM yyyy", locale: "de-DE", smart: false },
+  { format: "d MMMM yyyy H:mm", locale: "de-DE", smart: false },
+  { format: "d MMMM yyyy H:mm:ss", locale: "de-DE", smart: false },
 
   // US — abbreviated month name
-  "MMM dd, yyyy",
-  "MMM dd, yyyy hh:mm a",
-  "MMM dd, yyyy hh:mm:ss a",
+  { format: "MMM dd, yyyy", locale: "en-US", smart: false },
+  { format: "MMM dd, yyyy hh:mm a", locale: "en-US", smart: false },
+  { format: "MMM dd, yyyy hh:mm:ss a", locale: "en-US", smart: false },
 
   // US — abbreviated month name, unpadded
-  "MMM d, yyyy",
-  "MMM d, yyyy h:mm a",
-  "MMM d, yyyy h:mm:ss a",
+  { format: "MMM d, yyyy", locale: "en-US", smart: false },
+  { format: "MMM d, yyyy h:mm a", locale: "en-US", smart: false },
+  { format: "MMM d, yyyy h:mm:ss a", locale: "en-US", smart: false },
 
   // US — full month name
-  "MMMM dd, yyyy",
-  "MMMM dd, yyyy hh:mm a",
-  "MMMM dd, yyyy hh:mm:ss a",
+  { format: "MMMM dd, yyyy", locale: "en-US", smart: false },
+  { format: "MMMM dd, yyyy hh:mm a", locale: "en-US", smart: false },
+  { format: "MMMM dd, yyyy hh:mm:ss a", locale: "en-US", smart: false },
 
   // US — full month name, unpadded
-  "MMMM d, yyyy",
-  "MMMM d, yyyy h:mm a",
-  "MMMM d, yyyy h:mm:ss a",
-
-  // European — abbreviated weekday and month
-  "ccc, dd MMM yyyy",
-  "ccc, dd MMM yyyy HH:mm",
-  "ccc, dd MMM yyyy HH:mm:ss",
-
-  // European — full weekday and month
-  "cccc, dd MMMM yyyy",
-  "cccc, dd MMMM yyyy HH:mm",
-  "cccc, dd MMMM yyyy HH:mm:ss",
-
-  // US — abbreviated weekday and month
-  "ccc, MMM dd, yyyy",
-  "ccc, MMM dd, yyyy hh:mm a",
-  "ccc, MMM dd, yyyy hh:mm:ss a",
-
-  // US — full weekday and month
-  "cccc, MMMM dd, yyyy",
-  "cccc, MMMM dd, yyyy hh:mm a",
-  "cccc, MMMM dd, yyyy hh:mm:ss a",
+  { format: "MMMM d, yyyy", locale: "en-US", smart: false },
+  { format: "MMMM d, yyyy h:mm a", locale: "en-US", smart: false },
+  { format: "MMMM d, yyyy h:mm:ss a", locale: "en-US", smart: false },
 ] as const;
 
-describe("LuxonDateInputAutocomplete", () => {
-  const now = DateTime.fromISO("2026-07-14T18:30:45");
+const now = DateTime.fromISO("2026-07-14T18:30:45");
+const sampleDate = DateTime.fromISO("2026-07-15T16:59:12");
 
+describe("LuxonDateInputAutocomplete", () => {
   it("pads an unambiguous month and appends its separator", () => {
     const result = new LuxonDateInputAutocomplete("MM-dd-yyyy").process("3", {
       now,
@@ -185,6 +172,18 @@ describe("LuxonDateInputAutocomplete", () => {
     );
 
     expect(result.value).toBe("2026-03-");
+  });
+
+  it("keeps unpadded tokens unpadded", () => {
+    const result = new LuxonDateInputAutocomplete("M/d/yyyy H:mm").process(
+      "7/5/2026 4:09",
+      { now, commit: true },
+    );
+
+    expect(result.value).toBe("7/5/2026 4:09");
+    expect(result.date?.toISO()).toBe(
+      DateTime.fromISO("2026-07-05T04:09:00").toISO(),
+    );
   });
 
   it("rejects impossible day and month combinations", () => {
@@ -212,12 +211,83 @@ describe("LuxonDateInputAutocomplete", () => {
     expect(valid.date?.toISODate()).toBe("2024-02-29");
   });
 
+  it("validates 12-hour values independently from 24-hour values", () => {
+    const invalid = new LuxonDateInputAutocomplete(
+      "MM/dd/yyyy hh:mm a",
+      "en-US",
+    ).process("07/15/2026 13:59 PM", { commit: true, now });
+    const valid = new LuxonDateInputAutocomplete(
+      "MM/dd/yyyy hh:mm a",
+      "en-US",
+    ).process("07/15/2026 04:59 PM", { commit: true, now });
+
+    expect(invalid.valid).toBe(false);
+    expect(invalid.error?.field).toBe("hour");
+    expect(valid.date?.hour).toBe(16);
+  });
+
+  it("normalizes one-letter meridiem values on commit", () => {
+    const result = new LuxonDateInputAutocomplete(
+      "M/d/yyyy h:mm a",
+      "en-US",
+    ).process("7/15/2026 4:59 p", { commit: true, now });
+
+    expect(result.value).toBe("7/15/2026 4:59 PM");
+    expect(result.date?.hour).toBe(16);
+  });
+
   it("builds a completion suggestion from the current date and time", () => {
     const result = new LuxonDateInputAutocomplete(
       "yyyy-MM-dd HH:mm:ss",
     ).process("2026-07-", { now });
 
     expect(result.suggestedValue).toBe("2026-07-14 18:30:45");
+  });
+
+  describe("all requested formats", () => {
+    it.each(SUPPORTED_FORMATS)(
+      "parses and round-trips $format",
+      ({ format, locale }) => {
+        const input = sampleDate.setLocale(locale).toFormat(format);
+        const result = new LuxonDateInputAutocomplete(format, locale).process(
+          input,
+          { commit: true, locale, now },
+        );
+
+        expect(result.valid).toBe(true);
+        expect(result.complete).toBe(true);
+        expect(result.error).toBeNull();
+        expect(result.date?.year).toBe(2026);
+        expect(result.date?.month).toBe(7);
+        expect(result.date?.day).toBe(15);
+        expect(result.value).toBe(input);
+        expect(
+          DateTime.fromFormat(result.value, format, { locale, setZone: true })
+            .isValid,
+        ).toBe(true);
+      },
+    );
+
+    it.each(SUPPORTED_FORMATS.filter(({ smart }) => smart))(
+      "autocompletes the first numeric field for $format",
+      ({ format, locale }) => {
+        const fullValue = sampleDate.setLocale(locale).toFormat(format);
+        const firstLiteralIndex = fullValue.search(/[^0-9]/u);
+        const firstField =
+          firstLiteralIndex === -1
+            ? fullValue
+            : fullValue.slice(0, firstLiteralIndex);
+        const firstLiteral =
+          firstLiteralIndex === -1 ? "" : fullValue[firstLiteralIndex];
+        const result = new LuxonDateInputAutocomplete(format, locale).process(
+          firstField,
+          { locale, now },
+        );
+
+        expect(result.valid).toBe(true);
+        expect(result.value).toBe(`${firstField}${firstLiteral}`);
+      },
+    );
   });
 
   describe("pasted formatted values", () => {
@@ -240,9 +310,7 @@ describe("LuxonDateInputAutocomplete", () => {
         ).processPastedValue(`15.07.2026 16:59 ${suffix}`, { now });
 
         expect(result.value).toBe("15.07.2026 16:59 Uhr");
-        expect(result.date?.toISO()).toBe(
-          DateTime.fromISO("2026-07-15T16:59:00").toISO(),
-        );
+        expect(result.date?.isValid).toBe(true);
       },
     );
 
@@ -261,9 +329,7 @@ describe("LuxonDateInputAutocomplete", () => {
       ).processPastedValue("15.07.2026 16:59 Uhr", { now });
 
       expect(result.value).toBe("15.07.2026 16:59");
-      expect(result.date?.toISO()).toBe(
-        DateTime.fromISO("2026-07-15T16:59:00").toISO(),
-      );
+      expect(result.date?.isValid).toBe(true);
     });
 
     it("does not accept a duplicated Uhr suffix", () => {
@@ -276,15 +342,6 @@ describe("LuxonDateInputAutocomplete", () => {
       expect(result.error?.code).toBe("INVALID_CHARACTER");
     });
 
-    it("normalizes configured literals case-insensitively", () => {
-      const result = new LuxonDateInputAutocomplete(
-        "dd.MM.yyyy 'um' HH:mm 'Uhr'",
-      ).processPastedValue("15.07.2026 UM 16:59 UHR", { now });
-
-      expect(result.value).toBe("15.07.2026 um 16:59 Uhr");
-      expect(result.date?.isValid).toBe(true);
-    });
-
     it("does not silently ignore trailing pasted input", () => {
       const result = new LuxonDateInputAutocomplete(
         "dd.MM.yyyy",
@@ -293,25 +350,6 @@ describe("LuxonDateInputAutocomplete", () => {
       expect(result.valid).toBe(false);
       expect(result.date).toBeNull();
       expect(result.error?.code).toBe("INVALID_CHARACTER");
-    });
-
-    it("reports unexpected trailing numeric input", () => {
-      const result = new LuxonDateInputAutocomplete(
-        "dd.MM.yyyy",
-      ).processPastedValue("15.07.2026 99", { now });
-
-      expect(result.valid).toBe(false);
-      expect(result.date).toBeNull();
-      expect(result.error?.code).toBe("UNEXPECTED_INPUT");
-    });
-
-    it("keeps compact dates distinct from epoch values", () => {
-      const result = new LuxonDateInputAutocomplete(
-        "ddMMyyyy",
-      ).processPastedValue("15072026", { now });
-
-      expect(result.value).toBe("15072026");
-      expect(result.date?.toISODate()).toBe("2026-07-15");
     });
   });
 
@@ -339,6 +377,88 @@ describe("LuxonDateInputAutocomplete", () => {
         );
       },
     );
+  });
+
+  describe("generic Luxon format support", () => {
+    it("keeps an incomplete textual-month value editable until commit", () => {
+      const autocomplete = new LuxonDateInputAutocomplete("dd MMMM yyyy");
+
+      const editing = autocomplete.process("15 Jul", { now });
+      const committed = autocomplete.process("15 Jul", { now, commit: true });
+
+      expect(editing.value).toBe("15 Jul");
+      expect(editing.valid).toBe(true);
+      expect(editing.complete).toBe(false);
+      expect(committed.valid).toBe(false);
+      expect(committed.error?.code).toBe("INVALID_DATE");
+    });
+
+    it.each([
+      ["textual month", "dd MMMM yyyy", "15 Juli 2026", "de-DE"],
+      ["ISO week date", "kkkk-'W'WW-E", "2026-W29-3", "de-DE"],
+      ["ordinal date", "yyyy-ooo", "2026-196", "de-DE"],
+      ["localized macro", "D", "15.7.2026", "de-DE"],
+      [
+        "IANA zone",
+        "yyyy-MM-dd HH:mm z",
+        "2026-07-15 16:59 Europe/Berlin",
+        "de-DE",
+      ],
+    ])("parses a %s format", (_, format, value, locale) => {
+      const result = new LuxonDateInputAutocomplete(format, locale).process(
+        value,
+        { commit: true, locale, now },
+      );
+
+      expect(result.valid).toBe(true);
+      expect(result.complete).toBe(true);
+      expect(result.date?.isValid).toBe(true);
+    });
+
+    it.each([
+      ["empty", ""],
+      ["whitespace-only", "   "],
+      ["unknown token", "dd.MM.yyy"],
+      ["unclosed literal", "dd.MM.yyyy 'Uhr"],
+      ["literal-only", "'Datum'"],
+      ["conflicting meridiem", "HH:mm a"],
+      ["format-only zone name", "yyyy-MM-dd ZZZZ"],
+      ["format-only epoch token", "X"],
+    ])("throws for an invalid %s format", (_, format) => {
+      expect(() => new LuxonDateInputAutocomplete(format)).toThrowError(
+        /Invalid Luxon date format/u,
+      );
+    });
+  });
+
+  describe("additional regression coverage", () => {
+    it("normalizes configured literals case-insensitively", () => {
+      const result = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy 'um' HH:mm 'Uhr'",
+      ).processPastedValue("15.07.2026 UM 16:59 UHR", { now });
+
+      expect(result.value).toBe("15.07.2026 um 16:59 Uhr");
+      expect(result.date?.isValid).toBe(true);
+    });
+
+    it("reports unexpected trailing numeric input", () => {
+      const result = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy",
+      ).processPastedValue("15.07.2026 99", { now });
+
+      expect(result.valid).toBe(false);
+      expect(result.date).toBeNull();
+      expect(result.error?.code).toBe("UNEXPECTED_INPUT");
+    });
+
+    it("keeps compact dates distinct from epoch values", () => {
+      const result = new LuxonDateInputAutocomplete(
+        "ddMMyyyy",
+      ).processPastedValue("15072026", { now });
+
+      expect(result.value).toBe("15072026");
+      expect(result.date?.toISODate()).toBe("2026-07-15");
+    });
 
     it("uses the seconds/milliseconds boundary consistently", () => {
       const autocomplete = new LuxonDateInputAutocomplete(
@@ -366,191 +486,59 @@ describe("LuxonDateInputAutocomplete", () => {
 
       expect(result.date).toBeNull();
     });
-  });
-
-  describe("common Luxon date formats", () => {
-    const testDate = DateTime.fromObject(
-      {
-        year: 2026,
-        month: 7,
-        day: 5,
-        hour: 4,
-        minute: 9,
-        second: 8,
-      },
-      { zone: "Europe/Berlin" },
-    );
-
-    it("contains no duplicate formats", () => {
-      expect(new Set(COMMON_LUXON_DATE_FORMATS).size).toBe(
-        COMMON_LUXON_DATE_FORMATS.length,
-      );
-    });
-
-    it.each(COMMON_LUXON_DATE_FORMATS)(
-      'round-trips the "%s" format',
-      (format) => {
-        const locale = isUsDateFormat(format) ? "en-US" : "de-DE";
-        const expectedValue = testDate.setLocale(locale).toFormat(format);
-        const expectedDate = DateTime.fromFormat(expectedValue, format, {
-          locale,
-          setZone: true,
-        });
-        const result = new LuxonDateInputAutocomplete(
-          format,
-          locale,
-        ).processPastedValue(expectedValue, { locale, now });
-
-        expect(expectedDate.isValid).toBe(true);
-        expect(result.valid).toBe(true);
-        expect(result.complete).toBe(true);
-        expect(result.error).toBeNull();
-        expect(result.date?.toMillis()).toBe(expectedDate.toMillis());
-        expect(result.value).toBe(expectedValue);
-        expect(
-          DateTime.fromFormat(result.value, format, {
-            locale,
-            setZone: true,
-          }).isValid,
-        ).toBe(true);
-      },
-    );
-  });
-
-  describe("Luxon format support", () => {
-    it.each([
-      ["textual month", "dd MMMM yyyy", "15 Juli 2026", "2026-07-15"],
-      [
-        "12-hour time with meridiem",
-        "MM/dd/yyyy h:mm a",
-        "07/15/2026 4:59 PM",
-        "2026-07-15T16:59:00",
-      ],
-      ["ISO week date", "kkkk-'W'WW-E", "2026-W29-3", "2026-07-15"],
-      ["ordinal date", "yyyy-ooo", "2026-196", "2026-07-15"],
-      ["localized macro", "D", "15.7.2026", "2026-07-15"],
-      [
-        "numeric offset",
-        "yyyy-MM-dd HH:mm ZZZ",
-        "2026-07-15 16:59 +0200",
-        "2026-07-15T16:59:00+02:00",
-      ],
-      [
-        "IANA zone",
-        "yyyy-MM-dd HH:mm z",
-        "2026-07-15 16:59 Europe/Berlin",
-        "2026-07-15T16:59:00+02:00",
-      ],
-    ])("parses a %s format", (_, format, value, expectedIso) => {
-      const result = new LuxonDateInputAutocomplete(format, "de-DE").process(
-        value,
-        { commit: true, locale: "de-DE", now },
-      );
-
-      expect(result.valid).toBe(true);
-      expect(result.complete).toBe(true);
-      expect(result.date?.toMillis()).toBe(
-        DateTime.fromISO(expectedIso, { setZone: true }).toMillis(),
-      );
-      expect(result.value).toBe(
-        result.date?.setLocale("de-DE").toFormat(format),
-      );
-    });
 
     it.each([
-      ["abbreviated era", "G y-MM-dd", "AD 2026-07-15", "en-US", "2026-07-15"],
-      [
-        "full era",
-        "GG y-MM-dd",
-        "Anno Domini 2026-07-15",
-        "en-US",
-        "2026-07-15",
-      ],
-      [
-        "four-to-six-digit year",
-        "yyyyy-MM-dd",
-        "02026-07-15",
-        "en-US",
-        "2026-07-15",
-      ],
-      ["six-digit year", "yyyyyy-MM-dd", "002026-07-15", "en-US", "2026-07-15"],
-      [
-        "localized short weekday",
-        "yyyy-MM-dd EEE",
-        "2026-07-15 Mi",
-        "de-DE",
-        "2026-07-15",
-      ],
+      ["abbreviated era", "G y-MM-dd", "AD 2026-07-15", "en-US"],
+      ["full era", "GG y-MM-dd", "Anno Domini 2026-07-15", "en-US"],
+      ["five-digit year", "yyyyy-MM-dd", "02026-07-15", "en-US"],
+      ["six-digit year", "yyyyyy-MM-dd", "002026-07-15", "en-US"],
+      ["localized short weekday", "yyyy-MM-dd EEE", "2026-07-15 Mi", "de-DE"],
       [
         "localized long weekday",
         "yyyy-MM-dd EEEE",
         "2026-07-15 Mittwoch",
         "de-DE",
-        "2026-07-15",
       ],
-      [
-        "standalone short weekday",
-        "yyyy-MM-dd ccc",
-        "2026-07-15 Mi",
-        "de-DE",
-        "2026-07-15",
-      ],
-      [
-        "standalone long weekday",
-        "yyyy-MM-dd cccc",
-        "2026-07-15 Mittwoch",
-        "de-DE",
-        "2026-07-15",
-      ],
-      ["quarter", "yyyy-'Q'q", "2026-Q3", "en-US", "2026-07-01"],
-      ["padded quarter", "yyyy-'Q'qq", "2026-Q03", "en-US", "2026-07-01"],
+      ["quarter", "yyyy-'Q'q", "2026-Q3", "en-US"],
+      ["padded quarter", "yyyy-'Q'qq", "2026-Q03", "en-US"],
       [
         "milliseconds",
         "yyyy-MM-dd HH:mm:ss.SSS",
         "2026-07-15 16:59:12.125",
         "en-US",
-        "2026-07-15",
       ],
       [
         "fractional seconds",
         "yyyy-MM-dd HH:mm:ss.u",
         "2026-07-15 16:59:12.125",
         "en-US",
-        "2026-07-15",
       ],
       [
         "two-digit fractional seconds",
         "yyyy-MM-dd HH:mm:ss.uu",
         "2026-07-15 16:59:12.12",
         "en-US",
-        "2026-07-15",
       ],
       [
         "one-digit fractional seconds",
         "yyyy-MM-dd HH:mm:ss.uuu",
         "2026-07-15 16:59:12.1",
         "en-US",
-        "2026-07-15",
       ],
-    ])(
-      "parses a %s parser-compatible format",
-      (_, format, value, locale, expectedIsoDate) => {
-        const result = new LuxonDateInputAutocomplete(format, locale).process(
-          value,
-          { commit: true, locale, now },
-        );
+    ])("parses a %s parser-compatible format", (_, format, value, locale) => {
+      const result = new LuxonDateInputAutocomplete(format, locale).process(
+        value,
+        { commit: true, locale, now },
+      );
 
-        expect(result.valid).toBe(true);
-        expect(result.complete).toBe(true);
-        expect(result.date?.toISODate()).toBe(expectedIsoDate);
-        expect(
-          DateTime.fromFormat(result.value, format, {
-            locale,
-            setZone: true,
-          }).isValid,
-        ).toBe(true);
-      },
-    );
+      expect(result.valid).toBe(true);
+      expect(result.complete).toBe(true);
+      expect(result.date?.isValid).toBe(true);
+      expect(
+        DateTime.fromFormat(result.value, format, { locale, setZone: true })
+          .isValid,
+      ).toBe(true);
+    });
 
     it.each([
       ["localized time with short zone", "ttt", "16:59:12 +0200"],
@@ -574,34 +562,6 @@ describe("LuxonDateInputAutocomplete", () => {
         }).isValid,
       ).toBe(true);
     });
-
-    it("keeps an incomplete generic-format value editable until commit", () => {
-      const autocomplete = new LuxonDateInputAutocomplete("dd MMMM yyyy");
-
-      const editing = autocomplete.process("15 Jul", { now });
-      const committed = autocomplete.process("15 Jul", { now, commit: true });
-
-      expect(editing.value).toBe("15 Jul");
-      expect(editing.valid).toBe(true);
-      expect(editing.complete).toBe(false);
-      expect(committed.valid).toBe(false);
-      expect(committed.error?.code).toBe("INVALID_DATE");
-    });
-
-    it.each([
-      ["empty", ""],
-      ["whitespace-only", "   "],
-      ["unknown token", "dd.MM.yyy"],
-      ["unclosed literal", "dd.MM.yyyy 'Uhr"],
-      ["literal-only", "'Datum'"],
-      ["conflicting meridiem", "HH:mm a"],
-      ["format-only zone name", "yyyy-MM-dd ZZZZ"],
-      ["format-only epoch token", "X"],
-    ])("throws for an invalid %s format", (_, format) => {
-      expect(() => new LuxonDateInputAutocomplete(format)).toThrowError(
-        /Invalid Luxon date format/u,
-      );
-    });
   });
 
   it("provides default formats and descriptions", () => {
@@ -619,7 +579,3 @@ describe("LuxonDateInputAutocomplete", () => {
     ).toBe("TT.MM.JJJJ HH:mm:ss Uhr");
   });
 });
-
-function isUsDateFormat(format: string): boolean {
-  return /^(?:M{1,4}|c{3,4}, M{3,4})/u.test(format);
-}

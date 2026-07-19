@@ -1,18 +1,21 @@
 import { DateTime } from "luxon";
 
 export type LuxonDateField =
-  | "year"
-  | "month"
-  | "day"
-  | "hour"
-  | "minute"
-  | "second";
+  "year" | "month" | "day" | "hour" | "minute" | "second";
 
-type FieldToken = Readonly<{
+type NumericFieldToken = Readonly<{
   type: "field";
   field: LuxonDateField;
   token: string;
-  width: number;
+  minimumWidth: number;
+  maximumWidth: number;
+  padded: boolean;
+  hourCycle?: 12 | 24;
+}>;
+
+type MeridiemToken = Readonly<{
+  type: "meridiem";
+  token: "a";
 }>;
 
 type LiteralToken = Readonly<{
@@ -20,7 +23,7 @@ type LiteralToken = Readonly<{
   value: string;
 }>;
 
-type FormatToken = FieldToken | LiteralToken;
+type SmartToken = NumericFieldToken | MeridiemToken | LiteralToken;
 
 type LuxonFormatPart = Readonly<{
   literal: boolean;
@@ -58,34 +61,118 @@ export type DateInputAutocompleteOptions = Readonly<{
   isDeletion?: boolean;
 }>;
 
-const FIELD_TOKENS: Readonly<
-  Record<string, Omit<FieldToken, "type" | "token">>
+type NormalizedInput = Readonly<{
+  value: string;
+  fields: Partial<Record<LuxonDateField, string>>;
+  meridiem: "AM" | "PM" | null;
+  error: DateInputError | null;
+}>;
+
+const NUMERIC_FIELD_TOKENS: Readonly<
+  Record<string, Omit<NumericFieldToken, "type" | "token">>
 > = {
-  yyyy: { field: "year", width: 4 },
-  yy: { field: "year", width: 2 },
-  MM: { field: "month", width: 2 },
-  M: { field: "month", width: 2 },
-  dd: { field: "day", width: 2 },
-  d: { field: "day", width: 2 },
-  HH: { field: "hour", width: 2 },
-  H: { field: "hour", width: 2 },
-  mm: { field: "minute", width: 2 },
-  m: { field: "minute", width: 2 },
-  ss: { field: "second", width: 2 },
-  s: { field: "second", width: 2 },
+  yyyy: {
+    field: "year",
+    minimumWidth: 4,
+    maximumWidth: 4,
+    padded: true,
+  },
+  yy: {
+    field: "year",
+    minimumWidth: 2,
+    maximumWidth: 2,
+    padded: true,
+  },
+  MM: {
+    field: "month",
+    minimumWidth: 2,
+    maximumWidth: 2,
+    padded: true,
+  },
+  M: {
+    field: "month",
+    minimumWidth: 1,
+    maximumWidth: 2,
+    padded: false,
+  },
+  dd: {
+    field: "day",
+    minimumWidth: 2,
+    maximumWidth: 2,
+    padded: true,
+  },
+  d: {
+    field: "day",
+    minimumWidth: 1,
+    maximumWidth: 2,
+    padded: false,
+  },
+  HH: {
+    field: "hour",
+    minimumWidth: 2,
+    maximumWidth: 2,
+    padded: true,
+    hourCycle: 24,
+  },
+  H: {
+    field: "hour",
+    minimumWidth: 1,
+    maximumWidth: 2,
+    padded: false,
+    hourCycle: 24,
+  },
+  hh: {
+    field: "hour",
+    minimumWidth: 2,
+    maximumWidth: 2,
+    padded: true,
+    hourCycle: 12,
+  },
+  h: {
+    field: "hour",
+    minimumWidth: 1,
+    maximumWidth: 2,
+    padded: false,
+    hourCycle: 12,
+  },
+  mm: {
+    field: "minute",
+    minimumWidth: 2,
+    maximumWidth: 2,
+    padded: true,
+  },
+  m: {
+    field: "minute",
+    minimumWidth: 1,
+    maximumWidth: 2,
+    padded: false,
+  },
+  ss: {
+    field: "second",
+    minimumWidth: 2,
+    maximumWidth: 2,
+    padded: true,
+  },
+  s: {
+    field: "second",
+    minimumWidth: 1,
+    maximumWidth: 2,
+    padded: false,
+  },
 };
 
+const ORDERED_NUMERIC_FIELD_TOKENS = Object.keys(NUMERIC_FIELD_TOKENS).sort(
+  (left, right) => right.length - left.length,
+);
+
 const PARSEABLE_LUXON_TOKENS = new Set([
-  // Era
   "G",
   "GG",
-  // Calendar years
   "y",
   "yy",
   "yyyy",
   "yyyyy",
   "yyyyyy",
-  // Months
   "M",
   "MM",
   "MMM",
@@ -94,12 +181,10 @@ const PARSEABLE_LUXON_TOKENS = new Set([
   "LL",
   "LLL",
   "LLLL",
-  // Calendar dates and ordinals
   "d",
   "dd",
   "o",
   "ooo",
-  // Time
   "H",
   "HH",
   "h",
@@ -114,7 +199,6 @@ const PARSEABLE_LUXON_TOKENS = new Set([
   "uu",
   "uuu",
   "a",
-  // Quarter and ISO week date
   "q",
   "qq",
   "kk",
@@ -127,11 +211,30 @@ const PARSEABLE_LUXON_TOKENS = new Set([
   "c",
   "ccc",
   "cccc",
-  // Offset and IANA zone
   "Z",
   "ZZ",
   "ZZZ",
   "z",
+  "D",
+  "DD",
+  "DDD",
+  "DDDD",
+  "t",
+  "tt",
+  "ttt",
+  "tttt",
+  "T",
+  "TT",
+  "TTT",
+  "TTTT",
+  "f",
+  "ff",
+  "fff",
+  "ffff",
+  "F",
+  "FF",
+  "FFF",
+  "FFFF",
 ]);
 
 const FORMAT_VALIDATION_DATE = DateTime.fromObject(
@@ -155,9 +258,10 @@ export class LuxonDateInputAutocomplete {
 
   private readonly dateFormat: string;
   private readonly locale: string;
-  private readonly tokens: readonly FormatToken[];
+  private readonly tokens: readonly SmartToken[];
   private readonly usesSmartAutocomplete: boolean;
   private readonly hasUhrLiteral: boolean;
+  private readonly hasMeridiem: boolean;
 
   constructor(dateFormat: string, locale = "de-DE") {
     this.locale = locale;
@@ -173,6 +277,9 @@ export class LuxonDateInputAutocomplete {
     this.tokens = smartTokens ?? [];
     this.hasUhrLiteral = formatParts.some(
       (part) => part.literal && /uhr/iu.test(part.value),
+    );
+    this.hasMeridiem = formatParts.some(
+      (part) => !part.literal && part.value === "a",
     );
   }
 
@@ -193,18 +300,14 @@ export class LuxonDateInputAutocomplete {
       throw invalidFormatError(dateFormat, "the format must not be empty");
     }
 
-    // Parse once here as well to reject unclosed apostrophe-delimited literals
-    // with a clearer error than Luxon provides.
     parseLuxonFormat(normalizedFormat);
 
     try {
-      const validationDate = FORMAT_VALIDATION_DATE.setLocale(locale);
       const explanation = DateTime.fromFormatExplain("", normalizedFormat, {
         locale,
         setZone: true,
       });
-      const parserTokens = explanation.tokens;
-      const meaningfulTokens = parserTokens.filter(
+      const meaningfulTokens = explanation.tokens.filter(
         (token) => !token.literal && /^\p{L}+$/u.test(token.val),
       );
 
@@ -224,8 +327,21 @@ export class LuxonDateInputAutocomplete {
         }
       }
 
+      if (
+        meaningfulTokens.some((token) => token.val === "a") &&
+        meaningfulTokens.some(
+          (token) => token.val === "H" || token.val === "HH",
+        )
+      ) {
+        throw invalidFormatError(
+          dateFormat,
+          "24-hour tokens H/HH cannot be combined with meridiem token a",
+        );
+      }
+
+      const validationDate = FORMAT_VALIDATION_DATE.setLocale(locale);
       const validationValue = buildParserCompatibleValue(
-        parserTokens,
+        explanation.tokens,
         validationDate,
       );
       const parsedValue = DateTime.fromFormat(
@@ -264,6 +380,7 @@ export class LuxonDateInputAutocomplete {
     if (options.dateOnly) {
       return this.DEFAULT_FORMAT;
     }
+
     return options.showSeconds
       ? this.DEFAULT_DATETIME_SECONDS_FORMAT
       : this.DEFAULT_DATETIME_FORMAT;
@@ -276,12 +393,13 @@ export class LuxonDateInputAutocomplete {
     if (options.dateOnly) {
       return "TT.MM.JJJJ";
     }
+
     return options.showSeconds
       ? "TT.MM.JJJJ HH:mm:ss Uhr"
       : "TT.MM.JJJJ HH:mm Uhr";
   }
 
-  process(
+  public process(
     rawValue: string,
     options: DateInputAutocompleteOptions = {},
   ): DateInputAutocompleteResult {
@@ -289,14 +407,16 @@ export class LuxonDateInputAutocomplete {
       return this.processWithLuxon(rawValue, options);
     }
 
-    const now = options.now ?? DateTime.now();
+    const now = (options.now ?? DateTime.now()).setLocale(
+      options.locale ?? this.locale,
+    );
     const locale = options.locale ?? this.locale;
     const normalized = this.normalize(rawValue, options);
-    const error =
+    const validationError =
       normalized.error ?? this.validateKnownFields(normalized.fields);
-    const complete = this.isComplete(normalized.fields);
+    const complete = this.isComplete(normalized);
     let date: DateTime | null = null;
-    let parseError = error;
+    let parseError = validationError;
 
     if (!parseError && complete) {
       const parsed = DateTime.fromFormat(normalized.value, this.dateFormat, {
@@ -314,18 +434,13 @@ export class LuxonDateInputAutocomplete {
       }
     }
 
-    const value = date
-      ? formatInputValue(date, this.dateFormat, locale)
-      : normalized.value;
-    const suggestedValue = date
-      ? value
-      : this.buildSuggestion(normalized.fields, now);
+    const suggestedValue = this.buildSuggestion(normalized, now, locale);
 
     return {
-      value,
+      value: normalized.value,
       suggestedValue,
-      completionSuffix: suggestedValue.startsWith(value)
-        ? suggestedValue.slice(value.length)
+      completionSuffix: suggestedValue.startsWith(normalized.value)
+        ? suggestedValue.slice(normalized.value.length)
         : "",
       complete,
       valid: !parseError,
@@ -339,7 +454,7 @@ export class LuxonDateInputAutocomplete {
     options: Omit<DateInputAutocompleteOptions, "commit" | "isDeletion"> = {},
   ): DateInputAutocompleteResult {
     const locale = options.locale ?? this.locale;
-    const trimmedValue = rawValue.trim();
+    const trimmedValue = normalizeWhitespace(rawValue.trim());
     const directResult = this.process(trimmedValue, {
       ...options,
       commit: true,
@@ -388,7 +503,9 @@ export class LuxonDateInputAutocomplete {
     const locale = options.locale ?? this.locale;
     const now = (options.now ?? DateTime.now()).setLocale(locale);
     const commit = options.commit === true;
-    const value = commit ? rawValue.trim() : rawValue;
+    const value = commit
+      ? normalizeWhitespace(rawValue.trim())
+      : normalizeWhitespace(rawValue);
     const suggestedValue = formatInputValue(now, this.dateFormat, locale);
 
     if (!value) {
@@ -455,16 +572,14 @@ export class LuxonDateInputAutocomplete {
   private normalize(
     rawValue: string,
     options: DateInputAutocompleteOptions,
-  ): {
-    value: string;
-    fields: Partial<Record<LuxonDateField, string>>;
-    error: DateInputError | null;
-  } {
+  ): NormalizedInput {
     const fields: Partial<Record<LuxonDateField, string>> = {};
     const commit = options.commit === true;
     const isDeletion = options.isDeletion === true;
+    const source = normalizeWhitespace(rawValue);
     let sourceIndex = 0;
     let value = "";
+    let meridiem: "AM" | "PM" | null = null;
 
     for (let tokenIndex = 0; tokenIndex < this.tokens.length; tokenIndex++) {
       const token = this.tokens[tokenIndex];
@@ -474,66 +589,68 @@ export class LuxonDateInputAutocomplete {
           break;
         }
 
-        const consumed = consumeLiteral(rawValue, sourceIndex, token.value);
+        const consumed = consumeLiteral(source, sourceIndex, token.value);
         if (consumed > 0) {
           sourceIndex += consumed;
         }
 
-        const isTrailing = sourceIndex === rawValue.length;
-
-        if (
-          !isDeletion ||
-          (consumed === token.value.length && !isTrailing) ||
-          commit
-        ) {
+        const sourceFinished = sourceIndex === source.length;
+        if (!isDeletion || !sourceFinished || commit) {
           value += token.value;
-        } else if (isDeletion && consumed > 0 && !isTrailing) {
-          value += rawValue.slice(sourceIndex - consumed, sourceIndex);
         }
         continue;
       }
 
-      const digits = readDigits(rawValue, sourceIndex, token.width);
-      sourceIndex = digits.nextIndex;
+      if (token.type === "meridiem") {
+        const parsedMeridiem = readMeridiem(source, sourceIndex, commit);
+        sourceIndex = parsedMeridiem.nextIndex;
 
-      if (!digits.value) {
+        if (!parsedMeridiem.value) {
+          break;
+        }
+
+        value += parsedMeridiem.value;
+        meridiem = parsedMeridiem.complete
+          ? (parsedMeridiem.value as "AM" | "PM")
+          : null;
+
+        if (!parsedMeridiem.complete) {
+          break;
+        }
+        continue;
+      }
+
+      const numeric = readNumericField(
+        source,
+        sourceIndex,
+        token,
+        this.tokens[tokenIndex + 1],
+        commit,
+      );
+      sourceIndex = numeric.nextIndex;
+
+      if (!numeric.value) {
         break;
       }
 
-      const nextCharacter = rawValue[sourceIndex] ?? "";
-      const nextToken = this.tokens[tokenIndex + 1];
-      const explicitlyCommitted =
-        nextToken?.type === "literal" &&
-        nextCharacter.length > 0 &&
-        nextToken.value.startsWith(nextCharacter);
-      const shouldPad =
-        token.width === 2 &&
-        digits.value.length === 1 &&
-        (commit ||
-          explicitlyCommitted ||
-          isUnambiguousSingleDigit(token.field, digits.value));
-      const fieldValue = shouldPad
-        ? digits.value.padStart(2, "0")
-        : digits.value;
+      value += numeric.value;
+      fields[token.field] = numeric.value;
 
-      fields[token.field] = fieldValue;
-      value += fieldValue;
-
-      const fieldComplete = fieldValue.length === token.width;
-      if (!fieldComplete) {
+      if (!numeric.complete) {
         break;
       }
     }
 
-    const remaining = rawValue.slice(sourceIndex);
+    const remaining = source.slice(sourceIndex);
     const unexpectedInput = remaining.trim();
     const invalidCharacter = [...unexpectedInput].find(
-      (character) => !/[0-9\s./:\-']/u.test(character),
+      (character) => !/[0-9\s.,/:\-']/u.test(character),
     );
 
     return {
-      value: invalidCharacter || unexpectedInput ? rawValue : value,
+      value: invalidCharacter || unexpectedInput ? source : value,
       fields,
+      meridiem,
       error: invalidCharacter
         ? {
             code: "INVALID_CHARACTER",
@@ -551,27 +668,31 @@ export class LuxonDateInputAutocomplete {
   private validateKnownFields(
     fields: Partial<Record<LuxonDateField, string>>,
   ): DateInputError | null {
-    for (const [field, raw] of Object.entries(fields) as Array<
-      [LuxonDateField, string]
-    >) {
-      if (!raw || !isFieldComplete(field, raw, this.tokens)) {
+    for (const token of this.tokens) {
+      if (token.type !== "field") {
+        continue;
+      }
+
+      const raw = fields[token.field];
+      if (!raw || !isNumericTokenComplete(token, raw)) {
         continue;
       }
 
       const value = Number(raw);
-      const [minimum, maximum] = rangeFor(field);
+      const [minimum, maximum] = rangeForToken(token);
       if (value < minimum || value > maximum) {
         return {
           code: "OUT_OF_RANGE",
-          field,
-          message: `${field} must be between ${minimum} and ${maximum}.`,
+          field: token.field,
+          message: `${token.field} must be between ${minimum} and ${maximum}.`,
         };
       }
     }
 
     const day = completedNumber("day", fields, this.tokens);
     const month = completedNumber("month", fields, this.tokens);
-    const year = completedNumber("year", fields, this.tokens);
+    const rawYear = completedRawValue("year", fields, this.tokens);
+    const year = rawYear === null ? null : normalizeCalendarYear(rawYear);
 
     if (day !== null && month !== null) {
       const maximumDay = maximumDayForKnownDate(month, year);
@@ -587,17 +708,32 @@ export class LuxonDateInputAutocomplete {
     return null;
   }
 
-  private isComplete(fields: Partial<Record<LuxonDateField, string>>): boolean {
-    return this.tokens
-      .filter((token): token is FieldToken => token.type === "field")
-      .every((token) => fields[token.field]?.length === token.width);
+  private isComplete(normalized: NormalizedInput): boolean {
+    const fieldsComplete = this.tokens.every((token) => {
+      if (token.type !== "field") {
+        return true;
+      }
+
+      const value = normalized.fields[token.field];
+      return value !== undefined && isNumericTokenComplete(token, value);
+    });
+
+    return (
+      fieldsComplete && (!this.hasMeridiem || normalized.meridiem !== null)
+    );
   }
 
   private buildSuggestion(
-    fields: Partial<Record<LuxonDateField, string>>,
+    normalized: NormalizedInput,
     now: DateTime,
+    locale: string,
   ): string {
-    const defaults: Record<LuxonDateField, number> = {
+    const completeNowValue = formatInputValue(now, this.dateFormat, locale);
+    if (!normalized.value) {
+      return completeNowValue;
+    }
+
+    const valuesByField: Record<LuxonDateField, number> = {
       year: now.year,
       month: now.month,
       day: now.day,
@@ -612,27 +748,100 @@ export class LuxonDateInputAutocomplete {
           return token.value;
         }
 
-        const current = fields[token.field];
-        const fallback = String(defaults[token.field]).padStart(
-          token.width,
-          "0",
-        );
-        if (!current) {
-          return token.width === 2
-            ? fallback.slice(-2)
-            : fallback.slice(-token.width);
+        if (token.type === "meridiem") {
+          return normalized.meridiem ?? now.toFormat("a").toUpperCase();
         }
 
-        if (current.length >= token.width) {
+        const current = normalized.fields[token.field];
+        if (current && isNumericTokenComplete(token, current)) {
           return current;
         }
 
-        return fallback.startsWith(current)
-          ? fallback
-          : current.padStart(token.width, "0");
+        const fallbackValue =
+          token.field === "hour" && token.hourCycle === 12
+            ? valuesByField.hour % 12 || 12
+            : valuesByField[token.field];
+        const fallback = formatNumericTokenValue(token, fallbackValue);
+
+        if (!current) {
+          return fallback;
+        }
+
+        return fallback.startsWith(current) ? fallback : current;
       })
       .join("");
   }
+}
+
+function readNumericField(
+  source: string,
+  startIndex: number,
+  token: NumericFieldToken,
+  nextToken: SmartToken | undefined,
+  commit: boolean,
+): Readonly<{ value: string; nextIndex: number; complete: boolean }> {
+  const digits = readDigits(source, startIndex, token.maximumWidth);
+  if (!digits.value) {
+    return { value: "", nextIndex: startIndex, complete: false };
+  }
+
+  const nextCharacter = source[digits.nextIndex] ?? "";
+  const explicitlySeparated =
+    nextToken?.type === "literal" &&
+    nextCharacter.length > 0 &&
+    literalStartsWith(nextToken.value, nextCharacter);
+  const reachedMaximumWidth = digits.value.length === token.maximumWidth;
+  const unambiguous = isUnambiguousSingleDigit(token, digits.value);
+  const canPadSingleDigit =
+    token.padded && token.maximumWidth === 2 && digits.value.length === 1;
+  const canCompleteShortValue =
+    (digits.value.length >= token.minimumWidth || canPadSingleDigit) &&
+    (explicitlySeparated || commit || unambiguous);
+  const complete = reachedMaximumWidth || canCompleteShortValue;
+
+  if (!complete) {
+    return {
+      value: digits.value,
+      nextIndex: digits.nextIndex,
+      complete: false,
+    };
+  }
+
+  const normalizedValue =
+    token.padded && digits.value.length < token.maximumWidth
+      ? digits.value.padStart(token.maximumWidth, "0")
+      : digits.value;
+
+  return {
+    value: normalizedValue,
+    nextIndex: digits.nextIndex,
+    complete: true,
+  };
+}
+
+function readMeridiem(
+  source: string,
+  startIndex: number,
+  commit: boolean,
+): Readonly<{
+  value: "" | "A" | "P" | "AM" | "PM";
+  nextIndex: number;
+  complete: boolean;
+}> {
+  const match = /^[ap](?:m)?/iu.exec(source.slice(startIndex));
+  if (!match) {
+    return { value: "", nextIndex: startIndex, complete: false };
+  }
+
+  const raw = match[0].toUpperCase();
+  const complete = raw.length === 2 || commit;
+  const value = complete ? (`${raw[0]}M` as "AM" | "PM") : (raw as "A" | "P");
+
+  return {
+    value,
+    nextIndex: startIndex + match[0].length,
+    complete,
+  };
 }
 
 function formatInputValue(
@@ -682,7 +891,7 @@ function parserTokenValue(token: string, date: DateTime): string {
     case "yyyy":
       return formatSignedYear(date.year, 4);
     case "yyyyy":
-      return formatSignedYear(date.year, 4);
+      return formatSignedYear(date.year, 5);
     case "yyyyyy":
       return formatSignedYear(date.year, 6);
     case "M":
@@ -718,7 +927,6 @@ function parserTokenValue(token: string, date: DateTime): string {
     case "S":
       return String(date.millisecond);
     case "SSS":
-      return String(date.millisecond).padStart(3, "0");
     case "u":
       return String(date.millisecond).padStart(3, "0");
     case "uu":
@@ -758,13 +966,17 @@ function parserTokenValue(token: string, date: DateTime): string {
     case "a":
       return date.toFormat(token).replace(/\./gu, "");
     default:
-      throw new Error(`Unsupported Luxon parser token "${token}".`);
+      return date.toFormat(token);
   }
 }
 
 function formatSignedYear(year: number, width: number): string {
   const absoluteYear = String(Math.abs(year)).padStart(width, "0");
   return year < 0 ? `-${absoluteYear}` : absoluteYear;
+}
+
+function normalizeWhitespace(value: string): string {
+  return value.replace(/\u00a0/gu, " ");
 }
 
 function removeOptionalUhrSuffix(value: string): string {
@@ -801,136 +1013,147 @@ function parseEpoch(value: string, locale: string): DateTime | null {
 function parseLuxonFormat(format: string): readonly LuxonFormatPart[] {
   const parts: LuxonFormatPart[] = [];
   let index = 0;
-  let quotedLiteral = "";
-  let insideLiteral = false;
 
   while (index < format.length) {
-    const character = format[index];
+    if (format[index] === "'") {
+      let literal = "";
+      index++;
+      let closed = false;
 
-    if (character === "'") {
-      if (format[index + 1] === "'") {
-        if (insideLiteral) {
-          quotedLiteral += "'";
-        } else {
-          appendFormatPart(parts, true, "'");
+      while (index < format.length) {
+        if (format[index] !== "'") {
+          literal += format[index];
+          index++;
+          continue;
         }
-        index += 2;
-        continue;
+
+        if (format[index + 1] === "'") {
+          literal += "'";
+          index += 2;
+          continue;
+        }
+
+        index++;
+        closed = true;
+        break;
       }
 
-      if (insideLiteral) {
-        appendFormatPart(parts, true, quotedLiteral);
-        quotedLiteral = "";
-        insideLiteral = false;
-      } else {
-        insideLiteral = true;
+      if (!closed) {
+        throw invalidFormatError(
+          format,
+          "unclosed apostrophe-delimited literal",
+        );
       }
-      index++;
+
+      pushFormatPart(parts, { literal: true, value: literal });
       continue;
     }
 
-    if (insideLiteral) {
-      quotedLiteral += character;
+    if (/\p{L}/u.test(format[index])) {
+      let token = format[index];
       index++;
+      while (index < format.length && format[index] === token[0]) {
+        token += format[index];
+        index++;
+      }
+      pushFormatPart(parts, { literal: false, value: token });
       continue;
     }
 
-    let value = character;
+    pushFormatPart(parts, { literal: true, value: format[index] });
     index++;
-    while (index < format.length && format[index] === character) {
-      value += format[index];
-      index++;
-    }
-
-    const isLiteral = /^\s+$/u.test(value) || !/^\p{L}+$/u.test(value);
-    appendFormatPart(parts, isLiteral, value);
-  }
-
-  if (insideLiteral) {
-    throw invalidFormatError(
-      format,
-      "an apostrophe-delimited literal is not closed",
-    );
   }
 
   return parts;
 }
 
-function appendFormatPart(
-  parts: LuxonFormatPart[],
-  literal: boolean,
-  value: string,
-): void {
-  if (!value) {
+function pushFormatPart(parts: LuxonFormatPart[], part: LuxonFormatPart): void {
+  if (!part.value) {
     return;
   }
 
   const previous = parts.at(-1);
-  if (literal && previous?.literal) {
-    parts[parts.length - 1] = { literal: true, value: previous.value + value };
+  if (part.literal && previous?.literal) {
+    parts[parts.length - 1] = {
+      literal: true,
+      value: previous.value + part.value,
+    };
     return;
   }
 
-  parts.push({ literal, value });
+  parts.push(part);
 }
 
 function toSmartAutocompleteTokens(
   parts: readonly LuxonFormatPart[],
-): readonly FormatToken[] | null {
-  const tokens: FormatToken[] = [];
-  const usedFields = new Set<LuxonDateField>();
+): readonly SmartToken[] | null {
+  const tokens: SmartToken[] = [];
 
   for (const part of parts) {
     if (part.literal) {
-      pushLiteral(tokens, part.value);
+      pushSmartLiteral(tokens, part.value);
       continue;
     }
 
-    const definition = FIELD_TOKENS[part.value];
-    if (!definition || usedFields.has(definition.field)) {
+    if (part.value === "a") {
+      tokens.push({ type: "meridiem", token: "a" });
+      continue;
+    }
+
+    const numericDefinition = NUMERIC_FIELD_TOKENS[part.value];
+    if (!numericDefinition) {
       return null;
     }
 
-    usedFields.add(definition.field);
-    tokens.push({ type: "field", token: part.value, ...definition });
+    tokens.push({
+      type: "field",
+      token: part.value,
+      ...numericDefinition,
+    });
   }
 
   return tokens.some((token) => token.type === "field") ? tokens : null;
 }
 
-function invalidFormatError(format: string, reason: string): Error {
-  return new Error(`Invalid Luxon date format "${format}": ${reason}.`);
-}
+function pushSmartLiteral(tokens: SmartToken[], value: string): void {
+  if (!value) {
+    return;
+  }
 
-function pushLiteral(tokens: FormatToken[], value: string): void {
-  if (!value) return;
   const previous = tokens.at(-1);
   if (previous?.type === "literal") {
     tokens[tokens.length - 1] = {
       type: "literal",
       value: previous.value + value,
     };
-  } else {
-    tokens.push({ type: "literal", value });
+    return;
   }
+
+  tokens.push({ type: "literal", value });
+}
+
+function invalidFormatError(format: string, reason: string): Error {
+  return new Error(`Invalid Luxon date format "${format}": ${reason}.`);
 }
 
 function readDigits(
   source: string,
   startIndex: number,
   maximumLength: number,
-): { value: string; nextIndex: number } {
+): Readonly<{ value: string; nextIndex: number }> {
   let value = "";
   let index = startIndex;
+
   while (index < source.length && value.length < maximumLength) {
     const character = source[index];
-    if (/\d/u.test(character)) {
-      value += character;
-      index++;
-      continue;
+    if (!/\d/u.test(character)) {
+      break;
     }
-    break;
+
+    value += character;
+    index++;
   }
+
   return { value, nextIndex: index };
 }
 
@@ -975,18 +1198,36 @@ function consumeLiteral(
   return sourceIndex - startIndex;
 }
 
+function literalStartsWith(literal: string, character: string): boolean {
+  const firstVisibleCharacter = [...literal].find(
+    (candidate) => !/\s/u.test(candidate),
+  );
+
+  if (!firstVisibleCharacter) {
+    return /\s/u.test(character);
+  }
+
+  return (
+    firstVisibleCharacter.toLocaleLowerCase() === character.toLocaleLowerCase()
+  );
+}
+
 function isUnambiguousSingleDigit(
-  field: LuxonDateField,
-  digit: string,
+  token: NumericFieldToken,
+  digits: string,
 ): boolean {
-  const value = Number(digit);
-  switch (field) {
+  if (digits.length !== 1) {
+    return false;
+  }
+
+  const value = Number(digits);
+  switch (token.field) {
     case "month":
       return value > 1;
     case "day":
       return value > 3;
     case "hour":
-      return value > 2;
+      return token.hourCycle === 12 ? value > 1 : value > 2;
     case "minute":
     case "second":
       return value > 5;
@@ -995,47 +1236,81 @@ function isUnambiguousSingleDigit(
   }
 }
 
-function rangeFor(field: LuxonDateField): readonly [number, number] {
-  switch (field) {
+function rangeForToken(token: NumericFieldToken): readonly [number, number] {
+  switch (token.field) {
     case "year":
-      return [0, 9999];
+      return [0, token.maximumWidth === 2 ? 99 : 9999];
     case "month":
       return [1, 12];
     case "day":
       return [1, 31];
     case "hour":
-      return [0, 23];
+      return token.hourCycle === 12 ? [1, 12] : [0, 23];
     case "minute":
     case "second":
       return [0, 59];
   }
 }
 
+function isNumericTokenComplete(
+  token: NumericFieldToken,
+  raw: string,
+): boolean {
+  return raw.length >= token.minimumWidth && raw.length <= token.maximumWidth;
+}
+
+function completedRawValue(
+  field: LuxonDateField,
+  fields: Partial<Record<LuxonDateField, string>>,
+  tokens: readonly SmartToken[],
+): string | null {
+  const raw = fields[field];
+  const token = tokens.find(
+    (candidate): candidate is NumericFieldToken =>
+      candidate.type === "field" && candidate.field === field,
+  );
+
+  return raw && token && isNumericTokenComplete(token, raw) ? raw : null;
+}
+
 function completedNumber(
   field: LuxonDateField,
   fields: Partial<Record<LuxonDateField, string>>,
-  tokens: readonly FormatToken[],
+  tokens: readonly SmartToken[],
 ): number | null {
-  const raw = fields[field];
-  return raw && isFieldComplete(field, raw, tokens) ? Number(raw) : null;
+  const raw = completedRawValue(field, fields, tokens);
+  return raw === null ? null : Number(raw);
 }
 
-function isFieldComplete(
-  field: LuxonDateField,
-  raw: string,
-  tokens: readonly FormatToken[],
-): boolean {
-  const token = tokens.find(
-    (candidate): candidate is FieldToken =>
-      candidate.type === "field" && candidate.field === field,
-  );
-  return !!token && raw.length === token.width;
+function normalizeCalendarYear(rawYear: string): number {
+  if (rawYear.length !== 2) {
+    return Number(rawYear);
+  }
+
+  const parsed = DateTime.fromFormat(rawYear, "yy");
+  return parsed.isValid ? parsed.year : Number(rawYear);
 }
 
 function maximumDayForKnownDate(month: number, year: number | null): number {
   if (month === 2) {
-    if (year === null) return 29;
+    if (year === null) {
+      return 29;
+    }
+
     return DateTime.local(year, 2).daysInMonth ?? 29;
   }
+
   return [4, 6, 9, 11].includes(month) ? 30 : 31;
+}
+
+function formatNumericTokenValue(
+  token: NumericFieldToken,
+  value: number,
+): string {
+  if (token.token === "yy") {
+    return String(Math.abs(value) % 100).padStart(2, "0");
+  }
+
+  const raw = String(value);
+  return token.padded ? raw.padStart(token.maximumWidth, "0") : raw;
 }
