@@ -1,4 +1,11 @@
-import { Component, computed, input, output, signal } from "@angular/core";
+import {
+  Component,
+  OnDestroy,
+  computed,
+  input,
+  output,
+  signal,
+} from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 
 export type TimeUnit = "hour" | "minute" | "second";
@@ -34,6 +41,9 @@ type TimeWheelAnimationState = Readonly<{
 }>;
 
 const RAPID_CHANGE_THRESHOLD_MS = 180;
+const PRESS_HOLD_INITIAL_DELAY_MS = 70;
+const PRESS_HOLD_MINIMUM_DELAY_MS = 50;
+const PRESS_HOLD_ACCELERATION_STEP_MS = 2;
 
 const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
   hour: {
@@ -66,7 +76,7 @@ const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
   templateUrl: "./time-wheel.component.html",
   styleUrl: "./time-wheel.component.scss",
 })
-export class TimeWheelComponent {
+export class TimeWheelComponent implements OnDestroy {
   readonly context = input.required<TimeWheelContext>();
 
   readonly valueChange = output<number>();
@@ -134,13 +144,79 @@ export class TimeWheelComponent {
 
   private animationPhase: TimeWheelAnimationPhase = "b";
   private lastButtonChangeTimestamp: number | null = null;
+  private pressHoldTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private clickSuppressionTimeoutId: ReturnType<typeof setTimeout> | null =
+    null;
+  private pressHoldValue: number | null = null;
+  private pressHoldDifference = 0;
+  private pressHoldDirection: TimeWheelAnimationDirection | null = null;
+  private pressHoldDelayMs = PRESS_HOLD_INITIAL_DELAY_MS;
+  private pressHoldActive = false;
+  private suppressNextClick = false;
 
-  protected increment(): void {
-    this.changeBy(1, "increment", true);
+  ngOnDestroy(): void {
+    this.resetPressHoldState();
+    this.suppressNextClick = false;
+    this.clearClickSuppressionTimeout();
   }
 
-  protected decrement(): void {
-    this.changeBy(-1, "decrement", true);
+  protected onButtonClick(
+    difference: number,
+    direction: TimeWheelAnimationDirection,
+  ): void {
+    if (this.suppressNextClick) {
+      this.suppressNextClick = false;
+      this.clearClickSuppressionTimeout();
+      return;
+    }
+
+    this.changeBy(difference, direction, true);
+  }
+
+  protected startPressAndHold(
+    event: PointerEvent,
+    difference: number,
+    direction: TimeWheelAnimationDirection,
+  ): void {
+    if (event.button !== 0 || event.isPrimary === false) {
+      return;
+    }
+
+    this.resetPressHoldState();
+    this.clearClickSuppressionTimeout();
+    this.suppressNextClick = true;
+    this.pressHoldValue = this.value();
+    this.pressHoldDifference = difference;
+    this.pressHoldDirection = direction;
+    this.pressHoldActive = true;
+
+    this.performPressHoldStep();
+
+    if (this.pressHoldActive) {
+      this.schedulePressHoldStep();
+    }
+
+    const button = event.currentTarget;
+
+    if (
+      button instanceof HTMLElement &&
+      typeof button.setPointerCapture === "function" &&
+      Number.isInteger(event.pointerId)
+    ) {
+      try {
+        button.setPointerCapture(event.pointerId);
+      } catch {
+        // Pointer capture is optional; pointerup/pointerleave still stop repeat.
+      }
+    }
+  }
+
+  protected stopPressAndHold(): void {
+    this.resetPressHoldState();
+
+    if (this.suppressNextClick) {
+      this.scheduleClickSuppressionReset();
+    }
   }
 
   protected onInput(event: Event): void {
@@ -238,12 +314,95 @@ export class TimeWheelComponent {
     );
   }
 
+  private performPressHoldStep(): void {
+    if (
+      this.pressHoldValue === null ||
+      this.pressHoldDirection === null ||
+      this.pressHoldDifference === 0
+    ) {
+      return;
+    }
+
+    const currentValue = this.pressHoldValue;
+    const nextValue = this.normalizeSteppedValue(
+      currentValue + this.pressHoldDifference,
+    );
+
+    this.pressHoldValue = nextValue;
+    this.emitAnimatedValue(
+      nextValue,
+      this.pressHoldDirection,
+      true,
+      currentValue,
+    );
+  }
+
+  private schedulePressHoldStep(): void {
+    const delay = this.pressHoldDelayMs;
+
+    this.pressHoldTimeoutId = setTimeout(() => {
+      this.pressHoldTimeoutId = null;
+
+      if (!this.pressHoldActive) {
+        return;
+      }
+
+      this.performPressHoldStep();
+
+      if (!this.pressHoldActive) {
+        return;
+      }
+
+      this.pressHoldDelayMs = Math.max(
+        PRESS_HOLD_MINIMUM_DELAY_MS,
+        this.pressHoldDelayMs - PRESS_HOLD_ACCELERATION_STEP_MS,
+      );
+      this.schedulePressHoldStep();
+    }, delay);
+  }
+
+  private resetPressHoldState(): void {
+    this.clearPressHoldTimeout();
+    this.pressHoldValue = null;
+    this.pressHoldDifference = 0;
+    this.pressHoldDirection = null;
+    this.pressHoldDelayMs = PRESS_HOLD_INITIAL_DELAY_MS;
+    this.pressHoldActive = false;
+  }
+
+  private clearPressHoldTimeout(): void {
+    if (this.pressHoldTimeoutId === null) {
+      return;
+    }
+
+    clearTimeout(this.pressHoldTimeoutId);
+    this.pressHoldTimeoutId = null;
+  }
+
+  private scheduleClickSuppressionReset(): void {
+    this.clearClickSuppressionTimeout();
+    this.clickSuppressionTimeoutId = setTimeout(() => {
+      this.suppressNextClick = false;
+      this.clickSuppressionTimeoutId = null;
+    }, 0);
+  }
+
+  private clearClickSuppressionTimeout(): void {
+    if (this.clickSuppressionTimeoutId === null) {
+      return;
+    }
+
+    clearTimeout(this.clickSuppressionTimeoutId);
+    this.clickSuppressionTimeoutId = null;
+  }
+
   private emitAnimatedValue(
     value: number,
     direction: TimeWheelAnimationDirection,
     isButtonInteraction = false,
+    currentValue = this.value(),
   ): void {
-    if (value !== this.value()) {
+    if (value !== currentValue) {
       this.startCssAnimation(direction, isButtonInteraction);
     }
 

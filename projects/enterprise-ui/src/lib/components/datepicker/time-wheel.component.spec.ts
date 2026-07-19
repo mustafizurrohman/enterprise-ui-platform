@@ -45,6 +45,7 @@ describe("TimeWheelComponent", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -206,6 +207,81 @@ describe("TimeWheelComponent", () => {
     fixture.detectChanges();
     getDecrementButton().click();
     expect(valueChangeSpy).toHaveBeenLastCalledWith(23);
+  });
+
+  it("should repeat increment while pressed and accelerate from 70 ms to 50 ms", () => {
+    vi.useFakeTimers();
+    const valueChangeSpy = vi.fn();
+    component.valueChange.subscribe(valueChangeSpy);
+    const incrementButton = getIncrementButton();
+
+    incrementButton.dispatchEvent(
+      new MouseEvent("pointerdown", { bubbles: true, button: 0 }),
+    );
+
+    expect(valueChangeSpy).toHaveBeenCalledTimes(1);
+    expect(valueChangeSpy).toHaveBeenLastCalledWith(11);
+
+    const acceleratingDelays = [70, 68, 66, 64, 62, 60, 58, 56, 54, 52, 50];
+
+    for (const delay of acceleratingDelays) {
+      vi.advanceTimersByTime(delay - 1);
+      expect(valueChangeSpy).toHaveBeenCalledTimes(
+        acceleratingDelays.indexOf(delay) + 1,
+      );
+
+      vi.advanceTimersByTime(1);
+      expect(valueChangeSpy).toHaveBeenCalledTimes(
+        acceleratingDelays.indexOf(delay) + 2,
+      );
+    }
+
+    vi.advanceTimersByTime(50);
+    expect(valueChangeSpy).toHaveBeenCalledTimes(13);
+    expect(valueChangeSpy).toHaveBeenLastCalledWith(23);
+
+    incrementButton.dispatchEvent(
+      new MouseEvent("pointerup", { bubbles: true, button: 0 }),
+    );
+    incrementButton.click();
+
+    vi.advanceTimersByTime(500);
+    expect(valueChangeSpy).toHaveBeenCalledTimes(13);
+  });
+
+  it("should repeat decrement while pressed and stop on pointer cancellation", () => {
+    vi.useFakeTimers();
+    const valueChangeSpy = vi.fn();
+    component.valueChange.subscribe(valueChangeSpy);
+    const decrementButton = getDecrementButton();
+
+    decrementButton.dispatchEvent(
+      new MouseEvent("pointerdown", { bubbles: true, button: 0 }),
+    );
+    expect(valueChangeSpy).toHaveBeenLastCalledWith(9);
+
+    vi.advanceTimersByTime(70);
+    expect(valueChangeSpy).toHaveBeenLastCalledWith(8);
+
+    decrementButton.dispatchEvent(
+      new MouseEvent("pointercancel", { bubbles: true, button: 0 }),
+    );
+    vi.advanceTimersByTime(500);
+
+    expect(valueChangeSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it("should ignore non-primary pointer buttons for press and hold", () => {
+    vi.useFakeTimers();
+    const valueChangeSpy = vi.fn();
+    component.valueChange.subscribe(valueChangeSpy);
+
+    getIncrementButton().dispatchEvent(
+      new MouseEvent("pointerdown", { bubbles: true, button: 2 }),
+    );
+    vi.advanceTimersByTime(500);
+
+    expect(valueChangeSpy).not.toHaveBeenCalled();
   });
 
   it("should sanitize typed input and clamp it to the unit maximum", () => {
