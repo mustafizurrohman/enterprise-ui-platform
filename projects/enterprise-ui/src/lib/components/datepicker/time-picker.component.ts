@@ -38,6 +38,65 @@ export class TimePickerComponent {
   protected readonly timeAnnouncement = computed(
     () => this.context().timeAnnouncement,
   );
+
+  protected readonly meridiemChoices = computed(() => [
+    {
+      value: "AM" as const,
+      id: this.context().meridiemAmId,
+      label: "AM, vormittags",
+      testId: "meridiem-am",
+    },
+    {
+      value: "PM" as const,
+      id: this.context().meridiemPmId,
+      label: "PM, nachmittags und abends",
+      testId: "meridiem-pm",
+    },
+  ]);
+
+  protected readonly minuteAdjustments = [
+    { value: -30, label: "30 Minuten abziehen", id: "subtract-30-mins" },
+    { value: -15, label: "15 Minuten abziehen", id: "subtract-15-mins" },
+    { value: 15, label: "15 Minuten hinzufügen", id: "add-15-mins" },
+    { value: 30, label: "30 Minuten hinzufügen", id: "add-30-mins" },
+  ] as const;
+
+  protected readonly hourAdjustments = [
+    { value: -12, label: "12 Stunden abziehen", id: "subtract-12-hrs" },
+    { value: -6, label: "6 Stunden abziehen", id: "subtract-6-hrs" },
+    { value: 6, label: "6 Stunden hinzufügen", id: "add-6-hrs" },
+    { value: 12, label: "12 Stunden hinzufügen", id: "add-12-hrs" },
+  ] as const;
+
+  protected readonly adjustmentGroups = [
+    {
+      unit: "minutes" as const,
+      id: "minute-adjustment-group",
+      buttonsId: "minute-adjustment-buttons",
+      label: "Minuten anpassen",
+      labelText: "Minuten",
+      icon: "schedule",
+      testId: "minute-adjustment-group",
+      iconTestId: "minute-icon",
+      labelTestId: "minute-adjustment-label",
+      adjustments: this.minuteAdjustments,
+      controlsId: "minuteSelectId" as const,
+    },
+    {
+      unit: "hours" as const,
+      id: "hour-adjustment-group",
+      buttonsId: "hour-adjustment-buttons",
+      label: "Stunden anpassen",
+      labelText: "Stunden",
+      icon: "timer",
+      testId: "hour-adjustment-group",
+      iconTestId: "hour-icon",
+      labelTestId: "hour-adjustment-label",
+      adjustments: this.hourAdjustments,
+      controlsId: "hourSelectId" as const,
+    },
+  ] as const;
+
   protected readonly meridiem = computed<DatepickerMeridiem>(() =>
     (this.context().selectedDate?.hour ?? 0) >= 12 ? "PM" : "AM",
   );
@@ -52,8 +111,31 @@ export class TimePickerComponent {
     this.createTimeUnitControlContext("second"),
   );
 
+  protected readonly timeUnits = computed(() => {
+    const units: { type: TimeUnit; context: TimeUnitControlContext }[] = [
+      { type: "hour", context: this.hourControlContext() },
+      { type: "minute", context: this.minuteControlContext() },
+    ];
+
+    if (this.showSeconds()) {
+      units.push({
+        type: "second",
+        context: this.secondControlContext(),
+      });
+    }
+
+    return units;
+  });
+
   protected emitTimeChange(unit: TimeUnit, value: number): void {
     this.timeChanged.emit({ unit, value });
+  }
+
+  protected emitTimeAdjustment(
+    unit: "hours" | "minutes",
+    value: number,
+  ): void {
+    this.timeAdjusted.emit({ [unit]: value });
   }
 
   protected selectMeridiem(meridiem: DatepickerMeridiem): void {
