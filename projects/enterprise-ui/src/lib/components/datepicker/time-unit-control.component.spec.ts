@@ -1,9 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  TimeUnitControlComponent,
-  type TimeUnitControlContext,
-} from "./time-unit-control.component";
+import { TimeUnitControlComponent } from "./time-unit-control.component";
+import { type TimeUnitControlContext } from "./time-unit-control.types";
 
 describe("TimeUnitControlComponent", () => {
   let fixture: ComponentFixture<TimeUnitControlComponent>;

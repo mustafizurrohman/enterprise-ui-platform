@@ -8,14 +8,16 @@ import { MatIconModule } from "@angular/material/icon";
 import { DateTime } from "luxon";
 import {
   TimeUnitControlComponent,
+} from "./time-unit-control.component";
+import {
   type TimeUnit,
   type TimeUnitControlContext,
-} from "./time-unit-control.component";
-import type {
-  DatepickerDialogContext,
-  DatepickerMeridiem,
-  DatepickerTimeChange,
-} from "./datepicker-dialog.component";
+} from "./time-unit-control.types";
+import {
+  type DatepickerDialogContext,
+  type DatepickerMeridiem,
+  type DatepickerTimeChange,
+} from "./datepicker-dialog.types";
 
 @Component({
   selector: "time-picker",

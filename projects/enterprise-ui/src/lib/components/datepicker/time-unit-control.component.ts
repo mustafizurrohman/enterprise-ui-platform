@@ -8,20 +8,12 @@ import {
 } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 
-export type TimeUnit = "hour" | "minute" | "second";
-export type TimeUnitControlHourCycle = "h12" | "h23";
-export type TimeUnitControlMeridiem = "AM" | "PM";
-
-export type TimeUnitControlContext = Readonly<{
-  unit: TimeUnit;
-  value: number;
-  controlId: string;
-  labelId: string;
-  descriptionId?: string;
-  testIdPrefix: string;
-  hourCycle?: TimeUnitControlHourCycle;
-  meridiem?: TimeUnitControlMeridiem;
-}>;
+import {
+  type TimeUnit,
+  type TimeUnitControlContext,
+  type TimeUnitControlHourCycle,
+  type TimeUnitControlMeridiem,
+} from "./time-unit-control.types";
 
 type TimeUnitConfiguration = {
   label: string;

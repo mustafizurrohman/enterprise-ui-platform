@@ -1,6 +1,5 @@
 import {
   Component,
-  computed,
   input,
   output,
   signal,
@@ -11,19 +10,7 @@ import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import { MatFormFieldModule } from "@angular/material/form-field";
-
-export type DatepickerHeaderContext = Readonly<{
-  dialogId: string;
-  testIdPrefix: string;
-  calendarGridId: string;
-  monthHeadingId: string;
-  formattedMonth: string;
-  selectedMonth: string;
-  shortMonths: readonly string[];
-  todayMonth: number;
-  todayYear: number;
-  viewYear: number;
-}>;
+import { DatepickerHeaderContext } from "./datepicker-header.types";
 
 @Component({
   selector: "datepicker-header",

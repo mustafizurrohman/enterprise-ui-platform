@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { DateTime, Info } from "luxon";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DatepickerGridComponent } from "./datepicker-grid.component";
 import {
-  DatepickerGridComponent,
   type DatepickerGridContext,
   type DatepickerWeek,
-} from "./datepicker-grid.component";
+} from "./datepicker-grid.types";
 
 describe("DatepickerGridComponent", () => {
   let fixture: ComponentFixture<DatepickerGridComponent>;

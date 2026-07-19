@@ -31,16 +31,16 @@ import {
 } from "@angular/cdk/overlay";
 import { MatIconModule } from "@angular/material/icon";
 import { DateTime, Info } from "luxon";
-import {
-  DatepickerDialogComponent,
-  type DatepickerDialogContext,
-} from "./datepicker-dialog.component";
+import { DatepickerDialogComponent } from "./datepicker-dialog.component";
+import { type DatepickerDialogContext } from "./datepicker-dialog.types";
 import type {
   DatepickerWeek,
-} from "./datepicker-grid.component";
-import type { TimeUnit } from "./time-unit-control.component";
+} from "./datepicker-grid.types";
+import type { TimeUnit } from "./time-unit-control.types";
 import {
   type DateInputAutocompleteResult,
+} from "./luxon-date-input-autocomplete.types";
+import {
   LuxonDateInputAutocomplete,
 } from "./luxon-date-input-autocomplete";
 

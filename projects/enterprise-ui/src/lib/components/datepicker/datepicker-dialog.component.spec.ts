@@ -2,10 +2,8 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { DateTime, Info } from "luxon";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  DatepickerDialogComponent,
-  type DatepickerDialogContext,
-} from "./datepicker-dialog.component";
+import { DatepickerDialogComponent } from "./datepicker-dialog.component";
+import { type DatepickerDialogContext } from "./datepicker-dialog.types";
 
 describe("DatepickerDialogComponent", () => {
   let fixture: ComponentFixture<DatepickerDialogComponent>;
