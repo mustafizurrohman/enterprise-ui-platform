@@ -17,13 +17,13 @@
   --time-wheel-outline: var(--mat-sys-outline-variant, #cac4d0);
 
   display: grid;
-  grid-template-columns: 40px 24px;
+  grid-template-columns: 40px 30px;
   grid-template-rows: 40px auto;
   column-gap: 5px;
   row-gap: 4px;
   align-items: stretch;
   justify-content: center;
-  min-width: 69px;
+  min-width: 75px;
 }
 
 .datepicker-time-value {
@@ -74,17 +74,17 @@
   position: relative;
   grid-column: 2;
   grid-row: 1;
-  width: 24px;
+  width: 30px;
   height: 40px;
 }
 
 .datepicker-time-button {
   position: absolute;
   display: grid;
-  width: 24px;
-  min-width: 24px;
-  height: 21.6px;
-  min-height: 21.6px;
+  width: 30px;
+  min-width: 30px;
+  height: 27px;
+  min-height: 27px;
   padding: 0;
   place-items: center;
   border: 1px solid var(--time-wheel-outline);
@@ -121,11 +121,11 @@
 
   mat-icon {
     display: grid;
-    width: 16.8px;
-    height: 16.8px;
+    width: 21px;
+    height: 21px;
     place-items: center;
-    font-size: 16.8px;
-    line-height: 16.8px;
+    font-size: 21px;
+    line-height: 21px;
   }
 }
 
