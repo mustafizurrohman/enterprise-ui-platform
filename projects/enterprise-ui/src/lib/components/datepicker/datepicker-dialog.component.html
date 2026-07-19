@@ -11,7 +11,7 @@
 >
   <h2
     [id]="dialogTitleId()"
-    class="visually-hidden"
+    class="cdk-visually-hidden"
     [attr.data-testid]="testIdFor('dialog-title')"
   >
     {{ dialogTitle() }}
@@ -19,7 +19,7 @@
 
   <p
     [id]="dialogDescriptionId()"
-    class="visually-hidden"
+    class="cdk-visually-hidden"
     [attr.data-testid]="testIdFor('dialog-description')"
   >
     Verwenden Sie die Pfeiltasten zur Navigation zwischen den Tagen. Pos1 und
@@ -209,7 +209,7 @@
 
     <span
       [id]="monthHeadingId()"
-      class="visually-hidden"
+      class="cdk-visually-hidden"
       role="status"
       aria-live="polite"
       aria-atomic="true"
@@ -230,7 +230,7 @@
 
   <div
     [id]="idFor('date-status')"
-    class="visually-hidden"
+    class="cdk-visually-hidden"
     role="status"
     aria-live="polite"
     aria-atomic="true"
@@ -248,7 +248,7 @@
     >
       <legend
         [id]="idFor('time-picker-legend')"
-        class="visually-hidden"
+        class="cdk-visually-hidden"
         [attr.data-testid]="testIdFor('time-picker-legend')"
       >
         Uhrzeit auswählen
@@ -256,7 +256,7 @@
 
       <p
         [id]="idFor('time-instructions')"
-        class="visually-hidden"
+        class="cdk-visually-hidden"
         [attr.data-testid]="testIdFor('time-instructions')"
       >
         Verwenden Sie die Pfeiltasten oder geben Sie zweistellige Werte direkt
@@ -302,7 +302,7 @@
           >
             <span
               [id]="context().meridiemLabelId"
-              class="visually-hidden"
+              class="cdk-visually-hidden"
               [attr.data-testid]="testIdFor('meridiem-label')"
             >
               Tageshälfte auswählen
@@ -517,7 +517,7 @@
 
       <div
         [id]="idFor('time-status')"
-        class="visually-hidden"
+        class="cdk-visually-hidden"
         role="status"
         aria-live="polite"
         aria-atomic="true"
