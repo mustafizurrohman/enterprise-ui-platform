@@ -191,7 +191,7 @@ describe("TimeWheelComponent", () => {
 
     expect(label.tagName).toBe("LABEL");
     expect(label.htmlFor).toBe(input.id);
-    expect(label.textContent?.trim()).toBe("Stunden");
+    expect(label.textContent?.trim()).toBe("Std");
   });
 
   it("should emit incremented and decremented values with wrap-around", () => {

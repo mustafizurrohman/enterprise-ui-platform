@@ -49,21 +49,21 @@ const PRESS_HOLD_ACCELERATION_STEP_MS = PRESS_HOLD_INITIAL_DELAY_MS * 0.02;
 const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
   hour: {
     label: "Std",
-    singularLabel: "Std",
+    singularLabel: "Stunde",
     valueTextSuffix: "Uhr",
     minimum: 0,
     maximum: 23,
   },
   minute: {
     label: "Min",
-    singularLabel: "Min",
+    singularLabel: "Minute",
     valueTextSuffix: "Minuten",
     minimum: 0,
     maximum: 59,
   },
   second: {
     label: "Sek",
-    singularLabel: "Sek",
+    singularLabel: "Sekunde",
     valueTextSuffix: "Sekunden",
     minimum: 0,
     maximum: 59,
