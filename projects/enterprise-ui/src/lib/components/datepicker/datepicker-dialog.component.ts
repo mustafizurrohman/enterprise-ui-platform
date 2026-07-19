@@ -66,6 +66,7 @@ export type DatepickerDialogContext = Readonly<{
   locale: string;
   dateAnnouncement: string;
   timeAnnouncement: string;
+  showQuickTimeControls: boolean;
 }>;
 
 @Component({
@@ -144,6 +145,9 @@ export class DatepickerDialogComponent {
   );
   protected readonly timeAnnouncement = computed(
     () => this.context().timeAnnouncement,
+  );
+  protected readonly showQuickTimeControls = computed(
+    () => this.context().showQuickTimeControls,
   );
 
   protected readonly selectNowLabel = computed(() =>

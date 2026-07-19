@@ -367,153 +367,155 @@
         }
       </div>
 
-      <div
-        [id]="idFor('time-adjustments')"
-        class="datepicker-time-adjustments"
-        [attr.data-testid]="testIdFor('time-adjustments')"
-      >
+      @if (showQuickTimeControls()) {
         <div
-          [id]="idFor('minute-adjustment-group')"
-          class="datepicker-adjustment-group"
-          [attr.data-testid]="testIdFor('minute-adjustment-group')"
+          [id]="idFor('time-adjustments')"
+          class="datepicker-time-adjustments"
+          [attr.data-testid]="testIdFor('time-adjustments')"
         >
           <div
-            [id]="idFor('minute-adjustment-buttons')"
-            class="datepicker-adjustment-buttons"
-            role="group"
-            aria-label="Minuten anpassen"
-            [attr.data-testid]="testIdFor('minute-adjustment-buttons')"
+            [id]="idFor('minute-adjustment-group')"
+            class="datepicker-adjustment-group"
+            [attr.data-testid]="testIdFor('minute-adjustment-group')"
           >
-            <button
-              [id]="idFor('subtract-30-mins')"
-              type="button"
-              class="datepicker-time-adjustment"
-              aria-label="30 Minuten abziehen"
-              [attr.aria-controls]="context().minuteSelectId"
-              [attr.data-testid]="testIdFor('subtract-30-mins')"
-              (click)="timeAdjusted.emit({ minutes: -30 })"
+            <div
+              [id]="idFor('minute-adjustment-buttons')"
+              class="datepicker-adjustment-buttons"
+              role="group"
+              aria-label="Minuten anpassen"
+              [attr.data-testid]="testIdFor('minute-adjustment-buttons')"
             >
-              -30
-            </button>
+              <button
+                [id]="idFor('subtract-30-mins')"
+                type="button"
+                class="datepicker-time-adjustment"
+                aria-label="30 Minuten abziehen"
+                [attr.aria-controls]="context().minuteSelectId"
+                [attr.data-testid]="testIdFor('subtract-30-mins')"
+                (click)="timeAdjusted.emit({ minutes: -30 })"
+              >
+                -30
+              </button>
 
-            <button
-              [id]="idFor('subtract-15-mins')"
-              type="button"
-              class="datepicker-time-adjustment"
-              aria-label="15 Minuten abziehen"
-              [attr.aria-controls]="context().minuteSelectId"
-              [attr.data-testid]="testIdFor('subtract-15-mins')"
-              (click)="timeAdjusted.emit({ minutes: -15 })"
-            >
-              -15
-            </button>
+              <button
+                [id]="idFor('subtract-15-mins')"
+                type="button"
+                class="datepicker-time-adjustment"
+                aria-label="15 Minuten abziehen"
+                [attr.aria-controls]="context().minuteSelectId"
+                [attr.data-testid]="testIdFor('subtract-15-mins')"
+                (click)="timeAdjusted.emit({ minutes: -15 })"
+              >
+                -15
+              </button>
 
-            <button
-              [id]="idFor('add-15-mins')"
-              type="button"
-              class="datepicker-time-adjustment"
-              aria-label="15 Minuten hinzufügen"
-              [attr.aria-controls]="context().minuteSelectId"
-              [attr.data-testid]="testIdFor('add-15-mins')"
-              (click)="timeAdjusted.emit({ minutes: 15 })"
-            >
-              +15
-            </button>
+              <button
+                [id]="idFor('add-15-mins')"
+                type="button"
+                class="datepicker-time-adjustment"
+                aria-label="15 Minuten hinzufügen"
+                [attr.aria-controls]="context().minuteSelectId"
+                [attr.data-testid]="testIdFor('add-15-mins')"
+                (click)="timeAdjusted.emit({ minutes: 15 })"
+              >
+                +15
+              </button>
 
-            <button
-              [id]="idFor('add-30-mins')"
-              type="button"
-              class="datepicker-time-adjustment"
-              aria-label="30 Minuten hinzufügen"
-              [attr.aria-controls]="context().minuteSelectId"
-              [attr.data-testid]="testIdFor('add-30-mins')"
-              (click)="timeAdjusted.emit({ minutes: 30 })"
+              <button
+                [id]="idFor('add-30-mins')"
+                type="button"
+                class="datepicker-time-adjustment"
+                aria-label="30 Minuten hinzufügen"
+                [attr.aria-controls]="context().minuteSelectId"
+                [attr.data-testid]="testIdFor('add-30-mins')"
+                (click)="timeAdjusted.emit({ minutes: 30 })"
+              >
+                +30
+              </button>
+            </div>
+
+            <div
+              [id]="idFor('minute-adjustment-label')"
+              class="datepicker-adjustment-label"
+              [attr.data-testid]="testIdFor('minute-adjustment-label')"
             >
-              +30
-            </button>
+              <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('minute-icon')">schedule</mat-icon>
+              <span>Minuten</span>
+            </div>
           </div>
 
           <div
-            [id]="idFor('minute-adjustment-label')"
-            class="datepicker-adjustment-label"
-            [attr.data-testid]="testIdFor('minute-adjustment-label')"
+            [id]="idFor('hour-adjustment-group')"
+            class="datepicker-adjustment-group"
+            [attr.data-testid]="testIdFor('hour-adjustment-group')"
           >
-            <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('minute-icon')">schedule</mat-icon>
-            <span>Minuten</span>
+            <div
+              [id]="idFor('hour-adjustment-buttons')"
+              class="datepicker-adjustment-buttons"
+              role="group"
+              aria-label="Stunden anpassen"
+              [attr.data-testid]="testIdFor('hour-adjustment-buttons')"
+            >
+              <button
+                [id]="idFor('subtract-12-hrs')"
+                type="button"
+                class="datepicker-time-adjustment"
+                aria-label="12 Stunden abziehen"
+                [attr.aria-controls]="context().hourSelectId"
+                [attr.data-testid]="testIdFor('subtract-12-hrs')"
+                (click)="timeAdjusted.emit({ hours: -12 })"
+              >
+                -12
+              </button>
+
+              <button
+                [id]="idFor('subtract-6-hrs')"
+                type="button"
+                class="datepicker-time-adjustment"
+                aria-label="6 Stunden abziehen"
+                [attr.aria-controls]="context().hourSelectId"
+                [attr.data-testid]="testIdFor('subtract-6-hrs')"
+                (click)="timeAdjusted.emit({ hours: -6 })"
+              >
+                -6
+              </button>
+
+              <button
+                [id]="idFor('add-6-hrs')"
+                type="button"
+                class="datepicker-time-adjustment"
+                aria-label="6 Stunden hinzufügen"
+                [attr.aria-controls]="context().hourSelectId"
+                [attr.data-testid]="testIdFor('add-6-hrs')"
+                (click)="timeAdjusted.emit({ hours: 6 })"
+              >
+                +6
+              </button>
+
+              <button
+                [id]="idFor('add-12-hrs')"
+                type="button"
+                class="datepicker-time-adjustment"
+                aria-label="12 Stunden hinzufügen"
+                [attr.aria-controls]="context().hourSelectId"
+                [attr.data-testid]="testIdFor('add-12-hrs')"
+                (click)="timeAdjusted.emit({ hours: 12 })"
+              >
+                +12
+              </button>
+            </div>
+
+            <div
+              [id]="idFor('hour-adjustment-label')"
+              class="datepicker-adjustment-label"
+              [attr.data-testid]="testIdFor('hour-adjustment-label')"
+            >
+              <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('hour-icon')">timer</mat-icon>
+              <span>Stunden</span>
+            </div>
           </div>
         </div>
-
-        <div
-          [id]="idFor('hour-adjustment-group')"
-          class="datepicker-adjustment-group"
-          [attr.data-testid]="testIdFor('hour-adjustment-group')"
-        >
-          <div
-            [id]="idFor('hour-adjustment-buttons')"
-            class="datepicker-adjustment-buttons"
-            role="group"
-            aria-label="Stunden anpassen"
-            [attr.data-testid]="testIdFor('hour-adjustment-buttons')"
-          >
-            <button
-              [id]="idFor('subtract-12-hrs')"
-              type="button"
-              class="datepicker-time-adjustment"
-              aria-label="12 Stunden abziehen"
-              [attr.aria-controls]="context().hourSelectId"
-              [attr.data-testid]="testIdFor('subtract-12-hrs')"
-              (click)="timeAdjusted.emit({ hours: -12 })"
-            >
-              -12
-            </button>
-
-            <button
-              [id]="idFor('subtract-6-hrs')"
-              type="button"
-              class="datepicker-time-adjustment"
-              aria-label="6 Stunden abziehen"
-              [attr.aria-controls]="context().hourSelectId"
-              [attr.data-testid]="testIdFor('subtract-6-hrs')"
-              (click)="timeAdjusted.emit({ hours: -6 })"
-            >
-              -6
-            </button>
-
-            <button
-              [id]="idFor('add-6-hrs')"
-              type="button"
-              class="datepicker-time-adjustment"
-              aria-label="6 Stunden hinzufügen"
-              [attr.aria-controls]="context().hourSelectId"
-              [attr.data-testid]="testIdFor('add-6-hrs')"
-              (click)="timeAdjusted.emit({ hours: 6 })"
-            >
-              +6
-            </button>
-
-            <button
-              [id]="idFor('add-12-hrs')"
-              type="button"
-              class="datepicker-time-adjustment"
-              aria-label="12 Stunden hinzufügen"
-              [attr.aria-controls]="context().hourSelectId"
-              [attr.data-testid]="testIdFor('add-12-hrs')"
-              (click)="timeAdjusted.emit({ hours: 12 })"
-            >
-              +12
-            </button>
-          </div>
-
-          <div
-            [id]="idFor('hour-adjustment-label')"
-            class="datepicker-adjustment-label"
-            [attr.data-testid]="testIdFor('hour-adjustment-label')"
-          >
-            <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('hour-icon')">timer</mat-icon>
-            <span>Stunden</span>
-          </div>
-        </div>
-      </div>
+      }
 
       <div
         [id]="idFor('time-status')"

@@ -172,6 +172,7 @@ class DateTimeStoryHostComponent {
   @Input() disabled: boolean = false;
   @Input() locale: string = 'de-DE';
   @Input() luxonDateFormat: string = DEFAULT_DATETIME_FORMAT;
+  @Input() showQuickTimeControls: boolean = false;
   @Input() value: Date | string | null = null;
 }
 
@@ -224,12 +225,22 @@ const meta = {
         },
       },
     },
+    showQuickTimeControls: {
+      control: 'boolean',
+      description: 'Whether to show quick time adjustment buttons',
+      table: {
+        defaultValue: {
+          summary: 'false',
+        },
+      },
+    },
   },
   args: {
     label: 'Datum auswählen',
     disabled: false,
     locale: 'de-DE',
     luxonDateFormat: DEFAULT_DATETIME_FORMAT,
+    showQuickTimeControls: false,
     value: null,
   },
 } satisfies Meta<DateTimeStoryHostComponent>;

@@ -14,6 +14,7 @@ export class ReactiveFormWrapperComponent implements OnInit {
   @Input() dateOnly = false;
   @Input() disabled = false;
   @Input() showSeconds = false;
+  @Input() showQuickTimeControls = false;
 
   form = new FormGroup({
     date: new FormControl(null),

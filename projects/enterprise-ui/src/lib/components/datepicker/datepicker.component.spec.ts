@@ -2073,6 +2073,7 @@ describe("DatepickerComponent", () => {
     });
 
     it("should update selectedDate when time adjustment buttons are clicked", async () => {
+      fixture.componentRef.setInput("showQuickTimeControls", true);
       component.writeValue("2026-07-15T10:30:00");
       const toggle = fixture.nativeElement.querySelector(
         '[data-testid="datepicker-toggle"]',
@@ -2176,6 +2177,43 @@ describe("DatepickerComponent", () => {
       expect(component.selectedDate()?.year).toBe(2025);
       expect(component.selectedDate()?.hour).toBe(14);
       expect(component.selectedDate()?.minute).toBe(45);
+    });
+  });
+
+  describe("showQuickTimeControls", () => {
+    it("should be false by default", () => {
+      expect(component.showQuickTimeControls()).toBeFalsy();
+    });
+
+    it("should hide quick-time controls by default", async () => {
+      component.writeValue("2026-07-15T10:30:00");
+      const toggle = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-toggle"]',
+      ) as HTMLButtonElement;
+      toggle.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const adjustments = document.querySelector(
+        '[data-testid="datepicker-time-adjustments"]',
+      );
+      expect(adjustments).toBeNull();
+    });
+
+    it("should show quick-time controls when enabled", async () => {
+      fixture.componentRef.setInput("showQuickTimeControls", true);
+      component.writeValue("2026-07-15T10:30:00");
+      const toggle = fixture.nativeElement.querySelector(
+        '[data-testid="datepicker-toggle"]',
+      ) as HTMLButtonElement;
+      toggle.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const adjustments = document.querySelector(
+        '[data-testid="datepicker-time-adjustments"]',
+      );
+      expect(adjustments).not.toBeNull();
     });
   });
 });

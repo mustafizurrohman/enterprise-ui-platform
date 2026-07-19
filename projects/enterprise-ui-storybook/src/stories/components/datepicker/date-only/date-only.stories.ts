@@ -27,6 +27,10 @@ const meta: Meta<DatepickerComponent> = {
     showSeconds: {
       control: 'boolean',
       description: 'Whether to show seconds in the time picker',
+    },
+    showQuickTimeControls: {
+      control: 'boolean',
+      description: 'Whether to show quick time adjustment buttons',
     }
   },
 };

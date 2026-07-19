@@ -86,6 +86,9 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     alias: "dateFormat",
   });
   readonly disabled = input(false, { transform: booleanAttribute });
+  readonly showQuickTimeControls = input(false, {
+    transform: booleanAttribute,
+  });
   readonly value = model<Date | string | null>(null);
 
   private readonly _disabledForm = signal(false);
@@ -321,6 +324,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     locale: this.resolvedLocale(),
     dateAnnouncement: this.dateAnnouncement(),
     timeAnnouncement: this.timeAnnouncement(),
+    showQuickTimeControls: this.showQuickTimeControls(),
   }));
 
   onChange: (value: Date | null) => void = () => {};

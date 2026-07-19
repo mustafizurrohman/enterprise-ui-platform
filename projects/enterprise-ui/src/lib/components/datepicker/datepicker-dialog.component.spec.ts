@@ -71,6 +71,7 @@ describe("DatepickerDialogComponent", () => {
       locale: "de-DE",
       dateAnnouncement: "",
       timeAnnouncement: "",
+      showQuickTimeControls: false,
     };
 
     fixture.componentRef.setInput("context", context);
@@ -422,6 +423,12 @@ describe("DatepickerDialogComponent", () => {
   });
 
   it("should provide explicit labels and control relationships for time actions", () => {
+    fixture.componentRef.setInput("context", {
+      ...component.context(),
+      showQuickTimeControls: true,
+    });
+    fixture.detectChanges();
+
     const fieldset = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-time-picker"]',
     ) as HTMLFieldSetElement;
@@ -593,6 +600,12 @@ describe("DatepickerDialogComponent", () => {
   });
 
   it("should forward time adjustment events", () => {
+    fixture.componentRef.setInput("context", {
+      ...component.context(),
+      showQuickTimeControls: true,
+    });
+    fixture.detectChanges();
+
     const adjustSpy = vi.fn();
     component.timeAdjusted.subscribe(adjustSpy);
 
@@ -628,5 +641,25 @@ describe("DatepickerDialogComponent", () => {
       '[data-testid="datepicker-time-adjustments"]',
     );
     expect(adjustments).toBeNull();
+  });
+
+  it("should hide quick-time controls by default", () => {
+    const adjustments = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-time-adjustments"]',
+    );
+    expect(adjustments).toBeNull();
+  });
+
+  it("should show quick-time controls when showQuickTimeControls is enabled", () => {
+    fixture.componentRef.setInput("context", {
+      ...component.context(),
+      showQuickTimeControls: true,
+    });
+    fixture.detectChanges();
+
+    const adjustments = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-time-adjustments"]',
+    );
+    expect(adjustments).not.toBeNull();
   });
 });
