@@ -9,18 +9,18 @@ import {
 import { MatIconModule } from "@angular/material/icon";
 
 export type TimeUnit = "hour" | "minute" | "second";
-export type TimeWheelHourCycle = "h12" | "h23";
-export type TimeWheelMeridiem = "AM" | "PM";
+export type TimeUnitControlHourCycle = "h12" | "h23";
+export type TimeUnitControlMeridiem = "AM" | "PM";
 
-export type TimeWheelContext = Readonly<{
+export type TimeUnitControlContext = Readonly<{
   unit: TimeUnit;
   value: number;
   controlId: string;
   labelId: string;
   descriptionId?: string;
   testIdPrefix: string;
-  hourCycle?: TimeWheelHourCycle;
-  meridiem?: TimeWheelMeridiem;
+  hourCycle?: TimeUnitControlHourCycle;
+  meridiem?: TimeUnitControlMeridiem;
 }>;
 
 type TimeUnitConfiguration = {
@@ -31,12 +31,12 @@ type TimeUnitConfiguration = {
   maximum: number;
 };
 
-type TimeWheelAnimationDirection = "increment" | "decrement";
-type TimeWheelAnimationPhase = "a" | "b";
+type TimeUnitControlAnimationDirection = "increment" | "decrement";
+type TimeUnitControlAnimationPhase = "a" | "b";
 
-type TimeWheelAnimationState = Readonly<{
-  direction: TimeWheelAnimationDirection;
-  phase: TimeWheelAnimationPhase;
+type TimeUnitControlAnimationState = Readonly<{
+  direction: TimeUnitControlAnimationDirection;
+  phase: TimeUnitControlAnimationPhase;
   rapid: boolean;
 }>;
 
@@ -71,21 +71,21 @@ const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
 };
 
 @Component({
-  selector: "time-wheel",
+  selector: "time-unit-control",
   standalone: true,
   imports: [MatIconModule],
-  templateUrl: "./time-wheel.component.html",
-  styleUrl: "./time-wheel.component.scss",
+  templateUrl: "./time-unit-control.component.html",
+  styleUrl: "./time-unit-control.component.scss",
 })
-export class TimeWheelComponent implements OnDestroy {
-  readonly context = input.required<TimeWheelContext>();
+export class TimeUnitControlComponent implements OnDestroy {
+  readonly context = input.required<TimeUnitControlContext>();
 
   readonly valueChange = output<number>();
 
   protected readonly unit = computed(() => this.context().unit);
   protected readonly value = computed(() => this.context().value);
   protected readonly displayValue = computed(() =>
-    this.is12HourWheel() ? to12Hour(this.value()) : this.value(),
+    this.is12HourControl() ? to12Hour(this.value()) : this.value(),
   );
   protected readonly controlId = computed(() => this.context().controlId);
   protected readonly labelId = computed(() => this.context().labelId);
@@ -93,7 +93,7 @@ export class TimeWheelComponent implements OnDestroy {
     () => this.context().descriptionId ?? null,
   );
   protected readonly testIdPrefix = computed(() => this.context().testIdPrefix);
-  protected readonly wheelId = computed(() => `${this.controlId()}-wheel`);
+  protected readonly unitId = computed(() => `${this.controlId()}-unit`);
   protected readonly valueId = computed(() => `${this.controlId()}-value`);
   protected readonly buttonStackId = computed(
     () => `${this.controlId()}-button-stack`,
@@ -122,7 +122,7 @@ export class TimeWheelComponent implements OnDestroy {
   protected readonly accessibleValueText = computed(() => {
     const accessibleValue = this.displayValue();
 
-    if (this.is12HourWheel() && this.context().meridiem) {
+    if (this.is12HourControl() && this.context().meridiem) {
       return `${accessibleValue} ${this.context().meridiem}`;
     }
 
@@ -139,18 +139,18 @@ export class TimeWheelComponent implements OnDestroy {
     () => this.animationState()?.rapid ?? false,
   );
 
-  private readonly animationState = signal<TimeWheelAnimationState | null>(
+  private readonly animationState = signal<TimeUnitControlAnimationState | null>(
     null,
   );
 
-  private animationPhase: TimeWheelAnimationPhase = "b";
+  private animationPhase: TimeUnitControlAnimationPhase = "b";
   private lastButtonChangeTimestamp: number | null = null;
   private pressHoldTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private clickSuppressionTimeoutId: ReturnType<typeof setTimeout> | null =
     null;
   private pressHoldValue: number | null = null;
   private pressHoldDifference = 0;
-  private pressHoldDirection: TimeWheelAnimationDirection | null = null;
+  private pressHoldDirection: TimeUnitControlAnimationDirection | null = null;
   private pressHoldDelayMs = PRESS_HOLD_INITIAL_DELAY_MS;
   private pressHoldActive = false;
   private suppressNextClick = false;
@@ -163,7 +163,7 @@ export class TimeWheelComponent implements OnDestroy {
 
   protected onButtonClick(
     difference: number,
-    direction: TimeWheelAnimationDirection,
+    direction: TimeUnitControlAnimationDirection,
   ): void {
     if (this.suppressNextClick) {
       this.suppressNextClick = false;
@@ -177,7 +177,7 @@ export class TimeWheelComponent implements OnDestroy {
   protected startPressAndHold(
     event: PointerEvent,
     difference: number,
-    direction: TimeWheelAnimationDirection,
+    direction: TimeUnitControlAnimationDirection,
   ): void {
     if (event.button !== 0 || !event.isPrimary) {
       return;
@@ -305,7 +305,7 @@ export class TimeWheelComponent implements OnDestroy {
 
   private changeBy(
     difference: number,
-    direction: TimeWheelAnimationDirection,
+    direction: TimeUnitControlAnimationDirection,
     isButtonInteraction = false,
   ): void {
     this.emitAnimatedValue(
@@ -399,7 +399,7 @@ export class TimeWheelComponent implements OnDestroy {
 
   private emitAnimatedValue(
     value: number,
-    direction: TimeWheelAnimationDirection,
+    direction: TimeUnitControlAnimationDirection,
     isButtonInteraction = false,
     currentValue = this.value(),
   ): void {
@@ -411,7 +411,7 @@ export class TimeWheelComponent implements OnDestroy {
   }
 
   private startCssAnimation(
-    direction: TimeWheelAnimationDirection,
+    direction: TimeUnitControlAnimationDirection,
     isButtonInteraction: boolean,
   ): void {
     const currentTimestamp = Date.now();
@@ -433,12 +433,12 @@ export class TimeWheelComponent implements OnDestroy {
     });
   }
 
-  private is12HourWheel(): boolean {
+  private is12HourControl(): boolean {
     return this.unit() === "hour" && this.context().hourCycle === "h12";
   }
 
   private toEmittedValue(displayValue: number): number {
-    if (!this.is12HourWheel()) {
+    if (!this.is12HourControl()) {
       return displayValue;
     }
 
@@ -446,7 +446,7 @@ export class TimeWheelComponent implements OnDestroy {
   }
 
   private normalizeSteppedValue(value: number): number {
-    if (this.is12HourWheel()) {
+    if (this.is12HourControl()) {
       return normalizeToRange(value, 0, 23);
     }
 
@@ -460,7 +460,7 @@ function to12Hour(hour: number): number {
   return normalizeToRange(hour, 0, 23) % 12 || 12;
 }
 
-function to24Hour(hour: number, meridiem: TimeWheelMeridiem): number {
+function to24Hour(hour: number, meridiem: TimeUnitControlMeridiem): number {
   const normalizedHour = hour % 12;
 
   return meridiem === "PM" ? normalizedHour + 12 : normalizedHour;

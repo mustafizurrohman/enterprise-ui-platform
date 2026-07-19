@@ -515,8 +515,8 @@ describe("DatepickerDialogComponent", () => {
     const hourInput = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-hour-input"]',
     ) as HTMLInputElement;
-    const secondWheel = fixture.nativeElement.querySelector(
-      '[data-testid="datepicker-second-wheel"]',
+    const secondControl = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-second-unit-control"]',
     ) as HTMLElement;
     const group = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-meridiem-toggle"]',
@@ -545,7 +545,7 @@ describe("DatepickerDialogComponent", () => {
     expect(am.getAttribute("aria-controls")).toBe(hourInput.id);
     expect(pm.getAttribute("aria-controls")).toBe(hourInput.id);
     expect(
-      secondWheel.compareDocumentPosition(group) &
+      secondControl.compareDocumentPosition(group) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });

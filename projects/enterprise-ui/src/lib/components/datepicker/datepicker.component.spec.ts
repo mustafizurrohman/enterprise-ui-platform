@@ -1690,14 +1690,14 @@ describe("DatepickerComponent", () => {
       await fixture.whenStable();
 
       const minuteWheel = document.querySelector(
-        '[data-testid="datepicker-minute-wheel"]',
+        '[data-testid="datepicker-minute-unit-control"]',
       ) as HTMLElement;
       const meridiemToggle = document.querySelector(
         '[data-testid="datepicker-meridiem-toggle"]',
       ) as HTMLElement;
 
       expect(
-        document.querySelector('[data-testid="datepicker-second-wheel"]'),
+        document.querySelector('[data-testid="datepicker-second-unit-control"]'),
       ).toBeNull();
       expect(
         minuteWheel.compareDocumentPosition(meridiemToggle) &
@@ -1723,7 +1723,7 @@ describe("DatepickerComponent", () => {
         '[data-testid="datepicker-hour-input"]',
       ) as HTMLInputElement;
       const secondWheel = document.querySelector(
-        '[data-testid="datepicker-second-wheel"]',
+        '[data-testid="datepicker-second-unit-control"]',
       ) as HTMLElement;
       const meridiemToggle = document.querySelector(
         '[data-testid="datepicker-meridiem-toggle"]',
@@ -1886,7 +1886,7 @@ describe("DatepickerComponent", () => {
       expect(
         document.querySelector("#" + (component as any).ids().secondSelect),
       ).toBeNull();
-      expect(document.querySelectorAll(".datepicker-time-wheel")).toHaveLength(
+      expect(document.querySelectorAll(".datepicker-time-unit-control")).toHaveLength(
         2,
       );
     });
@@ -1908,7 +1908,7 @@ describe("DatepickerComponent", () => {
       expect(
         document.querySelector("#" + (component as any).ids().secondSelect),
       ).toBeTruthy();
-      expect(document.querySelectorAll(".datepicker-time-wheel")).toHaveLength(
+      expect(document.querySelectorAll(".datepicker-time-unit-control")).toHaveLength(
         3,
       );
     });

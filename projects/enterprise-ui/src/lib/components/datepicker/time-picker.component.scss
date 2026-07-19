@@ -1,0 +1,203 @@
+@use "sass:color";
+@use "@angular/cdk";
+
+@include cdk.a11y-visually-hidden();
+
+$primary: #3f51b5;
+$foreground: rgba(0, 0, 0, 0.87);
+$foreground-secondary: rgba(0, 0, 0, 0.54);
+$background-card: #fff;
+$hover-background: rgba(0, 0, 0, 0.04);
+$divider: rgba(0, 0, 0, 0.12);
+
+:host {
+  display: block;
+}
+
+.datepicker-time-picker {
+  border: none;
+  margin: 5px -8px -8px;
+  padding: 12px 8px;
+  background: rgb(250 250 252);
+}
+
+.datepicker-time-wheels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-left: 0;
+  margin-top: 10px;
+}
+
+.datepicker-meridiem-control {
+  display: grid;
+  grid-template-rows: 40px 16px;
+  gap: 4px;
+  align-items: stretch;
+  min-width: 88px;
+}
+
+.datepicker-meridiem-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 88px;
+  height: 40px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  margin-left: 15px;
+}
+
+.datepicker-meridiem-choice {
+  position: relative;
+  display: block;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.datepicker-meridiem-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.datepicker-meridiem-option {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #1c1c1e;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+.datepicker-meridiem-choice:hover .datepicker-meridiem-option {
+  background: #f2f2f7;
+}
+
+.datepicker-meridiem-input:checked + .datepicker-meridiem-option {
+  background: #eaf3ff;
+  color: #2d69b3;
+}
+
+.datepicker-meridiem-input:focus-visible + .datepicker-meridiem-option {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid #007aff;
+  outline-offset: -2px;
+}
+
+.datepicker-meridiem-caption {
+  color: var(--mat-sys-on-surface-variant, #49454f);
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+}
+
+.datepicker-time-adjustments {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.datepicker-adjustment-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.datepicker-adjustment-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: $foreground;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: $foreground-secondary;
+  }
+}
+
+.datepicker-adjustment-buttons {
+  display: flex;
+  border: 1px solid $divider;
+  border-radius: 6px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.datepicker-time-adjustment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-height: 32px;
+  border: 0;
+  border-right: 1px solid $divider;
+  background: transparent;
+  color: #007aff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+
+  &:last-child {
+    border-right: 0;
+  }
+
+  &:hover {
+    background-color: $hover-background;
+  }
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #007aff;
+    outline-offset: -2px;
+  }
+}
+
+.datepicker-time-separator {
+  align-self: flex-start;
+  height: 40px;
+  margin-right: 5px;
+  margin-left: 5px;
+  color: #1c1c1e;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 36px;
+}
+
+@media (forced-colors: active) {
+  .datepicker-meridiem-toggle,
+  .datepicker-meridiem-choice + .datepicker-meridiem-choice {
+    border-color: CanvasText;
+  }
+
+  .datepicker-meridiem-input:checked + .datepicker-meridiem-option {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+}

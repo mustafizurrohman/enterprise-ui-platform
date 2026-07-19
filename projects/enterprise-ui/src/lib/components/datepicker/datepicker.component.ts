@@ -38,7 +38,7 @@ import {
 import type {
   DatepickerWeek,
 } from "./datepicker-grid.component";
-import type { TimeUnit } from "./time-wheel.component";
+import type { TimeUnit } from "./time-unit-control.component";
 import {
   type DateInputAutocompleteResult,
   LuxonDateInputAutocomplete,

@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  TimeWheelComponent,
-  type TimeWheelContext,
-} from "./time-wheel.component";
+  TimeUnitControlComponent,
+  type TimeUnitControlContext,
+} from "./time-unit-control.component";
 
-describe("TimeWheelComponent", () => {
-  let fixture: ComponentFixture<TimeWheelComponent>;
-  let component: TimeWheelComponent;
+describe("TimeUnitControlComponent", () => {
+  let fixture: ComponentFixture<TimeUnitControlComponent>;
+  let component: TimeUnitControlComponent;
 
-  const createContext = (value: number): TimeWheelContext => ({
+  const createContext = (value: number): TimeUnitControlContext => ({
     unit: "hour",
     value,
     controlId: "hour-control",
@@ -35,10 +35,10 @@ describe("TimeWheelComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TimeWheelComponent],
+      imports: [TimeUnitControlComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TimeWheelComponent);
+    fixture = TestBed.createComponent(TimeUnitControlComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput("context", createContext(10));
     fixture.detectChanges();
@@ -66,7 +66,7 @@ describe("TimeWheelComponent", () => {
       ...createContext(13),
       hourCycle: "h12",
       meridiem: "PM",
-    } satisfies TimeWheelContext);
+    } satisfies TimeUnitControlContext);
     fixture.detectChanges();
 
     const input = fixture.nativeElement.querySelector(
@@ -88,7 +88,7 @@ describe("TimeWheelComponent", () => {
       ...createContext(11),
       hourCycle: "h12",
       meridiem: "AM",
-    } satisfies TimeWheelContext);
+    } satisfies TimeUnitControlContext);
     fixture.detectChanges();
     getIncrementButton().click();
     expect(valueChangeSpy).toHaveBeenLastCalledWith(12);
@@ -97,7 +97,7 @@ describe("TimeWheelComponent", () => {
       ...createContext(23),
       hourCycle: "h12",
       meridiem: "PM",
-    } satisfies TimeWheelContext);
+    } satisfies TimeUnitControlContext);
     fixture.detectChanges();
     getIncrementButton().click();
     expect(valueChangeSpy).toHaveBeenLastCalledWith(0);
@@ -106,7 +106,7 @@ describe("TimeWheelComponent", () => {
       ...createContext(12),
       hourCycle: "h12",
       meridiem: "PM",
-    } satisfies TimeWheelContext);
+    } satisfies TimeUnitControlContext);
     fixture.detectChanges();
     getDecrementButton().click();
     expect(valueChangeSpy).toHaveBeenLastCalledWith(11);
@@ -120,7 +120,7 @@ describe("TimeWheelComponent", () => {
       ...createContext(13),
       hourCycle: "h12",
       meridiem: "PM",
-    } satisfies TimeWheelContext);
+    } satisfies TimeUnitControlContext);
     fixture.detectChanges();
 
     const input = fixture.nativeElement.querySelector(
@@ -136,8 +136,8 @@ describe("TimeWheelComponent", () => {
   });
 
   it("should expose stable IDs and accessible control relationships", () => {
-    const wheel = fixture.nativeElement.querySelector(
-      '[data-testid="datepicker-hour-wheel"]',
+    const control = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-unit-control"]',
     ) as HTMLElement;
     const input = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-hour-input"]',
@@ -154,8 +154,8 @@ describe("TimeWheelComponent", () => {
     const increment = getIncrementButton();
     const decrement = getDecrementButton();
 
-    expect(wheel.id).toBe("hour-control-wheel");
-    expect(wheel.getAttribute("aria-labelledby")).toBe(label.id);
+    expect(control.id).toBe("hour-control-unit");
+    expect(control.getAttribute("aria-labelledby")).toBe(label.id);
     expect(label.id).toBe("hour-label");
     expect(input.id).toBe("hour-control");
     expect(input.getAttribute("aria-labelledby")).toBe(label.id);
@@ -442,8 +442,8 @@ describe("TimeWheelComponent", () => {
   });
 
   it("should render centered Material icons with stable test ids", () => {
-    const wheel = fixture.nativeElement.querySelector(
-      '[data-testid="datepicker-hour-wheel"]',
+    const control = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-hour-unit-control"]',
     ) as HTMLElement;
     const incrementIcon = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-hour-increment-icon"]',
@@ -452,8 +452,8 @@ describe("TimeWheelComponent", () => {
       '[data-testid="datepicker-hour-decrement-icon"]',
     ) as HTMLElement;
 
-    expect(wheel.getAttribute("role")).toBe("group");
-    expect(wheel.getAttribute("aria-labelledby")).toBe("hour-label");
+    expect(control.getAttribute("role")).toBe("group");
+    expect(control.getAttribute("aria-labelledby")).toBe("hour-label");
     expect(incrementIcon.tagName).toBe("MAT-ICON");
     expect(incrementIcon.textContent?.trim()).toBe("add");
     expect(incrementIcon.getAttribute("aria-hidden")).toBe("true");

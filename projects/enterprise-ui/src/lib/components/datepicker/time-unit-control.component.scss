@@ -2,19 +2,19 @@
   display: contents;
 }
 
-.datepicker-time-wheel {
-  --time-wheel-accent: var(--mat-sys-primary, #005cbb);
-  --time-wheel-field-surface: var(
+.datepicker-time-unit-control {
+  --time-unit-control-accent: var(--mat-sys-primary, #005cbb);
+  --time-unit-control-field-surface: var(
     --mat-sys-surface-container-low,
     #f7f2fa
   );
-  --time-wheel-button-surface: var(--mat-sys-surface, #fff);
-  --time-wheel-on-surface: var(--mat-sys-on-surface, #1d1b20);
-  --time-wheel-label-color: var(
+  --time-unit-control-button-surface: var(--mat-sys-surface, #fff);
+  --time-unit-control-on-surface: var(--mat-sys-on-surface, #1d1b20);
+  --time-unit-control-label-color: var(
     --mat-sys-on-surface-variant,
     #49454f
   );
-  --time-wheel-outline: var(--mat-sys-outline-variant, #cac4d0);
+  --time-unit-control-outline: var(--mat-sys-outline-variant, #cac4d0);
 
   display: grid;
   grid-template-columns: 40px 30px;
@@ -27,7 +27,7 @@
 }
 
 .datepicker-time-value {
-  --time-wheel-animation-duration: 180ms;
+  --time-unit-control-animation-duration: 180ms;
 
   position: relative;
   display: grid;
@@ -36,13 +36,13 @@
   width: 40px;
   height: 40px;
   overflow: hidden;
-  border: 1px solid var(--time-wheel-outline);
+  border: 1px solid var(--time-unit-control-outline);
   border-radius: 8px;
-  background: var(--time-wheel-field-surface);
+  background: var(--time-unit-control-field-surface);
   box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
 
   &--rapid {
-    --time-wheel-animation-duration: 70ms;
+    --time-unit-control-animation-duration: 70ms;
   }
 }
 
@@ -54,8 +54,8 @@
   border-radius: inherit;
   outline: 0;
   background: transparent;
-  color: var(--time-wheel-on-surface);
-  caret-color: var(--time-wheel-accent);
+  color: var(--time-unit-control-on-surface);
+  caret-color: var(--time-unit-control-accent);
   cursor: text;
   font: inherit;
   font-size: 24px;
@@ -65,7 +65,7 @@
   text-align: center;
 
   &:focus-visible {
-    outline: 3px solid var(--time-wheel-accent);
+    outline: 3px solid var(--time-unit-control-accent);
     outline-offset: -3px;
   }
 }
@@ -87,10 +87,10 @@
   min-height: 27px;
   padding: 0;
   place-items: center;
-  border: 1px solid var(--time-wheel-outline);
+  border: 1px solid var(--time-unit-control-outline);
   border-radius: 6px;
-  background: var(--time-wheel-button-surface);
-  color: var(--time-wheel-accent);
+  background: var(--time-unit-control-button-surface);
+  color: var(--time-unit-control-accent);
   box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
   cursor: pointer;
   touch-action: manipulation;
@@ -105,7 +105,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--time-wheel-accent);
+    outline: 2px solid var(--time-unit-control-accent);
     outline-offset: 2px;
   }
 
@@ -133,7 +133,7 @@
   grid-column: 1;
   grid-row: 2;
   width: 100%;
-  color: var(--time-wheel-label-color);
+  color: var(--time-unit-control-label-color);
   cursor: pointer;
   font-size: 12px;
   line-height: 16px;
@@ -148,7 +148,7 @@
   }
 
   .datepicker-time-value[data-animation] .datepicker-time-select {
-    animation-duration: var(--time-wheel-animation-duration);
+    animation-duration: var(--time-unit-control-animation-duration);
     animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
     animation-fill-mode: both;
     will-change: opacity, transform;

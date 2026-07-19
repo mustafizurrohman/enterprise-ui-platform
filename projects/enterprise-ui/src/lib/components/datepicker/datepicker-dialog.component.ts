@@ -21,11 +21,8 @@ import {
   type DatepickerWeek,
   type DatepickerWeekday,
 } from "./datepicker-grid.component";
-import {
-  TimeWheelComponent,
-  type TimeUnit,
-  type TimeWheelContext,
-} from "./time-wheel.component";
+import { type TimeUnit } from "./time-unit-control.component";
+import { TimePickerComponent } from "./time-picker.component";
 
 export type DatepickerTimeChange = {
   unit: TimeUnit;
@@ -79,7 +76,7 @@ export type DatepickerDialogContext = Readonly<{
     MatFormFieldModule,
     ReactiveFormsModule,
     DatepickerGridComponent,
-    TimeWheelComponent,
+    TimePickerComponent,
   ],
   templateUrl: "./datepicker-dialog.component.html",
   styleUrl: "./datepicker-dialog.component.scss",
@@ -175,16 +172,6 @@ export class DatepickerDialogComponent {
     };
   });
 
-  protected readonly hourWheelContext = computed<TimeWheelContext>(() =>
-    this.createTimeWheelContext("hour"),
-  );
-  protected readonly minuteWheelContext = computed<TimeWheelContext>(() =>
-    this.createTimeWheelContext("minute"),
-  );
-  protected readonly secondWheelContext = computed<TimeWheelContext>(() =>
-    this.createTimeWheelContext("second"),
-  );
-
   private readonly calendarGrid = viewChild.required(DatepickerGridComponent);
 
   constructor() {
@@ -201,23 +188,6 @@ export class DatepickerDialogComponent {
 
   focusDate(date: DateTime): void {
     this.calendarGrid().focusDate(date);
-  }
-
-  protected emitTimeChange(unit: TimeUnit, value: number): void {
-    this.timeChanged.emit({ unit, value });
-  }
-
-  protected selectMeridiem(meridiem: DatepickerMeridiem): void {
-    const selectedDate = this.selectedDate();
-
-    if (selectedDate && meridiem === this.meridiem()) {
-      return;
-    }
-
-    const currentHour = selectedDate?.hour ?? 0;
-    const hour = meridiem === "PM" ? (currentHour % 12) + 12 : currentHour % 12;
-
-    this.timeChanged.emit({ unit: "hour", value: hour });
   }
 
   protected onMonthChange(event: Event): void {
@@ -273,61 +243,5 @@ export class DatepickerDialogComponent {
     this.yearControl.setValue(this.context().viewDate.year.toString(), {
       emitEvent: false,
     });
-  }
-
-  private createTimeWheelContext(unit: TimeUnit): TimeWheelContext {
-    const context = this.context();
-
-    return {
-      unit,
-      value: this.getTimeValue(context.selectedDate, unit),
-      controlId: this.getTimeId(context, unit, "control"),
-      labelId: this.getTimeId(context, unit, "label"),
-      descriptionId: this.idFor("time-instructions"),
-      testIdPrefix: context.testIdPrefix,
-      hourCycle: context.uses12HourClock ? "h12" : "h23",
-      meridiem: this.meridiem(),
-    };
-  }
-
-  private getTimeValue(date: DateTime | null, unit: TimeUnit): number {
-    if (!date) {
-      return 0;
-    }
-
-    switch (unit) {
-      case "hour":
-        return date.hour;
-      case "minute":
-        return date.minute;
-      case "second":
-        return date.second;
-    }
-  }
-
-  private getTimeId(
-    context: DatepickerDialogContext,
-    unit: TimeUnit,
-    type: "control" | "label",
-  ): string {
-    if (type === "control") {
-      switch (unit) {
-        case "hour":
-          return context.hourSelectId;
-        case "minute":
-          return context.minuteSelectId;
-        case "second":
-          return context.secondSelectId;
-      }
-    }
-
-    switch (unit) {
-      case "hour":
-        return context.hourLabelId;
-      case "minute":
-        return context.minuteLabelId;
-      case "second":
-        return context.secondLabelId;
-    }
   }
 }
