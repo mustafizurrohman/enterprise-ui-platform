@@ -178,7 +178,7 @@ export class TimeWheelComponent implements OnDestroy {
     difference: number,
     direction: TimeWheelAnimationDirection,
   ): void {
-    if (event.button !== 0 || event.isPrimary === false) {
+    if (event.button !== 0 || !event.isPrimary) {
       return;
     }
 
