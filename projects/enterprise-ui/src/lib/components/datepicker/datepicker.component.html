@@ -58,7 +58,7 @@
         [attr.data-testid]="testIdFor('clear')"
         (click)="clearValue($event, dateInput)"
       >
-        <mat-icon aria-hidden="true">close</mat-icon>
+        <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('clear-icon')">close</mat-icon>
       </button>
     }
 
@@ -74,7 +74,7 @@
         [attr.data-testid]="testIdFor('now-input')"
         (click)="selectNow()"
       >
-        <mat-icon aria-hidden="true">
+        <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('now-icon')">
           {{ dateOnlyFormat ? "today" : "access_time" }}
         </mat-icon>
       </button>
@@ -94,7 +94,7 @@
       [attr.data-testid]="testIdFor('toggle')"
       (click)="toggleCalendar(calendarToggle)"
     >
-      <mat-icon aria-hidden="true">calendar_today</mat-icon>
+      <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('toggle-icon')">calendar_today</mat-icon>
     </button>
   </div>
 
@@ -112,7 +112,7 @@
 
   <div
     [id]="ids().inputStatus"
-    class="visually-hidden"
+    class="cdk-visually-hidden"
     role="status"
     aria-live="polite"
     aria-atomic="true"

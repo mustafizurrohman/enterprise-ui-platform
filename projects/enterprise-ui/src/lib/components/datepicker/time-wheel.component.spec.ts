@@ -216,13 +216,19 @@ describe("TimeWheelComponent", () => {
     const incrementButton = getIncrementButton();
 
     incrementButton.dispatchEvent(
-      new MouseEvent("pointerdown", { bubbles: true, button: 0 }),
+      new PointerEvent("pointerdown", {
+        bubbles: true,
+        button: 0,
+        isPrimary: true,
+      }),
     );
 
     expect(valueChangeSpy).toHaveBeenCalledTimes(1);
     expect(valueChangeSpy).toHaveBeenLastCalledWith(11);
 
-    const acceleratingDelays = [70, 68, 66, 64, 62, 60, 58, 56, 54, 52, 50];
+    const acceleratingDelays = [
+      300, 294, 288, 282, 276, 270, 264, 258, 252, 246, 240,
+    ];
 
     for (const delay of acceleratingDelays) {
       vi.advanceTimersByTime(delay - 1);
@@ -236,12 +242,16 @@ describe("TimeWheelComponent", () => {
       );
     }
 
-    vi.advanceTimersByTime(50);
+    vi.advanceTimersByTime(240);
     expect(valueChangeSpy).toHaveBeenCalledTimes(13);
     expect(valueChangeSpy).toHaveBeenLastCalledWith(23);
 
     incrementButton.dispatchEvent(
-      new MouseEvent("pointerup", { bubbles: true, button: 0 }),
+      new PointerEvent("pointerup", {
+        bubbles: true,
+        button: 0,
+        isPrimary: true,
+      }),
     );
     incrementButton.click();
 
@@ -256,15 +266,23 @@ describe("TimeWheelComponent", () => {
     const decrementButton = getDecrementButton();
 
     decrementButton.dispatchEvent(
-      new MouseEvent("pointerdown", { bubbles: true, button: 0 }),
+      new PointerEvent("pointerdown", {
+        bubbles: true,
+        button: 0,
+        isPrimary: true,
+      }),
     );
     expect(valueChangeSpy).toHaveBeenLastCalledWith(9);
 
-    vi.advanceTimersByTime(70);
+    vi.advanceTimersByTime(300);
     expect(valueChangeSpy).toHaveBeenLastCalledWith(8);
 
     decrementButton.dispatchEvent(
-      new MouseEvent("pointercancel", { bubbles: true, button: 0 }),
+      new PointerEvent("pointercancel", {
+        bubbles: true,
+        button: 0,
+        isPrimary: true,
+      }),
     );
     vi.advanceTimersByTime(500);
 
@@ -277,7 +295,11 @@ describe("TimeWheelComponent", () => {
     component.valueChange.subscribe(valueChangeSpy);
 
     getIncrementButton().dispatchEvent(
-      new MouseEvent("pointerdown", { bubbles: true, button: 2 }),
+      new PointerEvent("pointerdown", {
+        bubbles: true,
+        button: 2,
+        isPrimary: true,
+      }),
     );
     vi.advanceTimersByTime(500);
 
@@ -389,7 +411,7 @@ describe("TimeWheelComponent", () => {
     fixture.componentRef.setInput("context", createContext(11));
     fixture.detectChanges();
 
-    nowSpy.mockReturnValue(1_181);
+    nowSpy.mockReturnValue(1_400);
     getIncrementButton().click();
     fixture.detectChanges();
 

@@ -747,9 +747,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     this.manualInputError.set(false);
     this.value.set(jsDate);
     this.onChange(jsDate);
-    this.dateAnnouncement.set(
-      `${this.getAccessibleDateLabel(newSelectedDate)}.`,
-    );
+    this.dateAnnouncement.set("Ausgewählt.");
   }
 
   protected selectNow(): void {
@@ -943,17 +941,11 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     }
 
     const localizedDate = date.setLocale(this.resolvedLocale());
-    const hourText = this.showMeridiem()
-      ? localizedDate.toFormat("hh a")
-      : `${localizedDate.toFormat("HH")} Uhr`;
-    let announcement =
-      `Uhrzeit ${hourText}, ` + `${localizedDate.toFormat("mm")} Minuten`;
+    const timeText = localizedDate.toLocaleString(
+      this.showSeconds() ? DateTime.TIME_WITH_SECONDS : DateTime.TIME_SIMPLE,
+    );
 
-    if (this.showSeconds()) {
-      announcement += ` und ${localizedDate.toFormat("ss")} Sekunden`;
-    }
-
-    this.timeAnnouncement.set(announcement);
+    this.timeAnnouncement.set(`Uhrzeit: ${timeText}`);
   }
 
   isSelected(date: DateTime | null): boolean {
@@ -978,26 +970,12 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {
-    const formattedDate = date.setLocale(this.resolvedLocale()).toLocaleString({
+    return date.setLocale(this.resolvedLocale()).toLocaleString({
       weekday: "long",
       day: "numeric",
       month: "long",
       year: "numeric",
     });
-
-    const states: string[] = [];
-
-    if (this.isToday(date)) {
-      states.push("heute");
-    }
-
-    if (this.isSelected(date)) {
-      states.push("ausgewählt");
-    }
-
-    return states.length > 0
-      ? `${formattedDate}, ${states.join(", ")}`
-      : formattedDate;
   }
 
   protected hasInputError(): boolean {

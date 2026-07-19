@@ -118,25 +118,12 @@ export class DatepickerGridComponent {
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {
-    const formattedDate = date.setLocale(this.locale()).toLocaleString({
+    return date.setLocale(this.locale()).toLocaleString({
       weekday: "long",
       day: "numeric",
       month: "long",
       year: "numeric",
     });
-    const states: string[] = [];
-
-    if (this.isToday(date)) {
-      states.push("heute");
-    }
-
-    if (this.isSelected(date)) {
-      states.push("ausgewählt");
-    }
-
-    return states.length > 0
-      ? `${formattedDate}, ${states.join(", ")}`
-      : formattedDate;
   }
 
   protected dateIso(date: DateTime): string {

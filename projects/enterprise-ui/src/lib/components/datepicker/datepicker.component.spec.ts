@@ -1172,8 +1172,8 @@ describe("DatepickerComponent", () => {
     const description = document.getElementById(
       dialog.getAttribute("aria-describedby") || "",
     );
-    expect(title?.classList.contains("visually-hidden")).toBeTruthy();
-    expect(description?.classList.contains("visually-hidden")).toBeTruthy();
+    expect(title?.classList.contains("cdk-visually-hidden")).toBeTruthy();
+    expect(description?.classList.contains("cdk-visually-hidden")).toBeTruthy();
     expect(title?.getAttribute("data-testid")).toBe("datepicker-dialog-title");
     expect(description?.getAttribute("data-testid")).toBe(
       "datepicker-dialog-description",
@@ -1408,7 +1408,7 @@ describe("DatepickerComponent", () => {
         expect(
           document.querySelector('[data-testid="datepicker-date-status"]')
             ?.textContent,
-        ).toContain("ausgewählt");
+        ).toContain("Ausgewählt.");
       },
     );
 
@@ -1536,7 +1536,7 @@ describe("DatepickerComponent", () => {
     fixture.detectChanges();
 
     expect((component as any).timeAnnouncement()).toContain("Uhrzeit");
-    expect((component as any).timeAnnouncement()).toMatch(/Uhrzeit \d{2} Uhr/);
+    expect((component as any).timeAnnouncement()).toMatch(/Uhrzeit: \d{1,2}:\d{2}/);
   });
 
   describe("disabled", () => {
@@ -1962,7 +1962,7 @@ describe("DatepickerComponent", () => {
       );
       fixture.detectChanges();
       (component as any).announceTime();
-      expect((component as any).timeAnnouncement()).toContain("45 Sekunden");
+      expect((component as any).timeAnnouncement()).toContain("14:30:45");
     });
 
     it("should normalize seconds according to the Luxon format", () => {
