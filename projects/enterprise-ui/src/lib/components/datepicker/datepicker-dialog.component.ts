@@ -1,18 +1,11 @@
 import { CdkTrapFocus } from "@angular/cdk/a11y";
-import { MatIconModule } from "@angular/material/icon";
 import {
   Component,
   computed,
-  effect,
   input,
   output,
-  signal,
-  untracked,
   viewChild,
 } from "@angular/core";
-import { FormControl, ReactiveFormsModule } from "@angular/forms";
-import { MatInputModule } from "@angular/material/input";
-import { MatFormFieldModule } from "@angular/material/form-field";
 import { DateTime, Info } from "luxon";
 import {
   DatepickerGridComponent,
@@ -23,6 +16,10 @@ import {
 } from "./datepicker-grid.component";
 import { type TimeUnit } from "./time-unit-control.component";
 import { TimePickerComponent } from "./time-picker.component";
+import {
+  DatepickerHeaderComponent,
+  type DatepickerHeaderContext,
+} from "./datepicker-header.component";
 
 export type DatepickerTimeChange = {
   unit: TimeUnit;
@@ -71,12 +68,9 @@ export type DatepickerDialogContext = Readonly<{
   standalone: true,
   imports: [
     CdkTrapFocus,
-    MatIconModule,
-    MatInputModule,
-    MatFormFieldModule,
-    ReactiveFormsModule,
     DatepickerGridComponent,
     TimePickerComponent,
+    DatepickerHeaderComponent,
   ],
   templateUrl: "./datepicker-dialog.component.html",
   styleUrl: "./datepicker-dialog.component.scss",
@@ -97,11 +91,6 @@ export class DatepickerDialogComponent {
   readonly confirmed = output<void>();
   readonly monthSelected = output<number>();
   readonly yearSelected = output<number>();
-
-  protected readonly isMonthSelectFocused = signal(false);
-  protected readonly yearControl = new FormControl<string>("", {
-    nonNullable: true,
-  });
 
   protected readonly dialogId = computed(() => this.context().dialogId);
   protected readonly dialogTitleId = computed(
@@ -155,6 +144,22 @@ export class DatepickerDialogComponent {
 
   protected readonly calendarGridId = computed(() => `${this.dialogId()}-grid`);
 
+  protected readonly headerContext = computed<DatepickerHeaderContext>(() => {
+    const context = this.context();
+    return {
+      dialogId: this.dialogId(),
+      testIdPrefix: this.testIdPrefix(),
+      calendarGridId: this.calendarGridId(),
+      monthHeadingId: this.monthHeadingId(),
+      formattedMonth: this.formattedMonth(),
+      selectedMonth: this.selectedMonth(),
+      shortMonths: this.shortMonths(),
+      todayMonth: context.today.month,
+      todayYear: context.today.year,
+      viewYear: context.viewDate.year,
+    };
+  });
+
   protected readonly gridContext = computed<DatepickerGridContext>(() => {
     const context = this.context();
 
@@ -174,61 +179,8 @@ export class DatepickerDialogComponent {
 
   private readonly calendarGrid = viewChild.required(DatepickerGridComponent);
 
-  constructor() {
-    effect(() => {
-      const context = this.context();
-      untracked(() => {
-        const yearStr = context.viewDate.year.toString();
-        if (this.yearControl.value !== yearStr) {
-          this.yearControl.setValue(yearStr, { emitEvent: false });
-        }
-      });
-    });
-  }
-
   focusDate(date: DateTime): void {
     this.calendarGrid().focusDate(date);
-  }
-
-  protected onMonthChange(event: Event): void {
-    const month = Number.parseInt(
-      (event.target as HTMLSelectElement).value,
-      10,
-    );
-
-    if (Number.isInteger(month) && month >= 1 && month <= 12) {
-      this.monthSelected.emit(month);
-    }
-
-    this.isMonthSelectFocused.set(false);
-  }
-
-  protected onYearInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const sanitizedValue = input.value.replace(/\D/g, "").slice(0, 4);
-
-    if (input.value !== sanitizedValue) {
-      input.value = sanitizedValue;
-    }
-
-    if (this.yearControl.value !== sanitizedValue) {
-      this.yearControl.setValue(sanitizedValue, { emitEvent: false });
-    }
-  }
-
-  protected onYearEnter(event: Event): void {
-    (event.target as HTMLInputElement).blur();
-  }
-
-  protected onYearBlur(): void {
-    const value = this.yearControl.value;
-
-    if (/^\d{4}$/.test(value) && Number(value) > 0) {
-      this.yearSelected.emit(Number(value));
-      return;
-    }
-
-    this.restoreCurrentYear();
   }
 
   protected idFor(part: string): string {
@@ -237,11 +189,5 @@ export class DatepickerDialogComponent {
 
   protected testIdFor(part: string): string {
     return `${this.testIdPrefix()}-${part}`;
-  }
-
-  private restoreCurrentYear(): void {
-    this.yearControl.setValue(this.context().viewDate.year.toString(), {
-      emitEvent: false,
-    });
   }
 }
