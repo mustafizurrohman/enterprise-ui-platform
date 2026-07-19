@@ -14,15 +14,29 @@ The component exposes a `testId` input which generates stable `data-testid` attr
 | Selector | Description |
 | :--- | :--- |
 | `[data-testid="your-id"]` | The root component element. |
+| `[data-testid="your-id-label"]` | The label element. |
+| `[data-testid="your-id-input-wrapper"]` | The container for the input and icons. |
 | `[data-testid="your-id-input"]` | The native input element for manual entry. |
-| `[data-testid="your-id-toggle"]` | The calendar trigger button. |
 | `[data-testid="your-id-clear"]` | The clear button (visible when a value is present). |
 | `[data-testid="your-id-now-input"]` | The "Now" shortcut button next to the input. |
+| `[data-testid="your-id-toggle"]` | The calendar trigger button. |
+| `[data-testid="your-id-hint"]` | The visually hidden element containing format instructions. |
+| `[data-testid="your-id-input-status"]` | The live region announcing manual input updates. |
+| `[data-testid="your-id-error"]` | The error message display (visible when invalid). |
 | `[data-testid="your-id-dialog"]` | The calendar overlay/dialog container. |
+| `[data-testid="your-id-previous-month"]` / `your-id-next-month` | Month navigation buttons in the dialog. |
 | `[data-testid="your-id-month-select"]` | The month selection dropdown in the dialog. |
+| `[data-testid="your-id-previous-year"]` / `your-id-next-year` | Year navigation buttons in the dialog. |
 | `[data-testid="your-id-year-display"]` | The year input field in the dialog. |
-| `[data-testid="your-id-time-picker"]` | The container for time selection wheels. |
-| `[data-testid="your-id-day-YYYY-MM-DD"]` | Individual day buttons in the grid (e.g., `your-id-day-2026-07-17`). |
+| `[data-testid="your-id-month-heading"]` | The current month/year display in the dialog. |
+| `[data-testid="your-id-calendar-grid"]` | The date selection grid. |
+| `[data-testid="your-id-day-YYYY-MM-DD"]` | Individual day buttons (e.g., `your-id-day-2026-07-17`). |
+| `[data-testid="your-id-date-status"]` | The live region announcing date selection changes. |
+| `[data-testid="your-id-time-picker"]` | The container for time selection controls. |
+| `[data-testid="your-id-time-wheels"]` | The group containing hour and minute selection. |
+| `[data-testid="your-id-meridiem-toggle"]` | The AM/PM selection group (when applicable). |
+| `[data-testid="your-id-time-adjustments"]` | The container for quick time adjustment buttons. |
+| `[data-testid="your-id-time-status"]` | The live region announcing time selection updates. |
 
 ## Integration Testing
 

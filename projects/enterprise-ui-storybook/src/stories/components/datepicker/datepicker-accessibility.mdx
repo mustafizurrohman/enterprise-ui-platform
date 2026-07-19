@@ -27,11 +27,22 @@ Full keyboard support is provided for efficient, mouse-free operation:
 | **PageUp** / **PageDown** | Switches to the previous or next month. |
 | **Shift + PageUp** / **Shift + PageDown** | Switches to the previous or next year. |
 | **Space** / **Enter** | Selects the currently focused date. |
-| **Escape** | Closes the calendar without making a selection (unless already selected). |
+| **Escape** | Closes the calendar without making a selection. |
+
+### Time Selection
+
+| Key | Action |
+| :--- | :--- |
+| **Arrow Keys** | Adjusts the value of the focused time wheel. |
+| **Numeric Keys** | Directly enters values for hours, minutes, or seconds. |
 
 ## Screen Reader Support
 
-- **ARIA Roles**: Utilizes appropriate ARIA roles including `combobox` for the input, `dialog` for the overlay, `grid` for the calendar, and `status`/`alert` for dynamic updates and errors.
-- **Live Regions**: Employs `aria-live` regions to announce dynamic updates, such as month changes, date selection, and time adjustments, providing immediate feedback to screen reader users.
+- **ARIA Roles**: Utilizes appropriate ARIA roles including `combobox` for the input, `dialog` for the overlay, `grid` for the calendar grid, and `status`/`alert` for dynamic updates and errors.
+- **Live Regions**: Employs multiple `aria-live` regions to announce:
+  - **Manual Input**: Feedback during text entry and autocomplete.
+  - **Navigation**: Announcements for month and year changes.
+  - **Selection**: Confirmation of selected dates and times.
 - **Descriptive Labels**: Every date button features a localized, descriptive label (e.g., "Montag, 12. Juli 2026") including information about whether it is today or the currently selected date.
-- **Visual Feedback**: Focus is managed explicitly, ensuring that the active date is always clear to both keyboard and screen reader users.
+- **Keyboard Shortcuts**: Common actions are mapped to standard keyboard shortcuts and announced via `aria-keyshortcuts` where appropriate.
+- **Visual Feedback**: Focus is managed explicitly, ensuring that the active element is always clear to both keyboard and screen reader users.
