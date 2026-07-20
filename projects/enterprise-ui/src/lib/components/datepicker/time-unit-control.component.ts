@@ -1,12 +1,12 @@
 import {
   Component,
-  OnDestroy,
   computed,
   input,
   output,
   signal,
 } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
+import { RepeatClickDirective } from "../../directives/repeat-click.directive";
 
 import {
   type TimeUnit,
@@ -35,8 +35,6 @@ type TimeUnitControlAnimationState = Readonly<{
 
 const PRESS_HOLD_INITIAL_DELAY_MS = 300;
 const RAPID_CHANGE_THRESHOLD_MS = PRESS_HOLD_INITIAL_DELAY_MS * 1.1;
-const PRESS_HOLD_MINIMUM_DELAY_MS = PRESS_HOLD_INITIAL_DELAY_MS * 0.8;
-const PRESS_HOLD_ACCELERATION_STEP_MS = PRESS_HOLD_INITIAL_DELAY_MS * 0.02;
 
 const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
   hour: {
@@ -65,11 +63,11 @@ const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
 @Component({
   selector: "time-unit-control",
   standalone: true,
-  imports: [MatIconModule],
+  imports: [MatIconModule, RepeatClickDirective],
   templateUrl: "./time-unit-control.component.html",
   styleUrl: "./time-unit-control.component.scss",
 })
-export class TimeUnitControlComponent implements OnDestroy {
+export class TimeUnitControlComponent {
   readonly context = input.required<TimeUnitControlContext>();
 
   readonly valueChange = output<number>();
@@ -138,79 +136,12 @@ export class TimeUnitControlComponent implements OnDestroy {
 
   private animationPhase: TimeUnitControlAnimationPhase = "b";
   private lastButtonChangeTimestamp: number | null = null;
-  private pressHoldTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  private clickSuppressionTimeoutId: ReturnType<typeof setTimeout> | null =
-    null;
-  private pressHoldValue: number | null = null;
-  private pressHoldDifference = 0;
-  private pressHoldDirection: TimeUnitControlAnimationDirection | null = null;
-  private pressHoldDelayMs = PRESS_HOLD_INITIAL_DELAY_MS;
-  private pressHoldActive = false;
-  private suppressNextClick = false;
 
-  ngOnDestroy(): void {
-    this.resetPressHoldState();
-    this.suppressNextClick = false;
-    this.clearClickSuppressionTimeout();
-  }
-
-  protected onButtonClick(
+  protected onTrigger(
     difference: number,
     direction: TimeUnitControlAnimationDirection,
   ): void {
-    if (this.suppressNextClick) {
-      this.suppressNextClick = false;
-      this.clearClickSuppressionTimeout();
-      return;
-    }
-
     this.changeBy(difference, direction, true);
-  }
-
-  protected startPressAndHold(
-    event: PointerEvent,
-    difference: number,
-    direction: TimeUnitControlAnimationDirection,
-  ): void {
-    if (event.button !== 0 || !event.isPrimary) {
-      return;
-    }
-
-    this.resetPressHoldState();
-    this.clearClickSuppressionTimeout();
-    this.suppressNextClick = true;
-    this.pressHoldValue = this.value();
-    this.pressHoldDifference = difference;
-    this.pressHoldDirection = direction;
-    this.pressHoldActive = true;
-
-    this.performPressHoldStep();
-
-    if (this.pressHoldActive) {
-      this.schedulePressHoldStep();
-    }
-
-    const button = event.currentTarget;
-
-    if (
-      button instanceof HTMLElement &&
-      typeof button.setPointerCapture === "function" &&
-      Number.isInteger(event.pointerId)
-    ) {
-      try {
-        button.setPointerCapture(event.pointerId);
-      } catch {
-        // Pointer capture is optional; pointerup/pointerleave still stop repeat.
-      }
-    }
-  }
-
-  protected stopPressAndHold(): void {
-    this.resetPressHoldState();
-
-    if (this.suppressNextClick) {
-      this.scheduleClickSuppressionReset();
-    }
   }
 
   protected onInput(event: Event): void {
@@ -306,88 +237,6 @@ export class TimeUnitControlComponent implements OnDestroy {
       this.startCssAnimation(direction, isButtonInteraction);
     }
     this.offsetChange.emit(difference);
-  }
-
-  private performPressHoldStep(): void {
-    if (
-      this.pressHoldValue === null ||
-      this.pressHoldDirection === null ||
-      this.pressHoldDifference === 0
-    ) {
-      return;
-    }
-
-    const currentValue = this.pressHoldValue;
-    const nextValue = this.normalizeSteppedValue(
-      currentValue + this.pressHoldDifference,
-    );
-
-    this.pressHoldValue = nextValue;
-
-    if (nextValue !== currentValue) {
-      this.startCssAnimation(this.pressHoldDirection, true);
-    }
-
-    this.offsetChange.emit(this.pressHoldDifference);
-  }
-
-  private schedulePressHoldStep(): void {
-    const delay = this.pressHoldDelayMs;
-
-    this.pressHoldTimeoutId = setTimeout(() => {
-      this.pressHoldTimeoutId = null;
-
-      if (!this.pressHoldActive) {
-        return;
-      }
-
-      this.performPressHoldStep();
-
-      if (!this.pressHoldActive) {
-        return;
-      }
-
-      this.pressHoldDelayMs = Math.max(
-        PRESS_HOLD_MINIMUM_DELAY_MS,
-        this.pressHoldDelayMs - PRESS_HOLD_ACCELERATION_STEP_MS,
-      );
-      this.schedulePressHoldStep();
-    }, delay);
-  }
-
-  private resetPressHoldState(): void {
-    this.clearPressHoldTimeout();
-    this.pressHoldValue = null;
-    this.pressHoldDifference = 0;
-    this.pressHoldDirection = null;
-    this.pressHoldDelayMs = PRESS_HOLD_INITIAL_DELAY_MS;
-    this.pressHoldActive = false;
-  }
-
-  private clearPressHoldTimeout(): void {
-    if (this.pressHoldTimeoutId === null) {
-      return;
-    }
-
-    clearTimeout(this.pressHoldTimeoutId);
-    this.pressHoldTimeoutId = null;
-  }
-
-  private scheduleClickSuppressionReset(): void {
-    this.clearClickSuppressionTimeout();
-    this.clickSuppressionTimeoutId = setTimeout(() => {
-      this.suppressNextClick = false;
-      this.clickSuppressionTimeoutId = null;
-    }, 0);
-  }
-
-  private clearClickSuppressionTimeout(): void {
-    if (this.clickSuppressionTimeoutId === null) {
-      return;
-    }
-
-    clearTimeout(this.clickSuppressionTimeoutId);
-    this.clickSuppressionTimeoutId = null;
   }
 
   private emitAnimatedValue(
