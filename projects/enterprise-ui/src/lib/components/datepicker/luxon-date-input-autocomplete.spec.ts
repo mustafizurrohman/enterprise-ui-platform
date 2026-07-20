@@ -578,4 +578,39 @@ describe("LuxonDateInputAutocomplete", () => {
       LuxonDateInputAutocomplete.getFormatDescription({ showSeconds: true }),
     ).toBe("TT.MM.JJJJ HH:mm:ss Uhr");
   });
+
+  describe("Leading non-digits", () => {
+    it("provides autocomplete when format starts with cccc (weekday)", () => {
+      const format = "cccc, dd.MM.yyyy";
+      const autocomplete = new LuxonDateInputAutocomplete(format, "de-DE");
+
+      const result = autocomplete.process("1", { now });
+
+      expect(result.value).toContain("1");
+      expect(result.value.length).toBeGreaterThan(1);
+      expect(result.suggestedValue).toContain("2026");
+    });
+
+    it("provides autocomplete when format starts with MMMM (month name)", () => {
+      const format = "MMMM dd, yyyy";
+      const autocomplete = new LuxonDateInputAutocomplete(format, "en-US");
+
+      const result = autocomplete.process("1", { now });
+
+      expect(result.value).toContain("1");
+      expect(result.value.length).toBeGreaterThan(1);
+      expect(result.suggestedValue).toContain("2026");
+    });
+
+    it("handles multiple leading literals and non-numeric tokens", () => {
+      // 'Date:' is a literal, EEEE is a weekday
+      const format = "'Date:' EEEE, dd.MM.yyyy";
+      const autocomplete = new LuxonDateInputAutocomplete(format, "en-US");
+
+      const result = autocomplete.process("1", { now });
+
+      expect(result.value).toContain("Date: Tuesday, 1");
+      expect(result.suggestedValue).toContain("2026");
+    });
+  });
 });

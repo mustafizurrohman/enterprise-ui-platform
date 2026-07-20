@@ -25,6 +25,7 @@ type MeridiemToken = Readonly<{
 type LiteralToken = Readonly<{
   type: "literal";
   value: string;
+  isLuxonToken?: boolean;
 }>;
 
 type SmartToken = NumericFieldToken | MeridiemToken | LiteralToken;
@@ -384,7 +385,7 @@ export class LuxonDateInputAutocomplete {
       options.locale ?? this.locale,
     );
     const locale = options.locale ?? this.locale;
-    const normalized = this.normalize(rawValue, options);
+    const normalized = this.normalize(rawValue, options, now);
     const validationError =
       normalized.error ?? this.validateKnownFields(normalized.fields);
     const complete = this.isComplete(normalized);
@@ -545,7 +546,9 @@ export class LuxonDateInputAutocomplete {
   private normalize(
     rawValue: string,
     options: DateInputAutocompleteOptions,
+    now: DateTime,
   ): NormalizedInput {
+    const locale = options.locale ?? this.locale;
     const fields: Partial<Record<LuxonDateField, string>> = {};
     const commit = options.commit === true;
     const isDeletion = options.isDeletion === true;
@@ -553,29 +556,46 @@ export class LuxonDateInputAutocomplete {
     let sourceIndex = 0;
     let value = "";
     let meridiem: "AM" | "PM" | null = null;
+    let startedParsing = false;
 
     for (let tokenIndex = 0; tokenIndex < this.tokens.length; tokenIndex++) {
       const token = this.tokens[tokenIndex];
 
       if (token.type === "literal") {
-        if (!value) {
-          break;
+        const expectedValue = token.isLuxonToken
+          ? parserTokenValue(token.value, now)
+          : token.value;
+        const consumed = consumeLiteral(source, sourceIndex, expectedValue);
+
+        if (!startedParsing && consumed === 0) {
+          value += expectedValue;
+          continue;
         }
 
-        const consumed = consumeLiteral(source, sourceIndex, token.value);
         if (consumed > 0) {
           sourceIndex += consumed;
+          startedParsing = true;
         }
 
         const sourceFinished = sourceIndex === source.length;
         if (!isDeletion || !sourceFinished || commit) {
-          value += token.value;
+          value += expectedValue;
         }
         continue;
       }
 
       if (token.type === "meridiem") {
         const parsedMeridiem = readMeridiem(source, sourceIndex, commit);
+
+        if (!startedParsing && !parsedMeridiem.value) {
+          // If next digit is still far away, we can fill meridiem
+          if (!/^\s*\d/u.test(source.slice(sourceIndex))) {
+            const meridiemValue = now.toFormat("a").toUpperCase();
+            value += meridiemValue;
+            continue;
+          }
+        }
+
         sourceIndex = parsedMeridiem.nextIndex;
 
         if (!parsedMeridiem.value) {
@@ -587,6 +607,7 @@ export class LuxonDateInputAutocomplete {
           ? (parsedMeridiem.value as "AM" | "PM")
           : null;
 
+        startedParsing = true;
         if (!parsedMeridiem.complete) {
           break;
         }
@@ -600,6 +621,41 @@ export class LuxonDateInputAutocomplete {
         this.tokens[tokenIndex + 1],
         commit,
       );
+
+      if (!startedParsing && !numeric.value) {
+        // Look ahead to see if there's any digit in source at current sourceIndex
+        if (/^\s*\d/u.test(source.slice(sourceIndex))) {
+          // If there is a digit, we must have missed something or this token doesn't match
+          // But since it's numeric and we have no digits, it's a non-match.
+          // For leading tokens, we fill them.
+          const fallbackValue =
+            token.field === "hour" && token.hourCycle === 12
+              ? now.hour % 12 || 12
+              : now[token.field];
+          const fallback = formatNumericTokenValue(token, fallbackValue);
+          value += fallback;
+          continue;
+        } else {
+          // No digits ahead, and this is leading. 
+          // If the source is just empty or whitespace, we can still fill it.
+          const remainingTrimmed = source.slice(sourceIndex).trim();
+          if (!remainingTrimmed) {
+            const fallbackValue =
+              token.field === "hour" && token.hourCycle === 12
+                ? now.hour % 12 || 12
+                : now[token.field];
+            const fallback = formatNumericTokenValue(token, fallbackValue);
+            value += fallback;
+            continue;
+          }
+          // Some non-digit input but numeric token expects digits. Break.
+          break;
+        }
+      }
+
+      if (numeric.value) {
+        startedParsing = true;
+      }
       sourceIndex = numeric.nextIndex;
 
       if (!numeric.value) {
@@ -620,8 +676,13 @@ export class LuxonDateInputAutocomplete {
       (character) => !/[0-9\s.,/:\-']/u.test(character),
     );
 
+    let finalValue = value;
+    if ((!startedParsing && source.length > 0) || (startedParsing && (invalidCharacter || unexpectedInput))) {
+      finalValue = source;
+    }
+
     return {
-      value: invalidCharacter || unexpectedInput ? source : value,
+      value: finalValue,
       fields,
       meridiem,
       error: invalidCharacter
@@ -715,34 +776,58 @@ export class LuxonDateInputAutocomplete {
       second: now.second,
     };
 
-    return this.tokens
-      .map((token) => {
-        if (token.type === "literal") {
-          return token.value;
-        }
+    let startedParsing = false;
+    const tokensWithLeadingValues: string[] = [];
+    const fields = { ...normalized.fields };
 
-        if (token.type === "meridiem") {
-          return normalized.meridiem ?? now.toFormat("a").toUpperCase();
-        }
+    for (let i = 0; i < this.tokens.length; i++) {
+      const token = this.tokens[i];
 
-        const current = normalized.fields[token.field];
-        if (current && isNumericTokenComplete(token, current)) {
-          return current;
-        }
+      if (token.type === "literal") {
+        const expectedValue = token.isLuxonToken
+          ? parserTokenValue(token.value, now)
+          : token.value;
+        tokensWithLeadingValues.push(expectedValue);
+        continue;
+      }
 
+      if (token.type === "meridiem") {
+        if (normalized.meridiem) {
+          tokensWithLeadingValues.push(normalized.meridiem);
+          startedParsing = true;
+        } else {
+          const fallback = now.toFormat("a").toUpperCase();
+          tokensWithLeadingValues.push(fallback);
+        }
+        continue;
+      }
+
+      const current = fields[token.field];
+      if (current) {
+        startedParsing = true;
+        if (isNumericTokenComplete(token, current)) {
+          tokensWithLeadingValues.push(current);
+        } else {
+          const fallbackValue =
+            token.field === "hour" && token.hourCycle === 12
+              ? valuesByField.hour % 12 || 12
+              : valuesByField[token.field];
+          const fallback = formatNumericTokenValue(token, fallbackValue);
+          tokensWithLeadingValues.push(
+            fallback.startsWith(current) ? fallback : current,
+          );
+        }
+      } else {
         const fallbackValue =
           token.field === "hour" && token.hourCycle === 12
             ? valuesByField.hour % 12 || 12
             : valuesByField[token.field];
         const fallback = formatNumericTokenValue(token, fallbackValue);
+        tokensWithLeadingValues.push(fallback);
+      }
+    }
 
-        if (!current) {
-          return fallback;
-        }
-
-        return fallback.startsWith(current) ? fallback : current;
-      })
-      .join("");
+    return tokensWithLeadingValues.join("");
   }
 }
 
@@ -1061,10 +1146,11 @@ function toSmartAutocompleteTokens(
   parts: readonly LuxonFormatPart[],
 ): readonly SmartToken[] | null {
   const tokens: SmartToken[] = [];
+  let sawNumericField = false;
 
   for (const part of parts) {
     if (part.literal) {
-      pushSmartLiteral(tokens, part.value);
+      tokens.push({ type: "literal", value: part.value, isLuxonToken: false });
       continue;
     }
 
@@ -1074,18 +1160,29 @@ function toSmartAutocompleteTokens(
     }
 
     const numericDefinition = NUMERIC_FIELD_TOKENS[part.value];
-    if (!numericDefinition) {
-      return null;
+    if (numericDefinition) {
+      tokens.push({
+        type: "field",
+        token: part.value,
+        ...numericDefinition,
+      });
+      sawNumericField = true;
+      continue;
     }
 
-    tokens.push({
-      type: "field",
-      token: part.value,
-      ...numericDefinition,
-    });
+    // Treat unrecognized meaningful tokens as literals ONLY if they appear
+    // before the first numeric field. This enables autocomplete for formats
+    // starting with e.g. weekday (cccc) while maintaining compatibility
+    // with existing formats where such tokens appear in the middle or end.
+    if (!sawNumericField && /^\p{L}+$/u.test(part.value)) {
+      tokens.push({ type: "literal", value: part.value, isLuxonToken: true });
+      continue;
+    }
+
+    return null;
   }
 
-  return tokens.some((token) => token.type === "field") ? tokens : null;
+  return sawNumericField ? tokens : null;
 }
 
 function pushSmartLiteral(tokens: SmartToken[], value: string): void {
