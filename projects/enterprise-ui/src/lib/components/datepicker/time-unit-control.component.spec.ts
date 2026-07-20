@@ -80,7 +80,9 @@ describe("TimeUnitControlComponent", () => {
 
   it("should keep 12-hour stepping synchronized with the underlying 24-hour value", () => {
     const valueChangeSpy = vi.fn();
+    const offsetChangeSpy = vi.fn();
     component.valueChange.subscribe(valueChangeSpy);
+    component.offsetChange.subscribe(offsetChangeSpy);
 
     fixture.componentRef.setInput("context", {
       ...createContext(11),
@@ -89,7 +91,7 @@ describe("TimeUnitControlComponent", () => {
     } satisfies TimeUnitControlContext);
     fixture.detectChanges();
     getIncrementButton().click();
-    expect(valueChangeSpy).toHaveBeenLastCalledWith(12);
+    expect(offsetChangeSpy).toHaveBeenLastCalledWith(1);
 
     fixture.componentRef.setInput("context", {
       ...createContext(23),
@@ -98,7 +100,7 @@ describe("TimeUnitControlComponent", () => {
     } satisfies TimeUnitControlContext);
     fixture.detectChanges();
     getIncrementButton().click();
-    expect(valueChangeSpy).toHaveBeenLastCalledWith(0);
+    expect(offsetChangeSpy).toHaveBeenLastCalledWith(1);
 
     fixture.componentRef.setInput("context", {
       ...createContext(12),
@@ -107,7 +109,7 @@ describe("TimeUnitControlComponent", () => {
     } satisfies TimeUnitControlContext);
     fixture.detectChanges();
     getDecrementButton().click();
-    expect(valueChangeSpy).toHaveBeenLastCalledWith(11);
+    expect(offsetChangeSpy).toHaveBeenLastCalledWith(-1);
   });
 
   it("should clamp typed 12-hour values and preserve the selected meridiem", () => {
@@ -193,24 +195,24 @@ describe("TimeUnitControlComponent", () => {
   });
 
   it("should emit incremented and decremented values with wrap-around", () => {
-    const valueChangeSpy = vi.fn();
-    component.valueChange.subscribe(valueChangeSpy);
+    const offsetChangeSpy = vi.fn();
+    component.offsetChange.subscribe(offsetChangeSpy);
 
     fixture.componentRef.setInput("context", createContext(23));
     fixture.detectChanges();
     getIncrementButton().click();
-    expect(valueChangeSpy).toHaveBeenLastCalledWith(0);
+    expect(offsetChangeSpy).toHaveBeenLastCalledWith(1);
 
     fixture.componentRef.setInput("context", createContext(0));
     fixture.detectChanges();
     getDecrementButton().click();
-    expect(valueChangeSpy).toHaveBeenLastCalledWith(23);
+    expect(offsetChangeSpy).toHaveBeenLastCalledWith(-1);
   });
 
   it("should repeat increment while pressed and accelerate from 70 ms to 50 ms", () => {
     vi.useFakeTimers();
-    const valueChangeSpy = vi.fn();
-    component.valueChange.subscribe(valueChangeSpy);
+    const offsetChangeSpy = vi.fn();
+    component.offsetChange.subscribe(offsetChangeSpy);
     const incrementButton = getIncrementButton();
 
     incrementButton.dispatchEvent(
@@ -221,8 +223,8 @@ describe("TimeUnitControlComponent", () => {
       }),
     );
 
-    expect(valueChangeSpy).toHaveBeenCalledTimes(1);
-    expect(valueChangeSpy).toHaveBeenLastCalledWith(11);
+    expect(offsetChangeSpy).toHaveBeenCalledTimes(1);
+    expect(offsetChangeSpy).toHaveBeenLastCalledWith(1);
 
     const acceleratingDelays = [
       300, 294, 288, 282, 276, 270, 264, 258, 252, 246, 240,
@@ -230,19 +232,19 @@ describe("TimeUnitControlComponent", () => {
 
     for (const delay of acceleratingDelays) {
       vi.advanceTimersByTime(delay - 1);
-      expect(valueChangeSpy).toHaveBeenCalledTimes(
+      expect(offsetChangeSpy).toHaveBeenCalledTimes(
         acceleratingDelays.indexOf(delay) + 1,
       );
 
       vi.advanceTimersByTime(1);
-      expect(valueChangeSpy).toHaveBeenCalledTimes(
+      expect(offsetChangeSpy).toHaveBeenCalledTimes(
         acceleratingDelays.indexOf(delay) + 2,
       );
     }
 
     vi.advanceTimersByTime(240);
-    expect(valueChangeSpy).toHaveBeenCalledTimes(13);
-    expect(valueChangeSpy).toHaveBeenLastCalledWith(23);
+    expect(offsetChangeSpy).toHaveBeenCalledTimes(13);
+    expect(offsetChangeSpy).toHaveBeenLastCalledWith(1);
 
     incrementButton.dispatchEvent(
       new PointerEvent("pointerup", {
@@ -254,13 +256,13 @@ describe("TimeUnitControlComponent", () => {
     incrementButton.click();
 
     vi.advanceTimersByTime(500);
-    expect(valueChangeSpy).toHaveBeenCalledTimes(13);
+    expect(offsetChangeSpy).toHaveBeenCalledTimes(13);
   });
 
   it("should repeat decrement while pressed and stop on pointer cancellation", () => {
     vi.useFakeTimers();
-    const valueChangeSpy = vi.fn();
-    component.valueChange.subscribe(valueChangeSpy);
+    const offsetChangeSpy = vi.fn();
+    component.offsetChange.subscribe(offsetChangeSpy);
     const decrementButton = getDecrementButton();
 
     decrementButton.dispatchEvent(
@@ -270,10 +272,10 @@ describe("TimeUnitControlComponent", () => {
         isPrimary: true,
       }),
     );
-    expect(valueChangeSpy).toHaveBeenLastCalledWith(9);
+    expect(offsetChangeSpy).toHaveBeenLastCalledWith(-1);
 
     vi.advanceTimersByTime(300);
-    expect(valueChangeSpy).toHaveBeenLastCalledWith(8);
+    expect(offsetChangeSpy).toHaveBeenLastCalledWith(-1);
 
     decrementButton.dispatchEvent(
       new PointerEvent("pointercancel", {
@@ -284,7 +286,7 @@ describe("TimeUnitControlComponent", () => {
     );
     vi.advanceTimersByTime(500);
 
-    expect(valueChangeSpy).toHaveBeenCalledTimes(2);
+    expect(offsetChangeSpy).toHaveBeenCalledTimes(2);
   });
 
   it("should ignore non-primary pointer buttons for press and hold", () => {
@@ -319,24 +321,30 @@ describe("TimeUnitControlComponent", () => {
   });
 
   it.each([
-    ["ArrowUp", 11],
-    ["ArrowDown", 9],
-    ["PageUp", 20],
-    ["PageDown", 0],
-    ["Home", 0],
-    ["End", 23],
+    ["ArrowUp", "offset", 1],
+    ["ArrowDown", "offset", -1],
+    ["PageUp", "offset", 10],
+    ["PageDown", "offset", -10],
+    ["Home", "value", 0],
+    ["End", "value", 23],
   ])(
     "should handle %s keyboard input",
-    (key: string, expectedValue: number) => {
+    (key: string, type: string, expectedValue: number) => {
       const valueChangeSpy = vi.fn();
+      const offsetChangeSpy = vi.fn();
       component.valueChange.subscribe(valueChangeSpy);
+      component.offsetChange.subscribe(offsetChangeSpy);
       const input = fixture.nativeElement.querySelector(
         "input",
       ) as HTMLInputElement;
 
       input.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
 
-      expect(valueChangeSpy).toHaveBeenLastCalledWith(expectedValue);
+      if (type === "value") {
+        expect(valueChangeSpy).toHaveBeenLastCalledWith(expectedValue);
+      } else {
+        expect(offsetChangeSpy).toHaveBeenLastCalledWith(expectedValue);
+      }
     },
   );
 

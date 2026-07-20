@@ -134,10 +134,12 @@ export class TimePickerComponent {
   }
 
   protected emitTimeAdjustment(
-    unit: "hours" | "minutes",
+    unit: TimeUnit | "hours" | "minutes",
     value: number,
   ): void {
-    this.timeAdjusted.emit({ [unit]: value });
+    const key =
+      unit === "hour" ? "hours" : unit === "minute" ? "minutes" : unit === "second" ? "seconds" : unit;
+    this.timeAdjusted.emit({ [key]: value });
   }
 
   protected selectMeridiem(meridiem: DatepickerMeridiem): void {

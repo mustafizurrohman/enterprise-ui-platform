@@ -36,6 +36,7 @@
       <time-unit-control
         [context]="unit.context"
         (valueChange)="emitTimeChange(unit.type, $event)"
+        (offsetChange)="emitTimeAdjustment(unit.type, $event)"
       />
 
       @if (!last) {

@@ -144,8 +144,10 @@ describe("DatepickerDialogComponent", () => {
   it("should forward navigation and time changes", () => {
     const previousSpy = vi.fn();
     const timeSpy = vi.fn();
+    const adjustSpy = vi.fn();
     component.previousMonth.subscribe(previousSpy);
     component.timeChanged.subscribe(timeSpy);
+    component.timeAdjusted.subscribe(adjustSpy);
 
     (
       fixture.nativeElement.querySelector(
@@ -159,7 +161,7 @@ describe("DatepickerDialogComponent", () => {
     ).click();
 
     expect(previousSpy).toHaveBeenCalledOnce();
-    expect(timeSpy).toHaveBeenCalledWith({ unit: "hour", value: 1 });
+    expect(adjustSpy).toHaveBeenCalledWith({ hours: 1 });
   });
 
   it("should forward year navigation events", () => {
@@ -550,7 +552,9 @@ describe("DatepickerDialogComponent", () => {
 
   it("should keep 12-hour wheel and AM/PM changes synchronized with 24-hour values", () => {
     const timeSpy = vi.fn();
+    const adjustSpy = vi.fn();
     component.timeChanged.subscribe(timeSpy);
+    component.timeAdjusted.subscribe(adjustSpy);
 
     fixture.componentRef.setInput("context", {
       ...component.context(),
@@ -566,7 +570,7 @@ describe("DatepickerDialogComponent", () => {
       ) as HTMLButtonElement
     ).click();
 
-    expect(timeSpy).toHaveBeenLastCalledWith({ unit: "hour", value: 14 });
+    expect(adjustSpy).toHaveBeenLastCalledWith({ hours: 1 });
 
     fixture.componentRef.setInput("context", {
       ...component.context(),
@@ -580,7 +584,7 @@ describe("DatepickerDialogComponent", () => {
       ) as HTMLButtonElement
     ).click();
 
-    expect(timeSpy).toHaveBeenLastCalledWith({ unit: "hour", value: 12 });
+    expect(adjustSpy).toHaveBeenLastCalledWith({ hours: 1 });
 
     fixture.componentRef.setInput("context", {
       ...component.context(),

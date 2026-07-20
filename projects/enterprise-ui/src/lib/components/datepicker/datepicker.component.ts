@@ -917,6 +917,11 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     });
     const jsDate = newDate.toJSDate();
     this.selectedDate.set(newDate);
+
+    if (!this.viewDate().hasSame(newDate, "month")) {
+      this.viewDate.set(newDate.startOf("month"));
+    }
+
     this.inputDisplayValue.set(this.formatDate(newDate));
     this.manualInputError.set(false);
     this.value.set(jsDate);
@@ -924,12 +929,21 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     this.announceTime();
   }
 
-  protected adjustTime(adjustment: { hours?: number; minutes?: number }): void {
+  protected adjustTime(adjustment: {
+    hours?: number;
+    minutes?: number;
+    seconds?: number;
+  }): void {
     const currentDate = this.selectedDate() ?? DateTime.local().startOf("day");
     const newDate = currentDate.plus(adjustment);
 
     const jsDate = newDate.toJSDate();
     this.selectedDate.set(newDate);
+
+    if (!this.viewDate().hasSame(newDate, "month")) {
+      this.viewDate.set(newDate.startOf("month"));
+    }
+
     this.inputDisplayValue.set(this.formatDate(newDate));
     this.manualInputError.set(false);
     this.value.set(jsDate);

@@ -1834,7 +1834,7 @@ describe("DatepickerComponent", () => {
             '[data-testid="datepicker-input"]',
           ) as HTMLInputElement
         ).value,
-      ).toBe("07/15/2026 12:30 AM");
+      ).toBe("07/16/2026 12:30 AM");
     });
 
     it("should synchronize AM/PM changes with the selected DateTime and formatted input", async () => {

@@ -73,6 +73,7 @@ export class TimeUnitControlComponent implements OnDestroy {
   readonly context = input.required<TimeUnitControlContext>();
 
   readonly valueChange = output<number>();
+  readonly offsetChange = output<number>();
 
   protected readonly unit = computed(() => this.context().unit);
   protected readonly value = computed(() => this.context().value);
@@ -300,11 +301,11 @@ export class TimeUnitControlComponent implements OnDestroy {
     direction: TimeUnitControlAnimationDirection,
     isButtonInteraction = false,
   ): void {
-    this.emitAnimatedValue(
-      this.normalizeSteppedValue(this.value() + difference),
-      direction,
-      isButtonInteraction,
-    );
+    const nextValue = this.normalizeSteppedValue(this.value() + difference);
+    if (nextValue !== this.value()) {
+      this.startCssAnimation(direction, isButtonInteraction);
+    }
+    this.offsetChange.emit(difference);
   }
 
   private performPressHoldStep(): void {
@@ -322,12 +323,12 @@ export class TimeUnitControlComponent implements OnDestroy {
     );
 
     this.pressHoldValue = nextValue;
-    this.emitAnimatedValue(
-      nextValue,
-      this.pressHoldDirection,
-      true,
-      currentValue,
-    );
+
+    if (nextValue !== currentValue) {
+      this.startCssAnimation(this.pressHoldDirection, true);
+    }
+
+    this.offsetChange.emit(this.pressHoldDifference);
   }
 
   private schedulePressHoldStep(): void {

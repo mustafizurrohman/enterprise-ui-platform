@@ -47,7 +47,11 @@ export class DatepickerDialogComponent {
   readonly dateFocused = output<DateTime>();
   readonly dateKeydown = output<DatepickerGridKeydown>();
   readonly timeChanged = output<DatepickerTimeChange>();
-  readonly timeAdjusted = output<{ hours?: number; minutes?: number }>();
+  readonly timeAdjusted = output<{
+    hours?: number;
+    minutes?: number;
+    seconds?: number;
+  }>();
   readonly nowSelected = output<void>();
   readonly confirmed = output<void>();
   readonly monthSelected = output<number>();
