@@ -23,7 +23,7 @@
         aria-keyshortcuts="PageUp"
         [attr.aria-controls]="context().calendarGridId"
         [attr.data-testid]="testIdFor('previous-month')"
-        (click)="previousMonth.emit()"
+        (enterpriseRepeatClick)="previousMonth.emit()"
       >
         <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('previous-month-icon')">chevron_left</mat-icon>
       </button>
@@ -86,7 +86,7 @@
         aria-keyshortcuts="PageDown"
         [attr.aria-controls]="context().calendarGridId"
         [attr.data-testid]="testIdFor('next-month')"
-        (click)="nextMonth.emit()"
+        (enterpriseRepeatClick)="nextMonth.emit()"
       >
         <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('next-month-icon')">chevron_right</mat-icon>
       </button>
@@ -115,7 +115,7 @@
         aria-keyshortcuts="Shift+PageUp"
         [attr.aria-controls]="context().calendarGridId"
         [attr.data-testid]="testIdFor('previous-year')"
-        (click)="previousYear.emit()"
+        (enterpriseRepeatClick)="previousYear.emit()"
       >
         <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('previous-year-icon')">keyboard_double_arrow_left</mat-icon>
       </button>
@@ -170,7 +170,7 @@
         aria-keyshortcuts="Shift+PageDown"
         [attr.aria-controls]="context().calendarGridId"
         [attr.data-testid]="testIdFor('next-year')"
-        (click)="nextYear.emit()"
+        (enterpriseRepeatClick)="nextYear.emit()"
       >
         <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('next-year-icon')">keyboard_double_arrow_right</mat-icon>
       </button>

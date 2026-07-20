@@ -10,6 +10,7 @@ import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import { MatFormFieldModule } from "@angular/material/form-field";
+import { RepeatClickDirective } from "../../directives/repeat-click.directive";
 import { DatepickerHeaderContext } from "./datepicker-header.types";
 
 @Component({
@@ -20,6 +21,7 @@ import { DatepickerHeaderContext } from "./datepicker-header.types";
     MatInputModule,
     MatFormFieldModule,
     ReactiveFormsModule,
+    RepeatClickDirective,
   ],
   templateUrl: "./datepicker-header.component.html",
   styleUrl: "./datepicker-header.component.scss",
