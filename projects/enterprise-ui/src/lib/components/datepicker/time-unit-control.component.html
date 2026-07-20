@@ -50,7 +50,7 @@
       [attr.aria-controls]="controlId()"
       [attr.aria-label]="configuration().singularLabel + ' um eins erhöhen'"
       [attr.data-testid]="testIdFor('increment')"
-      (enterpriseRepeatClick)="onTrigger(1, 'increment')"
+      (repeatClick)="onTrigger(1, 'increment')"
     >
       <mat-icon
         aria-hidden="true"
@@ -67,7 +67,7 @@
       [attr.aria-controls]="controlId()"
       [attr.aria-label]="configuration().singularLabel + ' um eins verringern'"
       [attr.data-testid]="testIdFor('decrement')"
-      (enterpriseRepeatClick)="onTrigger(-1, 'decrement')"
+      (repeatClick)="onTrigger(-1, 'decrement')"
     >
       <mat-icon
         aria-hidden="true"

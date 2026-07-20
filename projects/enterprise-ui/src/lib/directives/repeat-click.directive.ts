@@ -11,11 +11,11 @@ const PRESS_HOLD_MINIMUM_DELAY_MS = PRESS_HOLD_INITIAL_DELAY_MS * 0.8;
 const PRESS_HOLD_ACCELERATION_STEP_MS = PRESS_HOLD_INITIAL_DELAY_MS * 0.02;
 
 @Directive({
-  selector: '[enterpriseRepeatClick]',
+  selector: '[repeatClick]',
   standalone: true,
 })
 export class RepeatClickDirective implements OnDestroy {
-  readonly enterpriseRepeatClick = output<void>();
+  readonly repeatClick = output<void>();
 
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   private clickSuppressionTimeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -43,7 +43,7 @@ export class RepeatClickDirective implements OnDestroy {
     this.active = true;
     this.delay = PRESS_HOLD_INITIAL_DELAY_MS;
 
-    this.enterpriseRepeatClick.emit();
+    this.repeatClick.emit();
     this.scheduleNext();
 
     const button = this.elementRef.nativeElement;
@@ -76,7 +76,7 @@ export class RepeatClickDirective implements OnDestroy {
       this.suppressNextClick = false;
       this.clearClickSuppressionTimeout();
     } else {
-      this.enterpriseRepeatClick.emit();
+      this.repeatClick.emit();
     }
   }
 
@@ -88,7 +88,7 @@ export class RepeatClickDirective implements OnDestroy {
         return;
       }
 
-      this.enterpriseRepeatClick.emit();
+      this.repeatClick.emit();
 
       this.delay = Math.max(
         PRESS_HOLD_MINIMUM_DELAY_MS,

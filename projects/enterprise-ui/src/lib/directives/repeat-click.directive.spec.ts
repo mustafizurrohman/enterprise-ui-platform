@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RepeatClickDirective } from './repeat-click.directive';
 
 @Component({
-  template: `<button (enterpriseRepeatClick)="onTrigger()">Click me</button>`,
+  template: `<button (repeatClick)="onTrigger()">Click me</button>`,
   standalone: true,
   imports: [RepeatClickDirective],
 })
