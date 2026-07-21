@@ -60,7 +60,7 @@ describe('RepeatClickDirective', () => {
     expect(component.onTrigger).toHaveBeenCalledTimes(1);
   });
 
-  it('should repeat while pressed with the default delay and acceleration', () => {
+  it('should emit immediately, wait 300 ms, and then progressively accelerate', () => {
     vi.useFakeTimers();
     button.dispatchEvent(
       new PointerEvent('pointerdown', {
@@ -69,15 +69,24 @@ describe('RepeatClickDirective', () => {
         isPrimary: true,
       }),
     );
+
+    // The initial pointer-down emission has no delay.
     expect(component.onTrigger).toHaveBeenCalledTimes(1);
 
+    // The first repeated emission occurs only after the full initial delay.
+    vi.advanceTimersByTime(299);
+    expect(component.onTrigger).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(1);
+    expect(component.onTrigger).toHaveBeenCalledTimes(2);
+
     const acceleratingDelays = [
-      300, 294, 288, 282, 276, 270, 264, 258, 252, 246, 240,
+      294, 288, 282, 276, 270, 264, 258, 252, 246, 240,
     ];
 
     for (const [index, delay] of acceleratingDelays.entries()) {
       vi.advanceTimersByTime(delay);
-      expect(component.onTrigger).toHaveBeenCalledTimes(index + 2);
+      expect(component.onTrigger).toHaveBeenCalledTimes(index + 3);
     }
   });
 

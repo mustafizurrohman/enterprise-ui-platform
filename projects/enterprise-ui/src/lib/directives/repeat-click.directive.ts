@@ -13,11 +13,12 @@ const PRESS_HOLD_MINIMUM_DELAY_FACTOR = 0.8;
 const PRESS_HOLD_ACCELERATION_STEP_FACTOR = 0.02;
 
 /**
- * Emits an event immediately when the primary pointer is pressed and continues
- * emitting while the pointer remains pressed.
+ * Emits immediately when the primary pointer is pressed. While the pointer
+ * remains pressed, the next emission occurs after the configured initial delay
+ * (300 ms by default), followed by progressively faster repeated emissions.
  *
  * The repeat interval accelerates by 2% of the configured initial delay after
- * each emission, down to a minimum interval of 80% of that initial delay.
+ * each repeated emission, down to a minimum interval of 80% of that delay.
  * Keyboard-triggered click events emit once without starting repetition.
  *
  * @example Default initial delay of 300 ms
@@ -50,7 +51,8 @@ export class RepeatClickDirective implements OnDestroy {
   readonly repeatClick = output<void>();
 
   /**
-   * Delay in milliseconds before the first repeated emission.
+   * Delay in milliseconds between the immediate pointer-down emission and
+   * the first repeated emission.
    *
    * The value defaults to `300`. Both property binding and a static numeric
    * attribute are supported because the input uses `numberAttribute`.
