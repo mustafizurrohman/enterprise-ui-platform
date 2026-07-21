@@ -3,7 +3,6 @@ import {
   type DateInputAutocompleteOptions,
   type DateInputAutocompleteResult,
   type DateInputError,
-  type DateInputErrorCode,
   type LuxonDateField,
 } from "./luxon-date-input-autocomplete.types";
 
@@ -134,10 +133,6 @@ const NUMERIC_FIELD_TOKENS: Readonly<
     padded: false,
   },
 };
-
-const ORDERED_NUMERIC_FIELD_TOKENS = Object.keys(NUMERIC_FIELD_TOKENS).sort(
-  (left, right) => right.length - left.length,
-);
 
 const PARSEABLE_LUXON_TOKENS = new Set([
   "G",
@@ -385,7 +380,21 @@ export class LuxonDateInputAutocomplete {
       options.locale ?? this.locale,
     );
     const locale = options.locale ?? this.locale;
-    const normalized = this.normalize(rawValue, options, now);
+    const normalizedRawValue = normalizeWhitespace(rawValue);
+
+    if (!normalizedRawValue) {
+      return {
+        value: "",
+        suggestedValue: formatInputValue(now, this.dateFormat, locale),
+        completionSuffix: "",
+        complete: false,
+        valid: true,
+        date: null,
+        error: null,
+      };
+    }
+
+    const normalized = this.normalize(normalizedRawValue, options, now);
     const validationError =
       normalized.error ?? this.validateKnownFields(normalized.fields);
     const complete = this.isComplete(normalized);
@@ -438,6 +447,14 @@ export class LuxonDateInputAutocomplete {
       return directResult;
     }
 
+    const directLuxonResult = this.parseCompleteValueWithLuxon(
+      trimmedValue,
+      locale,
+    );
+    if (directLuxonResult) {
+      return directLuxonResult;
+    }
+
     const valueWithoutUhr = removeOptionalUhrSuffix(trimmedValue);
     let fallbackResult = directResult;
 
@@ -449,6 +466,14 @@ export class LuxonDateInputAutocomplete {
 
       if (fallbackResult.date) {
         return fallbackResult;
+      }
+
+      const fallbackLuxonResult = this.parseCompleteValueWithLuxon(
+        valueWithoutUhr,
+        locale,
+      );
+      if (fallbackLuxonResult) {
+        return fallbackLuxonResult;
       }
     }
 
@@ -466,6 +491,36 @@ export class LuxonDateInputAutocomplete {
       complete: true,
       valid: true,
       date: epochDate,
+      error: null,
+    };
+  }
+
+  private parseCompleteValueWithLuxon(
+    value: string,
+    locale: string,
+  ): DateInputAutocompleteResult | null {
+    if (!value) {
+      return null;
+    }
+
+    const parsed = DateTime.fromFormat(value, this.dateFormat, {
+      locale,
+      setZone: true,
+    });
+
+    if (!parsed.isValid) {
+      return null;
+    }
+
+    const formattedValue = formatInputValue(parsed, this.dateFormat, locale);
+
+    return {
+      value: formattedValue,
+      suggestedValue: formattedValue,
+      completionSuffix: "",
+      complete: true,
+      valid: true,
+      date: parsed,
       error: null,
     };
   }
@@ -548,7 +603,6 @@ export class LuxonDateInputAutocomplete {
     options: DateInputAutocompleteOptions,
     now: DateTime,
   ): NormalizedInput {
-    const locale = options.locale ?? this.locale;
     const fields: Partial<Record<LuxonDateField, string>> = {};
     const commit = options.commit === true;
     const isDeletion = options.isDeletion === true;
@@ -636,7 +690,7 @@ export class LuxonDateInputAutocomplete {
           value += fallback;
           continue;
         } else {
-          // No digits ahead, and this is leading. 
+          // No digits ahead, and this is leading.
           // If the source is just empty or whitespace, we can still fill it.
           const remainingTrimmed = source.slice(sourceIndex).trim();
           if (!remainingTrimmed) {
@@ -677,7 +731,10 @@ export class LuxonDateInputAutocomplete {
     );
 
     let finalValue = value;
-    if ((!startedParsing && source.length > 0) || (startedParsing && (invalidCharacter || unexpectedInput))) {
+    if (
+      (!startedParsing && source.length > 0) ||
+      (startedParsing && (invalidCharacter || unexpectedInput))
+    ) {
       finalValue = source;
     }
 
@@ -776,7 +833,6 @@ export class LuxonDateInputAutocomplete {
       second: now.second,
     };
 
-    let startedParsing = false;
     const tokensWithLeadingValues: string[] = [];
     const fields = { ...normalized.fields };
 
@@ -794,7 +850,6 @@ export class LuxonDateInputAutocomplete {
       if (token.type === "meridiem") {
         if (normalized.meridiem) {
           tokensWithLeadingValues.push(normalized.meridiem);
-          startedParsing = true;
         } else {
           const fallback = now.toFormat("a").toUpperCase();
           tokensWithLeadingValues.push(fallback);
@@ -804,7 +859,6 @@ export class LuxonDateInputAutocomplete {
 
       const current = fields[token.field];
       if (current) {
-        startedParsing = true;
         if (isNumericTokenComplete(token, current)) {
           tokensWithLeadingValues.push(current);
         } else {
@@ -1183,23 +1237,6 @@ function toSmartAutocompleteTokens(
   }
 
   return sawNumericField ? tokens : null;
-}
-
-function pushSmartLiteral(tokens: SmartToken[], value: string): void {
-  if (!value) {
-    return;
-  }
-
-  const previous = tokens.at(-1);
-  if (previous?.type === "literal") {
-    tokens[tokens.length - 1] = {
-      type: "literal",
-      value: previous.value + value,
-    };
-    return;
-  }
-
-  tokens.push({ type: "literal", value });
 }
 
 function invalidFormatError(format: string, reason: string): Error {

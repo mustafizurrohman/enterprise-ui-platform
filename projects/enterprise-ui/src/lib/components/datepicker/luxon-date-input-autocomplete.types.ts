@@ -1,7 +1,12 @@
 import { DateTime } from "luxon";
 
 export type LuxonDateField =
-  "year" | "month" | "day" | "hour" | "minute" | "second";
+  | "year"
+  | "month"
+  | "day"
+  | "hour"
+  | "minute"
+  | "second";
 
 export type DateInputErrorCode =
   | "UNSUPPORTED_FORMAT"

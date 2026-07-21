@@ -613,4 +613,66 @@ describe("LuxonDateInputAutocomplete", () => {
       expect(result.suggestedValue).toContain("2026");
     });
   });
+
+  describe("empty input regression", () => {
+    it.each([
+      ["normal input", {}],
+      ["deletion", { isDeletion: true }],
+      ["commit", { commit: true }],
+    ])("keeps empty smart input empty during %s", (_, processOptions) => {
+      const result = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy HH:mm 'Uhr'",
+        "de-DE",
+      ).process("", { now, ...processOptions });
+
+      expect(result.value).toBe("");
+      expect(result.suggestedValue).toBe("14.07.2026 18:30 Uhr");
+      expect(result.completionSuffix).toBe("");
+      expect(result.complete).toBe(false);
+      expect(result.valid).toBe(true);
+      expect(result.date).toBeNull();
+      expect(result.error).toBeNull();
+    });
+
+    it("keeps an empty pasted smart value empty", () => {
+      const result = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy",
+        "de-DE",
+      ).processPastedValue("   ", { now });
+
+      expect(result.value).toBe("");
+      expect(result.complete).toBe(false);
+      expect(result.valid).toBe(true);
+      expect(result.date).toBeNull();
+    });
+  });
+
+  describe("complete pasted values with leading non-numeric tokens", () => {
+    it.each([
+      ["weekday", "cccc, dd.MM.yyyy", "Mittwoch, 15.07.2026", "de-DE"],
+      ["month", "MMMM dd, yyyy", "July 15, 2026", "en-US"],
+      [
+        "literal and weekday",
+        "'Date:' EEEE, dd.MM.yyyy",
+        "Date: Wednesday, 15.07.2026",
+        "en-US",
+      ],
+    ])(
+      "parses a complete %s-leading pasted value",
+      (_, format, value, locale) => {
+        const result = new LuxonDateInputAutocomplete(
+          format,
+          locale,
+        ).processPastedValue(value, { now, locale });
+
+        expect(result.valid).toBe(true);
+        expect(result.complete).toBe(true);
+        expect(result.date?.toISODate()).toBe("2026-07-15");
+        expect(
+          DateTime.fromFormat(result.value, format, { locale, setZone: true })
+            .isValid,
+        ).toBe(true);
+      },
+    );
+  });
 });
