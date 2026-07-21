@@ -43,6 +43,7 @@ import {
 import {
   LuxonDateInputAutocomplete,
 } from "./luxon-date-input-autocomplete";
+import { DatepickerPasteParserService } from "./datepicker-paste-parser.service";
 
 @Component({
   selector: "datepicker",
@@ -335,6 +336,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   onTouched: () => void = () => {};
 
   private readonly injector = inject(Injector);
+  private readonly pasteParser = inject(DatepickerPasteParserService);
   private _ngControl: NgControl | null = null;
 
   protected get ngControl(): NgControl | null {
@@ -832,28 +834,16 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       return;
     }
 
-    const selectionStart = input.selectionStart ?? 0;
-    const selectionEnd = input.selectionEnd ?? input.value.length;
-    const replacesCompleteValue =
-      selectionStart === 0 && selectionEnd === input.value.length;
-    const nextValue =
-      input.value.slice(0, selectionStart) +
-      pastedValue +
-      input.value.slice(selectionEnd);
-    const combinedResult = this.inputAutocomplete().processPastedValue(
-      nextValue,
-      { now: this.today(), locale: this.resolvedLocale() },
-    );
-    const pastedResult = this.inputAutocomplete().processPastedValue(
+    const result = this.pasteParser.parse(
       pastedValue,
+      {
+        value: input.value,
+        selectionStart: input.selectionStart,
+        selectionEnd: input.selectionEnd,
+      },
+      this.inputAutocomplete(),
       { now: this.today(), locale: this.resolvedLocale() },
     );
-    const shouldUsePastedValue =
-      !!pastedResult.date &&
-      (replacesCompleteValue ||
-        !input.value ||
-        looksLikeCompleteDateOrEpoch(pastedValue));
-    const result = shouldUsePastedValue ? pastedResult : combinedResult;
 
     this.applyManualInputResult(input, result, true);
 
@@ -1028,18 +1018,6 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
     return this.dateInput()?.nativeElement ?? null;
   }
-}
-
-function looksLikeCompleteDateOrEpoch(value: string): boolean {
-  const normalizedValue = value
-    .trim()
-    .replace(/(?:\s|\u00a0)*uhr(?:\s|\u00a0)*$/iu, "")
-    .trimEnd();
-
-  return (
-    /[./:\-T]/u.test(normalizedValue) ||
-    /^[+-]?\d{8,13}$/u.test(normalizedValue)
-  );
 }
 
 type LuxonFormatCapabilities = Readonly<{
