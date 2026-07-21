@@ -12,6 +12,22 @@ class TestComponent {
   onTrigger = vi.fn();
 }
 
+@Component({
+  template: `
+    <button
+      [pressHoldInitialDelayMs]="500"
+      (repeatClick)="onTrigger()"
+    >
+      Click me
+    </button>
+  `,
+  standalone: true,
+  imports: [RepeatClickDirective],
+})
+class CustomDelayTestComponent {
+  onTrigger = vi.fn();
+}
+
 describe('RepeatClickDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
   let component: TestComponent;
@@ -19,7 +35,7 @@ describe('RepeatClickDirective', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TestComponent],
+      imports: [TestComponent, CustomDelayTestComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestComponent);
@@ -44,7 +60,7 @@ describe('RepeatClickDirective', () => {
     expect(component.onTrigger).toHaveBeenCalledTimes(1);
   });
 
-  it('should repeat while pressed with acceleration', () => {
+  it('should repeat while pressed with the default delay and acceleration', () => {
     vi.useFakeTimers();
     button.dispatchEvent(
       new PointerEvent('pointerdown', {
@@ -59,12 +75,39 @@ describe('RepeatClickDirective', () => {
       300, 294, 288, 282, 276, 270, 264, 258, 252, 246, 240,
     ];
 
-    for (const delay of acceleratingDelays) {
+    for (const [index, delay] of acceleratingDelays.entries()) {
       vi.advanceTimersByTime(delay);
-      expect(component.onTrigger).toHaveBeenCalledTimes(
-        acceleratingDelays.indexOf(delay) + 2,
-      );
+      expect(component.onTrigger).toHaveBeenCalledTimes(index + 2);
     }
+  });
+
+  it('should use the configured initial delay', () => {
+    vi.useFakeTimers();
+    const customFixture = TestBed.createComponent(CustomDelayTestComponent);
+    const customComponent = customFixture.componentInstance;
+    const customButton: HTMLButtonElement =
+      customFixture.nativeElement.querySelector('button');
+    customFixture.detectChanges();
+
+    customButton.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        bubbles: true,
+        button: 0,
+        isPrimary: true,
+      }),
+    );
+    expect(customComponent.onTrigger).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(499);
+    expect(customComponent.onTrigger).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(1);
+    expect(customComponent.onTrigger).toHaveBeenCalledTimes(2);
+
+    vi.advanceTimersByTime(490);
+    expect(customComponent.onTrigger).toHaveBeenCalledTimes(3);
+
+    customFixture.destroy();
   });
 
   it('should stop repeating on pointerup', () => {
@@ -109,11 +152,14 @@ describe('RepeatClickDirective', () => {
         isPrimary: true,
       }),
     );
-    
-    const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    });
     button.dispatchEvent(clickEvent);
-    
-    expect(component.onTrigger).toHaveBeenCalledTimes(1); // Only from pointerdown
+
+    expect(component.onTrigger).toHaveBeenCalledTimes(1);
     expect(clickEvent.defaultPrevented).toBe(true);
   });
 

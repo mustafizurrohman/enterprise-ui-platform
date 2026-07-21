@@ -2,24 +2,83 @@ import {
   Directive,
   ElementRef,
   HostListener,
+  input,
+  numberAttribute,
   OnDestroy,
   output,
 } from '@angular/core';
 
-const PRESS_HOLD_INITIAL_DELAY_MS = 300;
-const PRESS_HOLD_MINIMUM_DELAY_MS = PRESS_HOLD_INITIAL_DELAY_MS * 0.8;
-const PRESS_HOLD_ACCELERATION_STEP_MS = PRESS_HOLD_INITIAL_DELAY_MS * 0.02;
+const DEFAULT_PRESS_HOLD_INITIAL_DELAY_MS = 300;
+const PRESS_HOLD_MINIMUM_DELAY_FACTOR = 0.8;
+const PRESS_HOLD_ACCELERATION_STEP_FACTOR = 0.02;
 
+/**
+ * Emits an event immediately when the primary pointer is pressed and continues
+ * emitting while the pointer remains pressed.
+ *
+ * The repeat interval accelerates by 2% of the configured initial delay after
+ * each emission, down to a minimum interval of 80% of that initial delay.
+ * Keyboard-triggered click events emit once without starting repetition.
+ *
+ * @example Default initial delay of 300 ms
+ * ```html
+ * <button type="button" (repeatClick)="increment()">
+ *   Increment
+ * </button>
+ * ```
+ *
+ * @example Custom initial delay of 500 ms
+ * ```html
+ * <button
+ *   type="button"
+ *   [pressHoldInitialDelayMs]="500"
+ *   (repeatClick)="increment()"
+ * >
+ *   Increment
+ * </button>
+ * ```
+ */
 @Directive({
   selector: '[repeatClick]',
   standalone: true,
 })
 export class RepeatClickDirective implements OnDestroy {
+  /**
+   * Emits once on pointer down, repeatedly while held, or once for a regular
+   * click such as a keyboard activation.
+   */
   readonly repeatClick = output<void>();
+
+  /**
+   * Delay in milliseconds before the first repeated emission.
+   *
+   * The value defaults to `300`. Both property binding and a static numeric
+   * attribute are supported because the input uses `numberAttribute`.
+   *
+   * @example
+   * ```html
+   * <button
+ *   type="button"
+ *   pressHoldInitialDelayMs="500"
+ *   (repeatClick)="increment()"
+ * >
+   *   Increment
+   * </button>
+   * ```
+   */
+  readonly pressHoldInitialDelayMs = input(
+    DEFAULT_PRESS_HOLD_INITIAL_DELAY_MS,
+    { transform: numberAttribute },
+  );
 
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   private clickSuppressionTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  private delay = PRESS_HOLD_INITIAL_DELAY_MS;
+  private delay = DEFAULT_PRESS_HOLD_INITIAL_DELAY_MS;
+  private minimumDelay =
+    DEFAULT_PRESS_HOLD_INITIAL_DELAY_MS * PRESS_HOLD_MINIMUM_DELAY_FACTOR;
+  private accelerationStep =
+    DEFAULT_PRESS_HOLD_INITIAL_DELAY_MS *
+    PRESS_HOLD_ACCELERATION_STEP_FACTOR;
   private active = false;
   private suppressNextClick = false;
 
@@ -39,15 +98,23 @@ export class RepeatClickDirective implements OnDestroy {
     this.stopRepeat();
     this.clearClickSuppressionTimeout();
 
+    const initialDelay = this.pressHoldInitialDelayMs();
+
     this.suppressNextClick = true;
     this.active = true;
-    this.delay = PRESS_HOLD_INITIAL_DELAY_MS;
+    this.delay = initialDelay;
+    this.minimumDelay = initialDelay * PRESS_HOLD_MINIMUM_DELAY_FACTOR;
+    this.accelerationStep =
+      initialDelay * PRESS_HOLD_ACCELERATION_STEP_FACTOR;
 
     this.repeatClick.emit();
     this.scheduleNext();
 
     const button = this.elementRef.nativeElement;
-    if (typeof button.setPointerCapture === 'function' && Number.isInteger(event.pointerId)) {
+    if (
+      typeof button.setPointerCapture === 'function' &&
+      Number.isInteger(event.pointerId)
+    ) {
       try {
         button.setPointerCapture(event.pointerId);
       } catch {
@@ -91,8 +158,8 @@ export class RepeatClickDirective implements OnDestroy {
       this.repeatClick.emit();
 
       this.delay = Math.max(
-        PRESS_HOLD_MINIMUM_DELAY_MS,
-        this.delay - PRESS_HOLD_ACCELERATION_STEP_MS,
+        this.minimumDelay,
+        this.delay - this.accelerationStep,
       );
       this.scheduleNext();
     }, this.delay);
