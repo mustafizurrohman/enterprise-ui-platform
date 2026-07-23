@@ -16,6 +16,7 @@ selection with high-efficiency manual input.
 
 - **Intelligent Mode Switching:** Dynamically toggles between date-only and
 date-time configurations based on the provided `luxonDateFormat`.
+- **Flexible Data Binding:** Supports both two-way binding via `value` (standard for forms) and one-way property binding via the `date` input for programmatic updates.
 - **Advanced Manual Entry:** Accelerates data input through smart autocomplete,
 support for localized German "Uhr" notation, and direct Unix timestamp
 processing (seconds and milliseconds).
@@ -41,6 +42,12 @@ and disabled modes.
 <Controls of={DateTimeStories.DateTime} />
 
 ## Examples
+
+### Date input
+
+The `date` input allows for one-way initialization or updates of the datepicker value, useful for scenarios where you want to set the date from a parent component without full two-way binding.
+
+<Canvas of={DateTimeStories.DateInput} />
 
 ### Reactive form
 

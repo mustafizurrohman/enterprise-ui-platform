@@ -176,6 +176,8 @@ class DateTimeStoryHostComponent {
   @Input() locale: string = 'de-DE';
   @Input() luxonDateFormat: string = DEFAULT_DATETIME_FORMAT;
   @Input() showQuickTimeControls: boolean = false;
+  @Input() value: any = null;
+  @Input() date: any = undefined;
 }
 
 const meta = {
@@ -222,6 +224,14 @@ const meta = {
         },
       },
     },
+    date: {
+      control: 'text',
+      description: 'The date value passed as an input property',
+    },
+    value: {
+      control: 'text',
+      description: 'The date value used for two-way binding',
+    },
   },
   args: {
     label: 'Datum auswählen',
@@ -236,3 +246,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const DateTime: Story = {};
+
+export const DateInput: Story = {
+  args: {
+    date: '2026-07-23T20:43:00',
+  },
+};

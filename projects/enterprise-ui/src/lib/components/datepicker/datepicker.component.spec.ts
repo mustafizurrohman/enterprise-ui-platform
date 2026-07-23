@@ -504,6 +504,28 @@ describe("DatepickerComponent", () => {
     ).toBeTruthy();
   });
 
+  describe("date input", () => {
+    it("should update state when date input is set", async () => {
+      const testDate = "2023-12-25";
+      fixture.componentRef.setInput("date", testDate);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(component.selectedDate()?.toISODate()).toBe(testDate);
+      expect(component.value()).toBe(testDate);
+    });
+
+    it("should update state when date input is set as Date object", async () => {
+      const testDate = new Date(2023, 11, 25);
+      fixture.componentRef.setInput("date", testDate);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(component.selectedDate()?.toJSDate()).toEqual(testDate);
+      expect(component.value()).toEqual(testDate);
+    });
+  });
+
   describe("Manual Input", () => {
     it("should allow entering date manually", () => {
       fixture.componentRef.setInput(
