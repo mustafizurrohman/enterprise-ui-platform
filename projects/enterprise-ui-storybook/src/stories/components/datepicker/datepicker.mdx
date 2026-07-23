@@ -15,23 +15,21 @@ selection with high-efficiency manual input.
 ## Key Capabilities
 
 - **Intelligent Mode Switching:** Dynamically toggles between date-only and
-date-time configurations based on the provided `luxonDateFormat`.
-- **Flexible Data Binding:** Supports both two-way binding via `value` (standard for forms) and one-way property binding via the `date` input for programmatic updates.
+date-time configurations based on the provided `luxonDateFormat` (or its alias `dateFormat`).
+- **Flexible Data Binding:** Supports both two-way binding via `value` (standard for forms) and the `date` model for programmatic updates.
 - **Advanced Manual Entry:** Accelerates data input through smart autocomplete,
 support for localized German "Uhr" notation, and direct Unix timestamp
 processing (seconds and milliseconds).
 - **Enterprise-Grade Localization:** Seamlessly integrates with the Luxon
-library to support diverse international date formats and locales.
+library to support diverse international date formats and locales via the `locale` input.
 - **Robust Form Integration:** Fully compatible with Angular Reactive and
 Template-driven forms via `ControlValueAccessor` and standard validation
 protocols.
 - **Accessibility by Design:** Adheres to WCAG 2.1 AA standards with comprehensive
 keyboard navigation, ARIA live regions, and screen reader optimizations.
 - **Precision Time Selection:** Features high-precision time wheels and optional
-quick-adjustment controls for rapid temporal modifications.
-- **Customization & State Management:** Supports extensive configuration for
-labels, placeholder text, and various interactive states, including read-only
-and disabled modes.
+quick-adjustment controls (`showQuickTimeControls`) for rapid temporal modifications.
+- **Testability Hooks:** Supports stable `testId` prefixes for automated testing environments.
 
 ## Interactive demo
 
@@ -45,7 +43,7 @@ and disabled modes.
 
 ### Date input
 
-The `date` input allows for one-way initialization or updates of the datepicker value, useful for scenarios where you want to set the date from a parent component without full two-way binding.
+The `date` model allows for two-way synchronization or programmatic updates of the datepicker value, useful for scenarios where you want to set the date from a parent component. It stays in sync with the `value` model.
 
 <Canvas of={DateTimeStories.DateInput} />
 
