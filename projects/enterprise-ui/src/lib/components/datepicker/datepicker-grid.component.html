@@ -63,7 +63,9 @@
         [attr.data-testid]="testIdFor('week-number-' + weekIndex)"
       >
         @if (hasDates(weekInfo)) {
-          <strong>{{ weekInfo.weekNumber }}</strong>
+          <abbr [title]="'KW ' + weekInfo.weekNumber + '-' + viewDate().year">
+            <strong>{{ weekInfo.weekNumber }}</strong>
+          </abbr>
         }
       </div>
 
