@@ -32,7 +32,10 @@ import {
 import { MatIconModule } from "@angular/material/icon";
 import { DateTime, Info } from "luxon";
 import { DatepickerDialogComponent } from "./datepicker-dialog.component";
-import { type DatepickerDialogContext } from "./datepicker-dialog.types";
+import {
+  type DatepickerDialogContext,
+} from "./datepicker-dialog.types";
+import { type LuxonFormatCapabilities } from "./datepicker.types";
 import type {
   DatepickerWeek,
 } from "./datepicker-grid.types";
@@ -1029,13 +1032,6 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     return this.dateInput()?.nativeElement ?? null;
   }
 }
-
-type LuxonFormatCapabilities = Readonly<{
-  hasTime: boolean;
-  hasSeconds: boolean;
-  uses12HourClock: boolean;
-  showMeridiem: boolean;
-}>;
 
 const TIME_FIELD_TOKENS = new Set([
   "H",

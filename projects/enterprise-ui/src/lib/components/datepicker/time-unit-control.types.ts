@@ -12,3 +12,20 @@ export type TimeUnitControlContext = Readonly<{
   hourCycle?: TimeUnitControlHourCycle;
   meridiem?: TimeUnitControlMeridiem;
 }>;
+
+export type TimeUnitConfiguration = {
+  label: string;
+  singularLabel: string;
+  valueTextSuffix: string;
+  minimum: number;
+  maximum: number;
+};
+
+export type TimeUnitControlAnimationDirection = "increment" | "decrement";
+export type TimeUnitControlAnimationPhase = "a" | "b";
+
+export type TimeUnitControlAnimationState = Readonly<{
+  direction: TimeUnitControlAnimationDirection;
+  phase: TimeUnitControlAnimationPhase;
+  rapid: boolean;
+}>;

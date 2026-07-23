@@ -16,6 +16,41 @@ export type DateInputErrorCode =
   | "INVALID_DATE"
   | "UNEXPECTED_INPUT";
 
+export type NumericFieldToken = Readonly<{
+  type: "field";
+  field: LuxonDateField;
+  token: string;
+  minimumWidth: number;
+  maximumWidth: number;
+  padded: boolean;
+  hourCycle?: 12 | 24;
+}>;
+
+export type MeridiemToken = Readonly<{
+  type: "meridiem";
+  token: "a";
+}>;
+
+export type LiteralToken = Readonly<{
+  type: "literal";
+  value: string;
+  isLuxonToken?: boolean;
+}>;
+
+export type SmartToken = NumericFieldToken | MeridiemToken | LiteralToken;
+
+export type LuxonFormatPart = Readonly<{
+  literal: boolean;
+  value: string;
+}>;
+
+export type NormalizedInput = Readonly<{
+  value: string;
+  fields: Partial<Record<LuxonDateField, string>>;
+  meridiem: "AM" | "PM" | null;
+  error: DateInputError | null;
+}>;
+
 export type DateInputError = Readonly<{
   code: DateInputErrorCode;
   message: string;

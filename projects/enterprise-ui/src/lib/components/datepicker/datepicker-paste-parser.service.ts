@@ -2,17 +2,10 @@ import { Injectable } from "@angular/core";
 import type { DateTime } from "luxon";
 import { LuxonDateInputAutocomplete } from "./luxon-date-input-autocomplete";
 import type { DateInputAutocompleteResult } from "./luxon-date-input-autocomplete.types";
-
-type DatepickerPasteInputState = Readonly<{
-  value: string;
-  selectionStart: number | null;
-  selectionEnd: number | null;
-}>;
-
-type NormalizedSelection = Readonly<{
-  start: number;
-  end: number;
-}>;
+import type {
+  DatepickerPasteInputState,
+  NormalizedSelection,
+} from "./datepicker-paste-parser.types";
 
 @Injectable({
   providedIn: "root",

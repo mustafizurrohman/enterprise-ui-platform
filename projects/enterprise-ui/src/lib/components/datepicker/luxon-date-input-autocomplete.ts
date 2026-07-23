@@ -3,43 +3,14 @@ import {
   type DateInputAutocompleteOptions,
   type DateInputAutocompleteResult,
   type DateInputError,
+  type LiteralToken,
   type LuxonDateField,
+  type LuxonFormatPart,
+  type MeridiemToken,
+  type NormalizedInput,
+  type NumericFieldToken,
+  type SmartToken,
 } from "./luxon-date-input-autocomplete.types";
-
-type NumericFieldToken = Readonly<{
-  type: "field";
-  field: LuxonDateField;
-  token: string;
-  minimumWidth: number;
-  maximumWidth: number;
-  padded: boolean;
-  hourCycle?: 12 | 24;
-}>;
-
-type MeridiemToken = Readonly<{
-  type: "meridiem";
-  token: "a";
-}>;
-
-type LiteralToken = Readonly<{
-  type: "literal";
-  value: string;
-  isLuxonToken?: boolean;
-}>;
-
-type SmartToken = NumericFieldToken | MeridiemToken | LiteralToken;
-
-type LuxonFormatPart = Readonly<{
-  literal: boolean;
-  value: string;
-}>;
-
-type NormalizedInput = Readonly<{
-  value: string;
-  fields: Partial<Record<LuxonDateField, string>>;
-  meridiem: "AM" | "PM" | null;
-  error: DateInputError | null;
-}>;
 
 const NUMERIC_FIELD_TOKENS: Readonly<
   Record<string, Omit<NumericFieldToken, "type" | "token">>

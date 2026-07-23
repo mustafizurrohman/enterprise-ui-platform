@@ -10,27 +10,14 @@ import { RepeatClickDirective } from "../../directives/repeat-click.directive";
 
 import {
   type TimeUnit,
+  type TimeUnitConfiguration,
+  type TimeUnitControlAnimationDirection,
+  type TimeUnitControlAnimationPhase,
+  type TimeUnitControlAnimationState,
   type TimeUnitControlContext,
   type TimeUnitControlHourCycle,
   type TimeUnitControlMeridiem,
 } from "./time-unit-control.types";
-
-type TimeUnitConfiguration = {
-  label: string;
-  singularLabel: string;
-  valueTextSuffix: string;
-  minimum: number;
-  maximum: number;
-};
-
-type TimeUnitControlAnimationDirection = "increment" | "decrement";
-type TimeUnitControlAnimationPhase = "a" | "b";
-
-type TimeUnitControlAnimationState = Readonly<{
-  direction: TimeUnitControlAnimationDirection;
-  phase: TimeUnitControlAnimationPhase;
-  rapid: boolean;
-}>;
 
 
 const PRESS_HOLD_INITIAL_DELAY_MS = 300;
