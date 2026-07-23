@@ -94,7 +94,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     transform: booleanAttribute,
   });
   readonly value = model<Date | string | null>(null);
-  readonly date = input<Date | string | null | undefined>(undefined);
+  readonly date = model<Date | string | null | undefined>(undefined);
 
   private readonly _disabledForm = signal(false);
 
@@ -358,9 +358,20 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       const d = this.date();
       if (d !== undefined) {
         untracked(() => {
-          this.value.set(d);
+          if (this.value() !== d) {
+            this.value.set(d);
+          }
         });
       }
+    });
+
+    effect(() => {
+      const v = this.value();
+      untracked(() => {
+        if (this.date() !== v) {
+          this.date.set(v);
+        }
+      });
     });
 
     effect(() => {
