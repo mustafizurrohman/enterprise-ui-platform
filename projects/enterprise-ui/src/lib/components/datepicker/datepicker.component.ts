@@ -93,8 +93,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   readonly showQuickTimeControls = input(false, {
     transform: booleanAttribute,
   });
-  readonly value = model<Date | string | null>(null);
-  readonly date = model<Date | string | null | undefined>(undefined);
+  readonly value = model<Date | string | null | undefined>(undefined);
 
   private readonly _disabledForm = signal(false);
 
@@ -355,26 +354,6 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
   constructor() {
     effect(() => {
-      const d = this.date();
-      if (d !== undefined) {
-        untracked(() => {
-          if (this.value() !== d) {
-            this.value.set(d);
-          }
-        });
-      }
-    });
-
-    effect(() => {
-      const v = this.value();
-      untracked(() => {
-        if (this.date() !== v) {
-          this.date.set(v);
-        }
-      });
-    });
-
-    effect(() => {
       const v = this.value();
       untracked(() => {
         const currentIso = this.selectedDate()?.toISO();
@@ -425,7 +404,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     });
   }
 
-  writeValue(value: Date | string | null): void {
+  writeValue(value: Date | string | null | undefined): void {
     if (this.value() !== value) {
       this.value.set(value);
     }
@@ -481,7 +460,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
   validate(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
-    if (!value) {
+    if (value === null || value === undefined || value === "") {
       return null;
     }
     let date: DateTime;

@@ -507,7 +507,7 @@ describe("DatepickerComponent", () => {
   describe("date input", () => {
     it("should update state when date input is set", async () => {
       const testDate = "2023-12-25";
-      fixture.componentRef.setInput("date", testDate);
+      fixture.componentRef.setInput("value", testDate);
       fixture.detectChanges();
       await fixture.whenStable();
 
@@ -517,7 +517,7 @@ describe("DatepickerComponent", () => {
 
     it("should update state when date input is set as Date object", async () => {
       const testDate = new Date(2023, 11, 25);
-      fixture.componentRef.setInput("date", testDate);
+      fixture.componentRef.setInput("value", testDate);
       fixture.detectChanges();
       await fixture.whenStable();
 

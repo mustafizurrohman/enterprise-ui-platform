@@ -16,7 +16,7 @@ selection with high-efficiency manual input.
 
 - **Intelligent Mode Switching:** Dynamically toggles between date-only and
 date-time configurations based on the provided `luxonDateFormat` (or its alias `dateFormat`).
-- **Flexible Data Binding:** Supports both two-way binding via `value` (standard for forms) and the `date` model for programmatic updates.
+ - **Flexible Data Binding:** Supports two-way binding via `value` (standard for forms and programmatic updates).
 - **Advanced Manual Entry:** Accelerates data input through smart autocomplete,
 support for localized German "Uhr" notation, and direct Unix timestamp
 processing (seconds and milliseconds).
@@ -41,9 +41,9 @@ quick-adjustment controls (`showQuickTimeControls`) for rapid temporal modificat
 
 ## Examples
 
-### Date input
+### Programmatic updates
 
-The `date` model allows for two-way synchronization or programmatic updates of the datepicker value, useful for scenarios where you want to set the date from a parent component. It stays in sync with the `value` model.
+The `value` model allows for two-way synchronization or programmatic updates of the datepicker value, useful for scenarios where you want to set the date from a parent component.
 
 <Canvas of={DateTimeStories.DateInput} />
 
