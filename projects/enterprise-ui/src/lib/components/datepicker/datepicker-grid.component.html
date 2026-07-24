@@ -94,7 +94,9 @@
               [attr.data-testid]="testIdFor('day-' + dateIso(calendarDate))"
               [attr.tabindex]="isActiveDate(calendarDate) ? 0 : -1"
               [attr.aria-label]="getAccessibleDateLabel(calendarDate)"
-              [attr.aria-selected]="isSelected(calendarDate)"
+              [attr.aria-selected]="
+                isSelected(calendarDate) ? 'true' : null
+              "
               [attr.aria-current]="isToday(calendarDate) ? 'date' : null"
               (click)="selectDate(calendarDate)"
               (focus)="focusDateCell(calendarDate)"

@@ -45,16 +45,23 @@ export class DatepickerGridComponent {
   private readonly calendarDayButtons =
     viewChildren<ElementRef<HTMLButtonElement>>("calendarDay");
 
-  focusDate(date: DateTime): void {
+  focusDate(date: DateTime): boolean {
     const isoDate = date.toISODate();
 
     if (!isoDate) {
-      return;
+      return false;
     }
 
-    this.calendarDayButtons()
-      .find(({ nativeElement }) => nativeElement.dataset["date"] === isoDate)
-      ?.nativeElement.focus();
+    const button = this.calendarDayButtons().find(
+      ({ nativeElement }) => nativeElement.dataset["date"] === isoDate,
+    )?.nativeElement;
+
+    if (!button) {
+      return false;
+    }
+
+    button.focus({ preventScroll: true });
+    return button.ownerDocument.activeElement === button;
   }
 
   protected selectDate(date: DateTime): void {

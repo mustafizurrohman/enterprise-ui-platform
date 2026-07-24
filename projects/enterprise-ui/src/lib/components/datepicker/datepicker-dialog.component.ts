@@ -98,6 +98,9 @@ export class DatepickerDialogComponent {
   protected readonly timeAnnouncement = computed(
     () => this.context().timeAnnouncement,
   );
+  protected readonly navigationAnnouncement = computed(
+    () => this.context().navigationAnnouncement,
+  );
   protected readonly showQuickTimeControls = computed(
     () => this.context().showQuickTimeControls,
   );
@@ -145,8 +148,8 @@ export class DatepickerDialogComponent {
 
   private readonly calendarGrid = viewChild.required(DatepickerGridComponent);
 
-  focusDate(date: DateTime): void {
-    this.calendarGrid().focusDate(date);
+  focusDate(date: DateTime): boolean {
+    return this.calendarGrid().focusDate(date);
   }
 
   protected idFor(part: string): string {

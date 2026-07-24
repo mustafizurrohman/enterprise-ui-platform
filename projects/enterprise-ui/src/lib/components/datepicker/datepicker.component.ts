@@ -9,6 +9,8 @@ import {
   Injector,
   input,
   model,
+  NgZone,
+  type OnDestroy,
   signal,
   untracked,
   viewChild,
@@ -76,9 +78,14 @@ import { DatepickerIdService } from "./datepicker-id.service";
     },
   ],
 })
-export class DatepickerComponent implements ControlValueAccessor, Validator {
+export class DatepickerComponent
+  implements ControlValueAccessor, Validator, OnDestroy
+{
   private readonly idService = inject(DatepickerIdService);
+  private readonly ngZone = inject(NgZone);
   private lastFocusedTrigger: HTMLElement | null = null;
+  private navigationAnnouncementTimer: ReturnType<typeof setTimeout> | null =
+    null;
 
   readonly label = input<string>("Datum auswählen");
   readonly today = input<DateTime>(DateTime.now());
@@ -148,9 +155,14 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       return "Kalender schließen";
     }
 
-    return this.dateOnly()
+    const baseLabel = this.dateOnly()
       ? "Kalender zur Auswahl eines Datums öffnen"
       : "Kalender zur Auswahl von Datum und Uhrzeit öffnen";
+    const selectedDate = this.selectedDate();
+
+    return selectedDate
+      ? `${baseLabel}. Aktueller Wert: ${this.formatDate(selectedDate)}`
+      : baseLabel;
   });
 
   protected readonly selectNowLabel = computed(() =>
@@ -182,6 +194,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   protected readonly timeAnnouncement = signal("");
   protected readonly dateAnnouncement = signal("");
   protected readonly inputAnnouncement = signal("");
+  protected readonly navigationAnnouncement = signal("");
 
   private readonly dateInput =
     viewChild<ElementRef<HTMLInputElement>>("dateInput");
@@ -302,6 +315,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     locale: this.resolvedLocale(),
     dateAnnouncement: this.dateAnnouncement(),
     timeAnnouncement: this.timeAnnouncement(),
+    navigationAnnouncement: this.navigationAnnouncement(),
     showQuickTimeControls: this.showQuickTimeControls(),
   }));
 
@@ -365,6 +379,10 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
         );
       });
     });
+  }
+
+  ngOnDestroy(): void {
+    this.clearNavigationAnnouncementTimer();
   }
 
   writeValue(value: Date | string | null | undefined): void {
@@ -505,7 +523,10 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       return;
     }
 
-    this.lastFocusedTrigger = trigger ?? this.getCurrentTrigger();
+    this.lastFocusedTrigger =
+      this.dateInput()?.nativeElement ?? trigger ?? this.getCurrentTrigger();
+    this.navigationAnnouncement.set("");
+    this.dateAnnouncement.set("");
     this.isOpen.set(true);
 
     if (this.selectedDate()) {
@@ -517,6 +538,12 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     event: KeyboardEvent,
     input: HTMLInputElement,
   ): void {
+    if (event.key === "ArrowDown" && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault();
+      this.openCalendar(input);
+      return;
+    }
+
     if (event.key === "Enter") {
       event.preventDefault();
       this.commitManualInput(input);
@@ -544,7 +571,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
 
   protected onOverlayAttached(): void {
     const initialDate =
-      this.selectedDate()?.startOf("day") ?? DateTime.local().startOf("day");
+      this.selectedDate()?.startOf("day") ?? this.today().startOf("day");
 
     this.activeDate.set(initialDate);
 
@@ -553,7 +580,15 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     }
 
     requestAnimationFrame(() => {
-      this.focusActiveDate();
+      if (this.focusActiveDate()) {
+        this.scheduleNavigationAnnouncement();
+        return;
+      }
+
+      requestAnimationFrame(() => {
+        this.focusActiveDate();
+        this.scheduleNavigationAnnouncement();
+      });
     });
   }
 
@@ -563,13 +598,15 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     }
   }
 
-  private focusActiveDate(): void {
-    this.calendarDialog()?.focusDate(this.activeDate());
+  private focusActiveDate(): boolean {
+    return this.calendarDialog()?.focusDate(this.activeDate()) ?? false;
   }
 
   protected closeCalendar(): void {
     const wasOpen = this.isOpen();
     this.isOpen.set(false);
+    this.clearNavigationAnnouncementTimer();
+    this.navigationAnnouncement.set("");
     this.onTouched();
 
     const trigger = this.lastFocusedTrigger;
@@ -785,7 +822,9 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     this.manualInputError.set(false);
     this.value.set(jsDate);
     this.onChange(jsDate);
-    this.dateAnnouncement.set("Ausgewählt.");
+    this.announceDate(
+      `Datum ausgewählt: ${this.getAccessibleDateLabel(newSelectedDate)}.`,
+    );
   }
 
   protected selectNow(): void {
@@ -802,7 +841,17 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     this.inputAnnouncement.set("");
     this.value.set(jsDate);
     this.onChange(jsDate);
+    this.announceInput(
+      this.dateOnly()
+        ? `Heutiges Datum übernommen: ${this.getAccessibleDateLabel(now)}.`
+        : `Aktuelles Datum und aktuelle Uhrzeit übernommen: ${this.formatDate(now)}.`,
+    );
     this.closeCalendar();
+
+    const input = this.dateInput()?.nativeElement;
+    if (input) {
+      requestAnimationFrame(() => input.focus());
+    }
   }
 
   protected clearValue(event: MouseEvent, input: HTMLInputElement): void {
@@ -813,9 +862,9 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     this.manualInputError.set(false);
     this.value.set(null);
     this.viewDate.set(DateTime.now());
-    this.dateAnnouncement.set("Datum gelöscht.");
+    this.dateAnnouncement.set("");
     this.timeAnnouncement.set("");
-    this.inputAnnouncement.set("");
+    this.announceInput("Datum gelöscht.");
     this.onChange(null);
     this.onTouched();
 
@@ -876,7 +925,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     this.applyManualInputResult(input, result, true);
 
     if (result.date) {
-      this.inputAnnouncement.set(
+      this.announceInput(
         this.dateOnly()
           ? "Eingefügtes Datum übernommen."
           : "Eingefügtes Datum und Uhrzeit übernommen.",
@@ -992,7 +1041,47 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       this.showSeconds() ? DateTime.TIME_WITH_SECONDS : DateTime.TIME_SIMPLE,
     );
 
-    this.timeAnnouncement.set(`Uhrzeit: ${timeText}`);
+    this.announceTimeMessage(`Uhrzeit: ${timeText}`);
+  }
+
+  private scheduleNavigationAnnouncement(): void {
+    this.clearNavigationAnnouncementTimer();
+    this.ngZone.runOutsideAngular(() => {
+      this.navigationAnnouncementTimer = setTimeout(() => {
+        this.navigationAnnouncementTimer = null;
+
+        if (!this.isOpen()) {
+          return;
+        }
+
+        this.ngZone.run(() => {
+          this.navigationAnnouncement.set(
+            "Pfeiltasten navigieren zwischen Tagen. Pos1 und Ende springen zum Wochenanfang und Wochenende. Bild auf und Bild ab wechseln den Monat; mit Umschalttaste das Jahr. Enter oder Leertaste wählen den Tag. Escape schließt den Kalender.",
+          );
+        });
+      }, 150);
+    });
+  }
+
+  private clearNavigationAnnouncementTimer(): void {
+    if (this.navigationAnnouncementTimer !== null) {
+      clearTimeout(this.navigationAnnouncementTimer);
+      this.navigationAnnouncementTimer = null;
+    }
+  }
+
+  private announceInput(message: string): void {
+    this.inputAnnouncement.set("");
+    queueMicrotask(() => this.inputAnnouncement.set(message));
+  }
+
+  private announceDate(message: string): void {
+    this.dateAnnouncement.set("");
+    queueMicrotask(() => this.dateAnnouncement.set(message));
+  }
+
+  private announceTimeMessage(message: string): void {
+    this.timeAnnouncement.set(message);
   }
 
   isSelected(date: DateTime | null): boolean {

@@ -109,7 +109,7 @@ describe("DatepickerGridComponent", () => {
       '[data-testid="datepicker-cell-0-0"]',
     ) as HTMLElement;
 
-    expect(unselectedDay.getAttribute("aria-selected")).toBe("false");
+    expect(unselectedDay.hasAttribute("aria-selected")).toBeFalsy();
     expect(unselectedDay.getAttribute("aria-rowindex")).toBe("3");
     expect(unselectedDay.getAttribute("aria-colindex")).toBe("3");
     expect(emptyCell.id).toBe("calendar-grid-cell-0-0");
@@ -170,13 +170,17 @@ describe("DatepickerGridComponent", () => {
   });
 
   it("should focus the requested date", () => {
-    component.focusDate(selectedDate);
+    expect(component.focusDate(selectedDate)).toBeTruthy();
 
     expect(document.activeElement).toBe(
       fixture.nativeElement.querySelector(
         '[data-testid="datepicker-day-2026-07-15"]',
       ),
     );
+  });
+
+  it("should report when a requested date is not rendered", () => {
+    expect(component.focusDate(DateTime.fromISO("2026-08-01"))).toBeFalsy();
   });
 
   it("should render weekday names and calendar weeks in bold", () => {

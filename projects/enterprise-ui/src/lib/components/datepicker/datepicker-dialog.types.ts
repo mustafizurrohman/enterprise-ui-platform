@@ -44,5 +44,6 @@ export type DatepickerDialogContext = Readonly<{
   locale: string;
   dateAnnouncement: string;
   timeAnnouncement: string;
+  navigationAnnouncement: string;
   showQuickTimeControls: boolean;
 }>;

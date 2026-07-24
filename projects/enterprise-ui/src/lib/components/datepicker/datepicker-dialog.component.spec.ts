@@ -75,6 +75,7 @@ describe("DatepickerDialogComponent", () => {
       locale: "de-DE",
       dateAnnouncement: "",
       timeAnnouncement: "",
+      navigationAnnouncement: "",
       showQuickTimeControls: false,
     };
 
@@ -95,7 +96,15 @@ describe("DatepickerDialogComponent", () => {
 
     expect(dialog.getAttribute("role")).toBe("dialog");
     expect(dialog.getAttribute("aria-modal")).toBe("true");
+    expect(dialog.hasAttribute("aria-describedby")).toBeFalsy();
     expect(previous.getAttribute("aria-controls")).toBe(grid.id);
+
+    const instructions = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-dialog-description"]',
+    ) as HTMLElement;
+    expect(instructions.getAttribute("role")).toBe("status");
+    expect(instructions.getAttribute("aria-live")).toBe("polite");
+    expect(instructions.getAttribute("aria-atomic")).toBe("true");
   });
 
   it("should label the grid with only the announced month and year", () => {
@@ -111,7 +120,8 @@ describe("DatepickerDialogComponent", () => {
 
     expect(header.id).toBe("dialog-header");
     expect(monthHeading.id).toBe("month-heading");
-    expect(monthHeading.getAttribute("role")).toBe("status");
+    expect(monthHeading.tagName).toBe("H3");
+    expect(monthHeading.hasAttribute("role")).toBeFalsy();
     expect(monthHeading.getAttribute("aria-live")).toBe("polite");
     expect(monthHeading.textContent?.trim()).toBe("Juli 2026");
     expect(grid.getAttribute("aria-labelledby")).toBe(monthHeading.id);

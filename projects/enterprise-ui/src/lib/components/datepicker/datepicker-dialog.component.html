@@ -1,12 +1,11 @@
 <div
   cdkTrapFocus
-  [cdkTrapFocusAutoCapture]="true"
+  [cdkTrapFocusAutoCapture]="false"
   [id]="dialogId()"
   class="datepicker-calendar"
   role="dialog"
   aria-modal="true"
   [attr.aria-labelledby]="dialogTitleId()"
-  [attr.aria-describedby]="dialogDescriptionId()"
   [attr.data-testid]="testIdFor('dialog')"
 >
   <h2
@@ -17,16 +16,16 @@
     {{ dialogTitle() }}
   </h2>
 
-  <p
+  <div
     [id]="dialogDescriptionId()"
     class="cdk-visually-hidden"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
     [attr.data-testid]="testIdFor('dialog-description')"
   >
-    Verwenden Sie die Pfeiltasten zur Navigation zwischen den Tagen. Pos1 und
-    Ende springen zum Wochenanfang beziehungsweise Wochenende. Bild auf und Bild
-    ab wechseln den Monat; mit Umschalttaste wechseln Sie das Jahr. Enter oder
-    Leertaste wählen den fokussierten Tag aus. Escape schließt den Kalender.
-  </p>
+    {{ navigationAnnouncement() }}
+  </div>
 
   <datepicker-header
     [context]="headerContext()"

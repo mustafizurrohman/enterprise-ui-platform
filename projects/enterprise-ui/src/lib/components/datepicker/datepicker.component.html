@@ -30,7 +30,7 @@
       role="combobox"
       aria-autocomplete="none"
       aria-haspopup="dialog"
-      aria-keyshortcuts="Enter Escape"
+      aria-keyshortcuts="ArrowDown Alt+ArrowDown Enter Escape"
       [attr.aria-expanded]="open"
       [attr.aria-controls]="open ? ids().dialog : null"
       [attr.aria-describedby]="inputDescriptionIds()"
@@ -93,6 +93,7 @@
       aria-haspopup="dialog"
       [attr.aria-controls]="open ? ids().dialog : null"
       [attr.aria-expanded]="open"
+      tabindex="-1"
       [attr.data-testid]="testIdFor('toggle')"
       (click)="toggleCalendar(calendarToggle)"
     >
