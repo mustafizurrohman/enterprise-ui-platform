@@ -899,7 +899,7 @@ describe("DatepickerComponent", () => {
       expect(input.value).toBe("15.07.2026 16:59 Uhr");
     });
 
-    it("should mark invalid pasted trailing text without emitting a new value", () => {
+    it("should mark invalid pasted trailing text and emit null", () => {
       const onChangeSpy = vi.fn();
       component.registerOnChange(onChangeSpy);
       const input = fixture.nativeElement.querySelector(
@@ -909,7 +909,7 @@ describe("DatepickerComponent", () => {
       dispatchPaste(input, "15.07.2026 16:59 extra");
       fixture.detectChanges();
 
-      expect(onChangeSpy).not.toHaveBeenCalled();
+      expect(onChangeSpy).toHaveBeenCalledWith(null);
       expect(component.selectedDate()).toBeNull();
       expect(input.getAttribute("aria-invalid")).toBe("true");
       expect(

@@ -356,18 +356,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     effect(() => {
       const v = this.value();
       untracked(() => {
-        const currentIso = this.selectedDate()?.toISO();
-        let newIso: string | null = null;
-
-        if (v instanceof Date) {
-          newIso = DateTime.fromJSDate(v).toISO();
-        } else if (typeof v === "string") {
-          newIso = DateTime.fromISO(v).toISO();
-        }
-
-        if (newIso !== currentIso) {
-          this.writeValue(v);
-        }
+        this.updateInternalState(v);
       });
     });
 
@@ -408,41 +397,88 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     if (this.value() !== value) {
       this.value.set(value);
     }
-    if (value) {
-      let date: DateTime;
-      if (value instanceof Date) {
-        date = DateTime.fromJSDate(value);
-      } else {
-        date = DateTime.fromISO(value);
-        if (!date.isValid) {
-          date = DateTime.fromSQL(value); // Fallback for some formats
-        }
+    this.updateInternalState(value);
+  }
+
+  private updateInternalState(value: Date | string | null | undefined): void {
+    if (value === null || value === undefined || value === "") {
+      if (this.selectedDate() !== null || this.manualInputError()) {
+        this.selectedDate.set(null);
+        this.inputDisplayValue.set("");
+        this.manualInputError.set(false);
+        this.inputAnnouncement.set("");
+        this.viewDate.set(this.today());
       }
+      return;
+    }
+
+    let date: DateTime | undefined;
+    let displayValue: string = "";
+
+    if (value instanceof Date) {
+      date = DateTime.fromJSDate(value);
       if (date.isValid) {
-        if (this.dateOnly()) {
-          date = date.startOf("day");
-        } else if (!this.showSeconds()) {
-          date = date.set({ second: 0, millisecond: 0 });
+        displayValue = this.formatDate(date);
+      }
+    } else if (typeof value === "string") {
+      const result = this.inputAutocomplete().process(value, {
+        commit: true,
+        now: this.today(),
+        locale: this.resolvedLocale(),
+      });
+
+      if (result.date) {
+        date = result.date;
+        displayValue = result.value;
+      } else {
+        let altDate = DateTime.fromISO(value);
+        if (!altDate.isValid) {
+          altDate = DateTime.fromSQL(value);
         }
 
+        if (altDate.isValid) {
+          date = altDate;
+          displayValue = this.formatDate(date);
+        } else {
+          date = undefined;
+          displayValue = value;
+        }
+      }
+    }
+
+    if (date?.isValid) {
+      if (this.dateOnly()) {
+        date = date.startOf("day");
+      } else if (!this.showSeconds()) {
+        date = date.set({ second: 0, millisecond: 0 });
+      }
+
+      const currentIso = this.selectedDate()?.toISO();
+      const newIso = date.toISO();
+
+      if (
+        newIso !== currentIso ||
+        this.manualInputError() ||
+        this.inputDisplayValue() !== displayValue
+      ) {
         this.selectedDate.set(date);
-        this.inputDisplayValue.set(this.formatDate(date));
+        this.inputDisplayValue.set(displayValue);
         this.manualInputError.set(false);
         this.inputAnnouncement.set("");
         this.viewDate.set(date);
-      } else {
-        this.selectedDate.set(null);
-        this.inputDisplayValue.set("");
-        this.manualInputError.set(true);
-        this.inputAnnouncement.set("");
-        this.viewDate.set(DateTime.now());
       }
     } else {
-      this.selectedDate.set(null);
-      this.inputDisplayValue.set("");
-      this.manualInputError.set(false);
-      this.inputAnnouncement.set("");
-      this.viewDate.set(DateTime.now());
+      if (
+        this.selectedDate() !== null ||
+        !this.manualInputError() ||
+        this.inputDisplayValue() !== displayValue
+      ) {
+        this.selectedDate.set(null);
+        this.inputDisplayValue.set(displayValue);
+        this.manualInputError.set(true);
+        this.inputAnnouncement.set("");
+        this.viewDate.set(this.today());
+      }
     }
   }
 
@@ -459,6 +495,9 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   validate(control: AbstractControl): ValidationErrors | null {
+    if (this.manualInputError()) {
+      return { invalidDate: true };
+    }
     const value = control.value;
     if (value === null || value === undefined || value === "") {
       return null;
@@ -868,12 +907,19 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   ): void {
     input.value = result.value;
     this.inputDisplayValue.set(result.value);
-    this.manualInputError.set(
-      !result.valid || (requireComplete && !result.complete),
-    );
+
+    const isInvalid = !result.valid || (requireComplete && !result.complete);
 
     if (result.date) {
       this.applyManualDate(result.date);
+    } else if (isInvalid) {
+      this.selectedDate.set(null);
+      this.manualInputError.set(true);
+      this.value.set(result.value);
+      this.onChange(null);
+    } else {
+      // Potentially valid prefix, don't update value yet, but ensure no error is shown
+      this.manualInputError.set(false);
     }
   }
 
