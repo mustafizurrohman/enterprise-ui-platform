@@ -409,6 +409,56 @@ describe("DatepickerPasteParserService", () => {
     });
   });
 
+  describe("separator normalization", () => {
+    it("should parse 20-07-2024 for dd.MM.yyyy format", () => {
+      const autocomplete = new LuxonDateInputAutocomplete("dd.MM.yyyy", "de-DE");
+      const result = service.parse(
+        "20-07-2024",
+        { value: "", selectionStart: 0, selectionEnd: 0 },
+        autocomplete,
+        { now, locale: "de-DE" },
+      );
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe("20.07.2024");
+    });
+
+    it("should parse 20/07/2024 for dd.MM.yyyy format", () => {
+      const autocomplete = new LuxonDateInputAutocomplete("dd.MM.yyyy", "de-DE");
+      const result = service.parse(
+        "20/07/2024",
+        { value: "", selectionStart: 0, selectionEnd: 0 },
+        autocomplete,
+        { now, locale: "de-DE" },
+      );
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe("20.07.2024");
+    });
+
+    it("should parse 20.07.2024 20:45:52 for dd.MM.yyyy format", () => {
+      const autocomplete = new LuxonDateInputAutocomplete("dd.MM.yyyy", "de-DE");
+      const result = service.parse(
+        "20.07.2024 20:45:52",
+        { value: "", selectionStart: 0, selectionEnd: 0 },
+        autocomplete,
+        { now, locale: "de-DE" },
+      );
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe("20.07.2024");
+    });
+
+    it("should parse 20-07-2024 20:45:52 for dd.MM.yyyy format", () => {
+      const autocomplete = new LuxonDateInputAutocomplete("dd.MM.yyyy", "de-DE");
+      const result = service.parse(
+        "20-07-2024 20:45:52",
+        { value: "", selectionStart: 0, selectionEnd: 0 },
+        autocomplete,
+        { now, locale: "de-DE" },
+      );
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe("20.07.2024");
+    });
+  });
+
   describe("selection edge cases", () => {
     it("treats null selection bounds as replacing the complete value", () => {
       const autocomplete = new LuxonDateInputAutocomplete(

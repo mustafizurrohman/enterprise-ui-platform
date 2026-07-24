@@ -1,6 +1,9 @@
 import { Injectable } from "@angular/core";
 import type { DateTime } from "luxon";
-import { LuxonDateInputAutocomplete } from "./luxon-date-input-autocomplete";
+import {
+  LuxonDateInputAutocomplete,
+  parseLuxonFormat,
+} from "./luxon-date-input-autocomplete";
 import type { DateInputAutocompleteResult } from "./luxon-date-input-autocomplete.types";
 import type {
   DatepickerPasteInputState,
@@ -34,21 +37,97 @@ export class DatepickerPasteParserService {
     autocomplete: LuxonDateInputAutocomplete,
     options: { now: DateTime; locale: string },
   ): DateInputAutocompleteResult {
+    const format = autocomplete.getDateFormat();
+    const normalizedPastedValue = normalizeSeparators(pastedValue, format);
+
+    const pastedResult = autocomplete.processPastedValue(pastedValue, options);
+    if (isCompleteDateResult(pastedResult)) {
+      return pastedResult;
+    }
+
+    if (normalizedPastedValue !== pastedValue) {
+      const normalizedPastedResult = autocomplete.processPastedValue(
+        normalizedPastedValue,
+        options,
+      );
+      if (isCompleteDateResult(normalizedPastedResult)) {
+        return normalizedPastedResult;
+      }
+    }
+
     const selection = normalizeSelection(inputState);
     const nextValue = replaceSelection(
       inputState.value,
       pastedValue,
       selection,
     );
-
-    const pastedResult = autocomplete.processPastedValue(pastedValue, options);
-
-    if (isCompleteDateResult(pastedResult)) {
-      return pastedResult;
+    const combinedResult = autocomplete.processPastedValue(nextValue, options);
+    if (isCompleteDateResult(combinedResult)) {
+      return combinedResult;
     }
 
-    return autocomplete.processPastedValue(nextValue, options);
+    const nextValueNormalized = replaceSelection(
+      inputState.value,
+      normalizedPastedValue,
+      selection,
+    );
+    if (nextValueNormalized !== nextValue) {
+      const normalizedCombinedResult = autocomplete.processPastedValue(
+        nextValueNormalized,
+        options,
+      );
+      if (isCompleteDateResult(normalizedCombinedResult)) {
+        return normalizedCombinedResult;
+      }
+    }
+
+    return combinedResult;
   }
+}
+
+function normalizeSeparators(pastedValue: string, format: string): string {
+  const parts = pastedValue.match(/[\p{L}\d]+/ug);
+  if (!parts || parts.length === 0) {
+    return pastedValue;
+  }
+
+  const formatParts = parseLuxonFormat(format);
+  let result = "";
+  let partIndex = 0;
+
+  for (const fp of formatParts) {
+    if (fp.literal) {
+      if (partIndex > 0) {
+        const literalValue = fp.value.trim().toLowerCase();
+        const isAlphanumericLiteral = /[\p{L}\d]/u.test(literalValue);
+
+        if (isAlphanumericLiteral) {
+          if (
+            partIndex < parts.length &&
+            parts[partIndex].toLowerCase() === literalValue
+          ) {
+            result += fp.value;
+            partIndex++;
+          } else {
+            return pastedValue;
+          }
+        } else {
+          if (partIndex < parts.length) {
+            result += fp.value;
+          }
+        }
+      }
+    } else {
+      if (partIndex < parts.length) {
+        result += parts[partIndex];
+        partIndex++;
+      } else {
+        break;
+      }
+    }
+  }
+
+  return result || pastedValue;
 }
 
 function normalizeSelection(

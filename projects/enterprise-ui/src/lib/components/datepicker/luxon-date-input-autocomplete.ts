@@ -313,6 +313,10 @@ export class LuxonDateInputAutocomplete {
     return normalizedFormat;
   }
 
+  public getDateFormat(): string {
+    return this.dateFormat;
+  }
+
   public static getFormat(options: {
     dateOnly?: boolean;
     showSeconds?: boolean;
@@ -1093,7 +1097,7 @@ function parseEpoch(value: string, locale: string): DateTime | null {
   return date.isValid ? date : null;
 }
 
-function parseLuxonFormat(format: string): readonly LuxonFormatPart[] {
+export function parseLuxonFormat(format: string): readonly LuxonFormatPart[] {
   const parts: LuxonFormatPart[] = [];
   let index = 0;
 
