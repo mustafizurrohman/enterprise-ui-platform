@@ -3,6 +3,7 @@ import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { DateTime, Info } from "luxon";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DatepickerDialogComponent } from "./datepicker-dialog.component";
+import { DatepickerIdService } from "./datepicker-id.service";
 import { type DatepickerDialogContext } from "./datepicker-dialog.types";
 
 describe("DatepickerDialogComponent", () => {
@@ -12,7 +13,12 @@ describe("DatepickerDialogComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DatepickerDialogComponent, NoopAnimationsModule],
+      providers: [DatepickerIdService],
     }).compileComponents();
+
+    const idService = TestBed.inject(DatepickerIdService);
+    idService.setComponentId("datepicker");
+    idService.setTestId("datepicker");
 
     fixture = TestBed.createComponent(DatepickerDialogComponent);
     component = fixture.componentInstance;

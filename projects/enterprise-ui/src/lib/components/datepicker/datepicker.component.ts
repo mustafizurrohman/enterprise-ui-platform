@@ -47,6 +47,7 @@ import {
   LuxonDateInputAutocomplete,
 } from "./luxon-date-input-autocomplete";
 import { DatepickerPasteParserService } from "./datepicker-paste-parser.service";
+import { DatepickerIdService } from "./datepicker-id.service";
 
 @Component({
   selector: "datepicker",
@@ -62,6 +63,7 @@ import { DatepickerPasteParserService } from "./datepicker-paste-parser.service"
   templateUrl: "./datepicker.component.html",
   styleUrl: "./datepicker.component.scss",
   providers: [
+    DatepickerIdService,
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => DatepickerComponent),
@@ -75,10 +77,7 @@ import { DatepickerPasteParserService } from "./datepicker-paste-parser.service"
   ],
 })
 export class DatepickerComponent implements ControlValueAccessor, Validator {
-  private static nextId = 0;
-  private readonly componentId = signal(
-    `datepicker-${DatepickerComponent.nextId++}`,
-  );
+  private readonly idService = inject(DatepickerIdService);
   private lastFocusedTrigger: HTMLElement | null = null;
 
   readonly label = input<string>("Datum auswählen");
@@ -105,37 +104,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     resolveLocale(this.locale()),
   );
 
-  protected readonly ids = computed(
-    () =>
-      ({
-        root: this.componentId(),
-        inputWrapper: `${this.componentId()}-input-wrapper`,
-        input: `${this.componentId()}-input`,
-        inputHint: `${this.componentId()}-hint`,
-        inputError: `${this.componentId()}-error`,
-        inputStatus: `${this.componentId()}-status`,
-        clearButton: `${this.componentId()}-clear`,
-        nowButton: `${this.componentId()}-now`,
-        toggleButton: `${this.componentId()}-toggle`,
-        dialog: `${this.componentId()}-dialog`,
-        dialogTitle: `${this.componentId()}-dialog-title`,
-        dialogDescription: `${this.componentId()}-dialog-description`,
-        monthHeading: `${this.componentId()}-month-heading`,
-        hourSelect: `${this.componentId()}-hour`,
-        minuteSelect: `${this.componentId()}-minute`,
-        secondSelect: `${this.componentId()}-second`,
-        hourLabel: `${this.componentId()}-hour-label`,
-        minuteLabel: `${this.componentId()}-minute-label`,
-        secondLabel: `${this.componentId()}-second-label`,
-        meridiemGroup: `${this.componentId()}-meridiem`,
-        meridiemLabel: `${this.componentId()}-meridiem-label`,
-        meridiemAm: `${this.componentId()}-meridiem-am`,
-        meridiemPm: `${this.componentId()}-meridiem-pm`,
-      }) as const,
-  );
-  protected readonly testIdPrefix = computed(
-    () => this.testId()?.trim() || this.componentId(),
-  );
+  protected readonly ids = this.idService.ids;
+  protected readonly testIdPrefix = this.idService.testIdPrefix;
 
   private readonly configuredDateFormat = computed(
     () => this.luxonDateFormat() ?? this.dateFormatInput(),
@@ -353,6 +323,10 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   constructor() {
+    effect(() => {
+      this.idService.setTestId(this.testId());
+    });
+
     effect(() => {
       const v = this.value();
       untracked(() => {
@@ -1054,7 +1028,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   protected testIdFor(part?: string): string {
-    return part ? `${this.testIdPrefix()}-${part}` : this.testIdPrefix();
+    return this.idService.testIdFor(part);
   }
 
   private getCurrentTrigger(): HTMLElement | null {

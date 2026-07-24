@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { DateTime, Info } from "luxon";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DatepickerGridComponent } from "./datepicker-grid.component";
+import { DatepickerIdService } from "./datepicker-id.service";
 import {
   type DatepickerGridContext,
   type DatepickerWeek,
@@ -66,7 +67,12 @@ describe("DatepickerGridComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DatepickerGridComponent],
+      providers: [DatepickerIdService],
     }).compileComponents();
+
+    const idService = TestBed.inject(DatepickerIdService);
+    idService.setComponentId("calendar-grid");
+    idService.setTestId("datepicker");
 
     fixture = TestBed.createComponent(DatepickerGridComponent);
     component = fixture.componentInstance;

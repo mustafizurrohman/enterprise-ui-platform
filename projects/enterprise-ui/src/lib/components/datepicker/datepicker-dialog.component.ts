@@ -2,12 +2,14 @@ import { CdkTrapFocus } from "@angular/cdk/a11y";
 import {
   Component,
   computed,
+  inject,
   input,
   output,
   viewChild,
 } from "@angular/core";
 import { DateTime, Info } from "luxon";
 import { DatepickerGridComponent } from "./datepicker-grid.component";
+import { DatepickerIdService } from "./datepicker-id.service";
 import {
   type DatepickerGridContext,
   type DatepickerGridKeydown,
@@ -37,6 +39,7 @@ import {
   styleUrl: "./datepicker-dialog.component.scss",
 })
 export class DatepickerDialogComponent {
+  private readonly idService = inject(DatepickerIdService);
   readonly context = input.required<DatepickerDialogContext>();
 
   readonly previousMonth = output<void>();
@@ -149,10 +152,10 @@ export class DatepickerDialogComponent {
   }
 
   protected idFor(part: string): string {
-    return `${this.dialogId()}-${part}`;
+    return this.idService.idFor(part, this.dialogId());
   }
 
   protected testIdFor(part: string): string {
-    return `${this.testIdPrefix()}-${part}`;
+    return this.idService.testIdFor(part, this.testIdPrefix());
   }
 }

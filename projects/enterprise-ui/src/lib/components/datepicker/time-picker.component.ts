@@ -1,6 +1,7 @@
 import {
   Component,
   computed,
+  inject,
   input,
   output,
 } from "@angular/core";
@@ -18,6 +19,7 @@ import {
   type DatepickerMeridiem,
   type DatepickerTimeChange,
 } from "./datepicker-dialog.types";
+import { DatepickerIdService } from "./datepicker-id.service";
 
 @Component({
   selector: "time-picker",
@@ -27,6 +29,7 @@ import {
   styleUrl: "./time-picker.component.scss",
 })
 export class TimePickerComponent {
+  private readonly idService = inject(DatepickerIdService);
   readonly context = input.required<DatepickerDialogContext>();
 
   readonly timeChanged = output<DatepickerTimeChange>();
@@ -156,11 +159,11 @@ export class TimePickerComponent {
   }
 
   protected idFor(part: string): string {
-    return `${this.context().dialogId}-${part}`;
+    return this.idService.idFor(part, this.context().dialogId);
   }
 
   protected testIdFor(part: string): string {
-    return `${this.context().testIdPrefix}-${part}`;
+    return this.idService.testIdFor(part, this.context().testIdPrefix);
   }
 
   private createTimeUnitControlContext(unit: TimeUnit): TimeUnitControlContext {

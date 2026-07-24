@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TimeUnitControlComponent } from "./time-unit-control.component";
+import { DatepickerIdService } from "./datepicker-id.service";
 import { type TimeUnitControlContext } from "./time-unit-control.types";
 
 describe("TimeUnitControlComponent", () => {
@@ -34,7 +35,12 @@ describe("TimeUnitControlComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TimeUnitControlComponent],
+      providers: [DatepickerIdService],
     }).compileComponents();
+
+    const idService = TestBed.inject(DatepickerIdService);
+    idService.setComponentId("datepicker-hour");
+    idService.setTestId("datepicker-hour");
 
     fixture = TestBed.createComponent(TimeUnitControlComponent);
     component = fixture.componentInstance;

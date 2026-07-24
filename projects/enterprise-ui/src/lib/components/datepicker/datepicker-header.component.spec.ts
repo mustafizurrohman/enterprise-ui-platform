@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DatepickerHeaderComponent } from "./datepicker-header.component";
+import { DatepickerIdService } from "./datepicker-id.service";
 import { DatepickerHeaderContext } from "./datepicker-header.types";
 
 describe("DatepickerHeaderComponent", () => {
@@ -24,7 +25,12 @@ describe("DatepickerHeaderComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DatepickerHeaderComponent, NoopAnimationsModule],
+      providers: [DatepickerIdService],
     }).compileComponents();
+
+    const idService = TestBed.inject(DatepickerIdService);
+    idService.setComponentId("datepicker");
+    idService.setTestId("datepicker");
 
     fixture = TestBed.createComponent(DatepickerHeaderComponent);
     component = fixture.componentInstance;

@@ -5,6 +5,7 @@ import {
   signal,
   effect,
   untracked,
+  inject,
 } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { MatIconModule } from "@angular/material/icon";
@@ -12,6 +13,7 @@ import { MatInputModule } from "@angular/material/input";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { RepeatClickDirective } from "../../directives/repeat-click.directive";
 import { DatepickerHeaderContext } from "./datepicker-header.types";
+import { DatepickerIdService } from "./datepicker-id.service";
 
 @Component({
   selector: "datepicker-header",
@@ -27,6 +29,7 @@ import { DatepickerHeaderContext } from "./datepicker-header.types";
   styleUrl: "./datepicker-header.component.scss",
 })
 export class DatepickerHeaderComponent {
+  private readonly idService = inject(DatepickerIdService);
   readonly context = input.required<DatepickerHeaderContext>();
 
   readonly previousMonth = output<void>();
@@ -95,11 +98,11 @@ export class DatepickerHeaderComponent {
   }
 
   protected idFor(part: string): string {
-    return `${this.context().dialogId}-${part}`;
+    return this.idService.idFor(part, this.context().dialogId);
   }
 
   protected testIdFor(part: string): string {
-    return `${this.context().testIdPrefix}-${part}`;
+    return this.idService.testIdFor(part, this.context().testIdPrefix);
   }
 
   private restoreCurrentYear(): void {

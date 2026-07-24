@@ -1,12 +1,14 @@
 import {
   Component,
   computed,
+  inject,
   input,
   output,
   signal,
 } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 import { RepeatClickDirective } from "../../directives/repeat-click.directive";
+import { DatepickerIdService } from "./datepicker-id.service";
 
 import {
   type TimeUnit,
@@ -55,6 +57,7 @@ const TIME_UNIT_CONFIGURATION: Record<TimeUnit, TimeUnitConfiguration> = {
   styleUrl: "./time-unit-control.component.scss",
 })
 export class TimeUnitControlComponent {
+  private readonly idService = inject(DatepickerIdService);
   readonly context = input.required<TimeUnitControlContext>();
 
   readonly valueChange = output<number>();
@@ -71,16 +74,20 @@ export class TimeUnitControlComponent {
     () => this.context().descriptionId ?? null,
   );
   protected readonly testIdPrefix = computed(() => this.context().testIdPrefix);
-  protected readonly unitId = computed(() => `${this.controlId()}-unit`);
-  protected readonly valueId = computed(() => `${this.controlId()}-value`);
-  protected readonly buttonStackId = computed(
-    () => `${this.controlId()}-button-stack`,
+  protected readonly unitId = computed(() =>
+    this.idService.idFor("unit", this.controlId()),
   );
-  protected readonly incrementButtonId = computed(
-    () => `${this.controlId()}-increment`,
+  protected readonly valueId = computed(() =>
+    this.idService.idFor("value", this.controlId()),
   );
-  protected readonly decrementButtonId = computed(
-    () => `${this.controlId()}-decrement`,
+  protected readonly buttonStackId = computed(() =>
+    this.idService.idFor("button-stack", this.controlId()),
+  );
+  protected readonly incrementButtonId = computed(() =>
+    this.idService.idFor("increment", this.controlId()),
+  );
+  protected readonly decrementButtonId = computed(() =>
+    this.idService.idFor("decrement", this.controlId()),
   );
 
   protected readonly configuration = computed<TimeUnitConfiguration>(() => {
@@ -211,7 +218,10 @@ export class TimeUnitControlComponent {
   }
 
   protected testIdFor(part: string): string {
-    return `${this.testIdPrefix()}-${this.unit()}-${part}`;
+    return this.idService.testIdFor(
+      `${this.unit()}-${part}`,
+      this.testIdPrefix(),
+    );
   }
 
   private changeBy(

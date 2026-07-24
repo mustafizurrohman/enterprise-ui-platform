@@ -2,6 +2,7 @@ import {
   Component,
   computed,
   ElementRef,
+  inject,
   input,
   output,
   viewChildren,
@@ -12,6 +13,7 @@ import {
   type DatepickerGridKeydown,
   type DatepickerWeek,
 } from "./datepicker-grid.types";
+import { DatepickerIdService } from "./datepicker-id.service";
 
 @Component({
   selector: "datepicker-grid",
@@ -20,6 +22,7 @@ import {
   styleUrl: "./datepicker-grid.component.scss",
 })
 export class DatepickerGridComponent {
+  private readonly idService = inject(DatepickerIdService);
   readonly context = input.required<DatepickerGridContext>();
 
   readonly dateSelected = output<DateTime>();
@@ -107,10 +110,10 @@ export class DatepickerGridComponent {
   }
 
   protected idFor(part: string): string {
-    return `${this.gridId()}-${part}`;
+    return this.idService.idFor(part, this.gridId());
   }
 
   protected testIdFor(part: string): string {
-    return `${this.testIdPrefix()}-${part}`;
+    return this.idService.testIdFor(part, this.testIdPrefix());
   }
 }
