@@ -1,5 +1,10 @@
 import { DateTime } from "luxon";
 import {
+  DEFAULT_DATE_FORMAT,
+  DEFAULT_DATETIME_FORMAT,
+  DEFAULT_DATETIME_SECONDS_FORMAT,
+} from "./datepicker-formats";
+import {
   type DateInputAutocompleteOptions,
   type DateInputAutocompleteResult,
   type DateInputError,
@@ -191,10 +196,10 @@ const FORMAT_VALIDATION_DATE = DateTime.fromObject(
 );
 
 export class LuxonDateInputAutocomplete {
-  public static readonly DEFAULT_FORMAT = "dd.MM.yyyy";
-  public static readonly DEFAULT_DATETIME_FORMAT = "dd.MM.yyyy HH:mm 'Uhr'";
+  public static readonly DEFAULT_FORMAT = DEFAULT_DATE_FORMAT;
+  public static readonly DEFAULT_DATETIME_FORMAT = DEFAULT_DATETIME_FORMAT;
   public static readonly DEFAULT_DATETIME_SECONDS_FORMAT =
-    "dd.MM.yyyy HH:mm:ss 'Uhr'";
+    DEFAULT_DATETIME_SECONDS_FORMAT;
 
   private readonly dateFormat: string;
   private readonly locale: string;
