@@ -13,8 +13,6 @@ import { DatepickerIdService } from "./datepicker-id.service";
 import {
   type DatepickerGridContext,
   type DatepickerGridKeydown,
-  type DatepickerWeek,
-  type DatepickerWeekday,
 } from "./datepicker-grid.types";
 import { type TimeUnit } from "./time-unit-control.types";
 import { TimePickerComponent } from "./time-picker.component";

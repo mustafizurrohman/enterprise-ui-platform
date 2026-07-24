@@ -17,7 +17,6 @@ import {
   type TimeUnitControlAnimationPhase,
   type TimeUnitControlAnimationState,
   type TimeUnitControlContext,
-  type TimeUnitControlHourCycle,
   type TimeUnitControlMeridiem,
 } from "./time-unit-control.types";
 

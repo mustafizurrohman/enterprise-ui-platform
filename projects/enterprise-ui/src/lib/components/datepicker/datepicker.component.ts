@@ -420,7 +420,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
       }
     }
 
-    if (date?.isValid) {
+    if (date && date?.isValid) {
       if (this.dateOnly()) {
         date = date.startOf("day");
       } else if (!this.showSeconds()) {

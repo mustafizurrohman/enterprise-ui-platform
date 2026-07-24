@@ -745,13 +745,13 @@ describe("DatepickerComponent", () => {
     });
 
     it.each([
-      ["empty", ""],
-      ["unknown token", "dd.MM.yyy"],
-      ["unclosed literal", "dd.MM.yyyy 'Uhr"],
-      ["conflicting tokens", "HH:mm a"],
-      ["non-parseable token", "yyyy-MM-dd ZZZZ"],
-    ])("should throw for an invalid %s dateFormat", (_, format) => {
-      fixture.componentRef.setInput("dateFormat", format);
+      ['empty', ''],
+      ['unknown token', 'dd.MM.yyy'],
+      ['unclosed literal', "dd.MM.yyyy 'Uhr"],
+      ['conflicting tokens', 'HH:mm a'],
+      ['non-parseable token', 'yyyy-MM-dd ZZZZ'],
+    ])('should throw for an invalid %s dateFormat', (_, format) => {
+      fixture.componentRef.setInput('dateFormat', format);
 
       expect(() => {
         fixture.detectChanges();
@@ -767,8 +767,7 @@ describe("DatepickerComponent", () => {
       const input = fixture.nativeElement.querySelector(
         "input",
       ) as HTMLInputElement;
-      const testDateStr = "24.12.2023 18:00:00 Uhr";
-      input.value = testDateStr;
+      input.value = "24.12.2023 18:00:00 Uhr";
       input.dispatchEvent(new Event("input"));
       input.dispatchEvent(
         new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
@@ -2308,8 +2307,7 @@ describe("DatepickerComponent Forms Compatibility", () => {
   });
 
   it("should work with Template-driven Forms", async () => {
-    const testDate = "2026-07-13T10:00:00.000Z";
-    host.templateValue = testDate;
+    host.templateValue = '2026-07-13T10:00:00.000Z';
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
