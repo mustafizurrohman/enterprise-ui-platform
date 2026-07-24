@@ -16,10 +16,13 @@ selection with high-efficiency manual input.
 
 - **Intelligent Mode Switching:** Dynamically toggles between date-only and
 date-time configurations based on the provided `luxonDateFormat` (or its alias `dateFormat`).
- - **Flexible Data Binding:** Supports two-way binding via `value` (standard for forms and programmatic updates).
 - **Advanced Manual Entry:** Accelerates data input through smart autocomplete,
 support for localized German "Uhr" notation, and direct Unix timestamp
 processing (seconds and milliseconds).
+- **Intelligent Paste Parsing:** Robust clipboard processing that automatically
+normalizes separators, handles partial replacements, and supports diverse
+formats (ISO, localized, Unix) regardless of the current display format.
+- **Flexible Data Binding:** Supports two-way binding via `value` (standard for forms and programmatic updates).
 - **Enterprise-Grade Localization:** Seamlessly integrates with the Luxon
 library to support diverse international date formats and locales via the `locale` input.
 - **Robust Form Integration:** Fully compatible with Angular Reactive and
@@ -43,7 +46,8 @@ quick-adjustment controls (`showQuickTimeControls`) for rapid temporal modificat
 
 ### Programmatic updates
 
-The `value` model allows for two-way synchronization or programmatic updates of the datepicker value, useful for scenarios where you want to set the date from a parent component.
+The `value` model supports two-way binding and programmatic updates,
+allowing parent components to read or set the datepicker value directly.
 
 <Canvas of={DateTimeStories.DateInput} />
 
@@ -52,3 +56,22 @@ The `value` model allows for two-way synchronization or programmatic updates of 
 <Canvas
   of={ReactiveFormStories.ReactiveForm}
 />
+
+## Advanced Manual Entry & Paste Parsing
+
+For experienced developers building high-efficiency data entry interfaces, the `DatepickerComponent` provides a sophisticated manual entry system powered by the `DatepickerPasteParserService`.
+
+### Paste Logic & Normalization
+
+The component implements an "Intelligent Paste" strategy that prioritizes data integrity and user intent:
+
+1.  **Standalone Parsing:** If the clipboard content independently forms a valid date (ISO 8601, localized strings, or Unix timestamps), it is immediately accepted as the new value.
+2.  **Separator Normalization:** The parser automatically attempts to map alphanumeric parts of the pasted string to the expected `luxonDateFormat`. This allows users to paste dates with different delimiters (e.g., `2024/07/24` into a `dd.MM.yyyy` field) without manual correction.
+3.  **Contextual Merging:** If the pasted text is not a standalone date, it is inserted into the current input at the cursor/selection point. The resulting string is then re-evaluated.
+4.  **Unix Epoch Support:** Direct pasting of Unix seconds or milliseconds is supported and automatically converted to the appropriate localized display format.
+
+### Localization & Macros
+
+Manual entry supports Luxon-based localization macros and German-specific notation:
+- **"Uhr" Notation:** In date-time mode, the "Uhr" literal is optional during input but preserved in formatting.
+- **Localized Months:** Supports full and abbreviated month names based on the active `locale`.

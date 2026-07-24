@@ -20,8 +20,11 @@ The component supports a `testId` input which serves as a prefix for all interna
 | `[data-testid="your-id-input-wrapper"]` | The container for the input and integrated action buttons. |
 | `[data-testid="your-id-input"]` | The interactive text input for manual entry. |
 | `[data-testid="your-id-clear"]` | The button to reset the current value. |
+| `[data-testid="your-id-clear-icon"]` | The icon inside the clear button. |
 | `[data-testid="your-id-now-input"]` | The "Now" or "Today" shortcut button. |
+| `[data-testid="your-id-now-icon"]` | The icon inside the "Now" button. |
 | `[data-testid="your-id-toggle"]` | The trigger button to open the calendar dialog. |
+| `[data-testid="your-id-toggle-icon"]` | The icon inside the toggle button. |
 | `[data-testid="your-id-hint"]` | Visually hidden instructions regarding supported formats. |
 | `[data-testid="your-id-input-status"]` | Live region for manual input feedback. |
 | `[data-testid="your-id-error"]` | Validation error message display. |
@@ -64,3 +67,10 @@ Leveraging standard Angular protocols, the component ensures robust compatibilit
 - **Reactive & Template-driven Forms**: Full support for state tracking and validation testing.
 - **Async Testing**: Compatible with `fakeAsync` and `waitForAsync` for overlay and animation handling.
 - **Signal-based Architecture**: Optimized for modern Angular change detection strategies.
+
+## Testing Paste Functionality
+
+When testing clipboard operations, ensure that:
+1.  **Events**: Trigger the `paste` event on the `[data-testid="your-id-input"]` element with a `ClipboardEvent`.
+2.  **Feedback**: Verify that `[data-testid="your-id-input-status"]` (the live region) announces the successful insertion (e.g., "Eingefügtes Datum übernommen").
+3.  **Validation**: Check that the internal value updates correctly even if pasted separators differ from the configured format.
