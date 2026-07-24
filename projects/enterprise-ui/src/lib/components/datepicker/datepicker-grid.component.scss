@@ -49,16 +49,12 @@ $calendar-header-background: rgba(63, 81, 181, 0.06);
     border-right: 1px solid $divider;
     box-sizing: border-box;
     background-color: $calendar-header-background;
+    font-weight: 700;
 
     &.today {
       color: $primary;
       font-weight: 700;
     }
-  }
-
-  .datepicker-kw,
-  .datepicker-kw-value {
-    font-weight: 700;
   }
 
   .datepicker-day-name {
@@ -105,11 +101,17 @@ $calendar-header-background: rgba(63, 81, 181, 0.06);
     }
 
     &.selected {
+      width: 36px;
+      height: 36px;
+      margin: 3px;
       background-color: $primary !important;
       color: $primary-contrast !important;
     }
 
     &:focus-visible {
+      width: 36px;
+      height: 36px;
+      margin: 3px;
       outline: 2px solid $primary;
       outline-offset: 2px;
     }
