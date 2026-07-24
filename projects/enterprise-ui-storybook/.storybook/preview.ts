@@ -5,6 +5,11 @@ setCompodocJson(docJson);
 
 const preview: Preview = {
   parameters: {
+    options: {
+      storySort: {
+        order: ['Documentation', 'Accessibility', 'Testability', '*'],
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,

@@ -12,6 +12,14 @@ solution engineered for complex enterprise ecosystems. It delivers a unified
 interaction model for temporal data entry, combining intuitive graphical
 selection with high-efficiency manual input.
 
+## Interactive demo
+
+<Canvas of={DateTimeStories.DateTime} />
+
+### Controls
+
+<Controls of={DateTimeStories.DateTime} />
+
 ## Key Capabilities
 
 - **Intelligent Mode Switching:** Dynamically toggles between date-only and
@@ -34,29 +42,6 @@ keyboard navigation, ARIA live regions, and screen reader optimizations.
 quick-adjustment controls (`showQuickTimeControls`) for rapid temporal modifications.
 - **Testability Hooks:** Supports stable `testId` prefixes for automated testing environments.
 
-## Interactive demo
-
-<Canvas of={DateTimeStories.DateTime} />
-
-### Controls
-
-<Controls of={DateTimeStories.DateTime} />
-
-## Examples
-
-### Programmatic updates
-
-The `value` model supports two-way binding and programmatic updates,
-allowing parent components to read or set the datepicker value directly.
-
-<Canvas of={DateTimeStories.DateInput} />
-
-### Reactive form
-
-<Canvas
-  of={ReactiveFormStories.ReactiveForm}
-/>
-
 ## Advanced Manual Entry & Paste Parsing
 
 For experienced developers building high-efficiency data entry interfaces, the `DatepickerComponent` provides a sophisticated manual entry system powered by the `DatepickerPasteParserService`.
@@ -75,3 +60,18 @@ The component implements an "Intelligent Paste" strategy that prioritizes data i
 Manual entry supports Luxon-based localization macros and German-specific notation:
 - **"Uhr" Notation:** In date-time mode, the "Uhr" literal is optional during input but preserved in formatting.
 - **Localized Months:** Supports full and abbreviated month names based on the active `locale`.
+
+## Examples
+
+### Programmatic updates
+
+The `value` model supports two-way binding and programmatic updates,
+allowing parent components to read or set the datepicker value directly.
+
+<Canvas of={DateTimeStories.DateInput} />
+
+### Reactive form
+
+<Canvas
+  of={ReactiveFormStories.ReactiveForm}
+/>
