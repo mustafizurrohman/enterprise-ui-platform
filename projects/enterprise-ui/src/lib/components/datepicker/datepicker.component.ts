@@ -330,7 +330,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     effect(() => {
       const v = this.value();
       untracked(() => {
-        this.updateInternalState(v);
+        this.updateInternalState(v, true);
       });
     });
 
@@ -374,7 +374,10 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
     this.updateInternalState(value);
   }
 
-  private updateInternalState(value: Date | string | null | undefined): void {
+  private updateInternalState(
+    value: Date | string | null | undefined,
+    emit: boolean = false,
+  ): void {
     if (value === null || value === undefined || value === "") {
       if (this.selectedDate() !== null || this.manualInputError()) {
         this.selectedDate.set(null);
@@ -382,6 +385,9 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
         this.manualInputError.set(false);
         this.inputAnnouncement.set("");
         this.viewDate.set(this.today());
+        if (emit) {
+          this.onChange(null);
+        }
       }
       return;
     }
@@ -440,6 +446,9 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
         this.manualInputError.set(false);
         this.inputAnnouncement.set("");
         this.viewDate.set(date);
+        if (emit) {
+          this.onChange(date.toJSDate());
+        }
       }
     } else {
       if (
@@ -452,6 +461,9 @@ export class DatepickerComponent implements ControlValueAccessor, Validator {
         this.manualInputError.set(true);
         this.inputAnnouncement.set("");
         this.viewDate.set(this.today());
+        if (emit) {
+          this.onChange(null);
+        }
       }
     }
   }

@@ -580,6 +580,21 @@ describe("DatepickerComponent", () => {
       );
     });
 
+    it("should parse string input value and output Date object to parent", async () => {
+      const onChangeSpy = vi.fn();
+      component.registerOnChange(onChangeSpy);
+
+      fixture.componentRef.setInput("value", "2023-12-25");
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(component.selectedDate()?.toISODate()).toBe("2023-12-25");
+      expect(onChangeSpy).toHaveBeenCalled();
+      const callValue = onChangeSpy.mock.calls[0][0];
+      expect(callValue).toBeInstanceOf(Date);
+      expect(DateTime.fromJSDate(callValue).toISODate()).toBe("2023-12-25");
+    });
+
     it("should proactively append separators and pad an unambiguous month", () => {
       fixture.componentRef.setInput("dateFormat", "MM-dd-yyyy");
       const input = fixture.nativeElement.querySelector(
