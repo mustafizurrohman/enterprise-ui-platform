@@ -81,6 +81,7 @@ const meta = {
     disabled: false,
     luxonDateFormat: DEFAULT_DATETIME_FORMAT,
     showQuickTimeControls: false,
+    value: null,
   },
 } satisfies Meta<DateTimeStoryHostComponent>;
 
