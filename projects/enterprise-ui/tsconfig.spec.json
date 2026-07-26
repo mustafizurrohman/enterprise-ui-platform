@@ -7,8 +7,6 @@
     "types": ["vitest/globals"]
   },
   "include": [
-    "common/src/**/*.d.ts",
-    "common/src/**/*.spec.ts",
     "datepicker/src/**/*.d.ts",
     "datepicker/src/**/*.spec.ts"
   ]

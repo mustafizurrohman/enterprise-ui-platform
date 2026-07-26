@@ -32,11 +32,7 @@ const config: StorybookConfig = {
         __dirname,
         '../../enterprise-ui/datepicker/public-api.ts',
       ),
-      '@mr/enterprise-ui/common': path.resolve(
-        __dirname,
-        '../../enterprise-ui/common/public-api.ts',
-      ),
-      '@mr/enterprise-ui': path.resolve(__dirname, '../../enterprise-ui/common/public-api.ts'),
+      '@mr/enterprise-ui': path.resolve(__dirname, '../../enterprise-ui/public-api.ts'),
     };
     return config;
   },

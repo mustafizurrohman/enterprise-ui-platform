@@ -8,6 +8,6 @@
     "declarationMap": true,
     "types": []
   },
-  "include": ["common/src/**/*.ts", "datepicker/src/**/*.ts"],
+  "include": ["public-api.ts", "datepicker/src/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }

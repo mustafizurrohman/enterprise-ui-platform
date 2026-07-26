@@ -9,7 +9,7 @@
     "enterprise-ui": {
       "projectType": "library",
       "root": "projects/enterprise-ui",
-      "sourceRoot": "projects/enterprise-ui/common/src",
+      "sourceRoot": "projects/enterprise-ui",
       "prefix": "mr",
       "architect": {
         "build": {
