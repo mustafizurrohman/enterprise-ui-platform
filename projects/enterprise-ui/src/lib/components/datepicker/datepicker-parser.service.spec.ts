@@ -1,7 +1,7 @@
 import { TestBed } from "@angular/core/testing";
 import { DateTime } from "luxon";
 import { beforeEach, describe, expect, it } from "vitest";
-import { DatepickerPasteParserService } from "./datepicker-paste-parser.service";
+import { DatepickerParserService } from "./datepicker-parser.service";
 import { LuxonDateInputAutocomplete } from "./luxon-date-input-autocomplete";
 
 const DEFAULT_DATETIME_FORMAT = "dd.MM.yyyy HH:mm 'Uhr'";
@@ -174,14 +174,14 @@ const sampleDate = DateTime.fromISO("2026-07-15T16:59:12", {
   zone: "Europe/Berlin",
 });
 
-describe("DatepickerPasteParserService", () => {
-  let service: DatepickerPasteParserService;
+describe("DatepickerParserService", () => {
+  let service: DatepickerParserService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [DatepickerPasteParserService],
+      providers: [DatepickerParserService],
     });
-    service = TestBed.inject(DatepickerPasteParserService);
+    service = TestBed.inject(DatepickerParserService);
   });
 
   it("should be created", () => {

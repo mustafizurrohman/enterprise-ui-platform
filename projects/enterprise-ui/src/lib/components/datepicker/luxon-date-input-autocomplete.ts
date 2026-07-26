@@ -322,6 +322,10 @@ export class LuxonDateInputAutocomplete {
     return this.dateFormat;
   }
 
+  public getLocale(): string {
+    return this.locale;
+  }
+
   public static getFormat(options: {
     dateOnly?: boolean;
     showSeconds?: boolean;

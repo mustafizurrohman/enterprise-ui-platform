@@ -1,14 +1,17 @@
 import { Injectable } from "@angular/core";
-import type { DateTime } from "luxon";
+import { DateTime } from "luxon";
 import {
   LuxonDateInputAutocomplete,
   parseLuxonFormat,
 } from "./luxon-date-input-autocomplete";
-import type { DateInputAutocompleteResult } from "./luxon-date-input-autocomplete.types";
 import type {
-  DatepickerPasteInputState,
+  DateInputAutocompleteResult,
+  DateInputAutocompleteOptions,
+} from "./luxon-date-input-autocomplete.types";
+import type {
+  DatepickerInputState,
   NormalizedSelection,
-} from "./datepicker-paste-parser.types";
+} from "./datepicker-parser.types";
 
 const NUMERIC_SEGMENT_TOKENS = new Set([
   "y",
@@ -64,7 +67,7 @@ const SEGMENT_PATTERN = /[\p{L}\p{M}\d]+/gu;
 @Injectable({
   providedIn: "root",
 })
-export class DatepickerPasteParserService {
+export class DatepickerParserService {
   /**
    * Parses clipboard input either as a complete standalone value or as a
    * partial replacement within the current input value.
@@ -84,14 +87,21 @@ export class DatepickerPasteParserService {
    */
   parse(
     pastedValue: string,
-    inputState: DatepickerPasteInputState,
+    inputState: DatepickerInputState,
     autocomplete: LuxonDateInputAutocomplete,
-    options: { now: DateTime; locale: string },
+    options: DateInputAutocompleteOptions,
   ): DateInputAutocompleteResult {
+    const now = options.now ?? DateTime.now();
+    const locale = options.locale ?? autocomplete.getLocale();
+    const luxonOptions = { ...options, now, locale };
+
     const format = autocomplete.getDateFormat();
     const normalizedPastedValue = normalizeSeparators(pastedValue, format);
 
-    const pastedResult = autocomplete.processPastedValue(pastedValue, options);
+    const pastedResult = autocomplete.processPastedValue(
+      pastedValue,
+      luxonOptions,
+    );
     if (isCompleteDateResult(pastedResult)) {
       return pastedResult;
     }
@@ -99,7 +109,7 @@ export class DatepickerPasteParserService {
     if (normalizedPastedValue !== pastedValue) {
       const normalizedPastedResult = autocomplete.processPastedValue(
         normalizedPastedValue,
-        options,
+        luxonOptions,
       );
       if (isCompleteDateResult(normalizedPastedResult)) {
         return normalizedPastedResult;
@@ -112,7 +122,10 @@ export class DatepickerPasteParserService {
       pastedValue,
       selection,
     );
-    const combinedResult = autocomplete.processPastedValue(nextValue, options);
+    const combinedResult = autocomplete.processPastedValue(
+      nextValue,
+      luxonOptions,
+    );
     if (isCompleteDateResult(combinedResult)) {
       return combinedResult;
     }
@@ -127,14 +140,19 @@ export class DatepickerPasteParserService {
     if (nextValueNormalized !== nextValue) {
       normalizedCombinedResult = autocomplete.processPastedValue(
         nextValueNormalized,
-        options,
+        luxonOptions,
       );
       if (isCompleteDateResult(normalizedCombinedResult)) {
         return normalizedCombinedResult;
       }
     }
 
-    return normalizedCombinedResult ?? combinedResult;
+    return normalizedCombinedResult &&
+      (isCompleteDateResult(normalizedCombinedResult) ||
+        normalizedCombinedResult.error?.code === "INVALID_DAY_FOR_MONTH" ||
+        normalizedCombinedResult.error?.code === "OUT_OF_RANGE")
+      ? normalizedCombinedResult
+      : combinedResult;
   }
 }
 
@@ -162,6 +180,7 @@ function normalizeSeparators(pastedValue: string, format: string): string {
   let segmentIndex = 0;
   let consumedTokenCount = 0;
   let hasIncompatibleSegment = false;
+  let allLiteralsMatched = true;
 
   for (let partIndex = 0; partIndex < formatParts.length; partIndex++) {
     const formatPart = formatParts[partIndex];
@@ -194,6 +213,8 @@ function normalizeSeparators(pastedValue: string, format: string): string {
 
     if (hasMatchedLiteralWords) {
       segmentIndex += consumedLiteralWordCount;
+    } else if (literalWords.length > 0) {
+      allLiteralsMatched = false;
     }
 
     const remainingTokenCount = countRemainingTokens(
@@ -212,7 +233,9 @@ function normalizeSeparators(pastedValue: string, format: string): string {
     }
 
     if (isTrailingLiteral) {
-      normalizedValue += formatPart.value;
+      if (hasMatchedLiteralWords || literalWords.length === 0) {
+        normalizedValue += formatPart.value;
+      }
       continue;
     }
 
@@ -221,7 +244,11 @@ function normalizeSeparators(pastedValue: string, format: string): string {
     }
   }
 
-  return consumedTokenCount > 0 && !hasIncompatibleSegment
+  const allSegmentsConsumed = segmentIndex === segments.length;
+
+  return consumedTokenCount > 0 &&
+    !hasIncompatibleSegment &&
+    (allSegmentsConsumed || allLiteralsMatched)
     ? normalizedValue
     : pastedValue;
 }
@@ -315,7 +342,7 @@ function countRemainingTokens(
 }
 
 function normalizeSelection(
-  inputState: DatepickerPasteInputState,
+  inputState: DatepickerInputState,
 ): NormalizedSelection {
   const valueLength = inputState.value.length;
   const rawStart = inputState.selectionStart ?? 0;

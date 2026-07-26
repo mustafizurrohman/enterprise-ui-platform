@@ -48,7 +48,7 @@ import {
 import {
   LuxonDateInputAutocomplete,
 } from "./luxon-date-input-autocomplete";
-import { DatepickerPasteParserService } from "./datepicker-paste-parser.service";
+import { DatepickerParserService } from "./datepicker-parser.service";
 import { DatepickerIdService } from "./datepicker-id.service";
 
 @Component({
@@ -313,7 +313,7 @@ export class DatepickerComponent
   onTouched: () => void = () => {};
 
   private readonly injector = inject(Injector);
-  private readonly pasteParser = inject(DatepickerPasteParserService);
+  private readonly parser = inject(DatepickerParserService);
   private _ngControl: NgControl | null = null;
 
   protected get ngControl(): NgControl | null {
@@ -409,27 +409,56 @@ export class DatepickerComponent
         displayValue = this.formatDate(date);
       }
     } else if (typeof value === "string") {
-      const result = this.inputAutocomplete().process(value, {
-        commit: true,
-        now: this.today(),
-        locale: this.resolvedLocale(),
-      });
+      const result = this.parser.parse(
+        value,
+        {
+          value: "",
+          selectionStart: 0,
+          selectionEnd: 0,
+        },
+        this.inputAutocomplete(),
+        {
+          now: this.today(),
+          locale: this.resolvedLocale(),
+          commit: true,
+        },
+      );
 
       if (result.date) {
         date = result.date;
         displayValue = result.value;
-      } else {
-        let altDate = DateTime.fromISO(value);
-        if (!altDate.isValid) {
-          altDate = DateTime.fromSQL(value);
-        }
 
-        if (altDate.isValid) {
-          date = altDate;
-          displayValue = this.formatDate(date);
+        const jsDate = date.toJSDate();
+        if (
+          this.value() instanceof Date
+            ? (this.value() as Date).getTime() !== jsDate.getTime()
+            : this.value() !== jsDate
+        ) {
+          this.value.set(jsDate);
+        }
+      } else {
+        const procResult = this.inputAutocomplete().process(value, {
+          commit: true,
+          now: this.today(),
+          locale: this.resolvedLocale(),
+        });
+
+        if (procResult.date) {
+          date = procResult.date;
+          displayValue = procResult.value;
         } else {
-          date = undefined;
-          displayValue = value;
+          let altDate = DateTime.fromISO(value);
+          if (!altDate.isValid) {
+            altDate = DateTime.fromSQL(value);
+          }
+
+          if (altDate.isValid) {
+            date = altDate;
+            displayValue = this.formatDate(date);
+          } else {
+            date = undefined;
+            displayValue = value;
+          }
         }
       }
     }
@@ -901,7 +930,7 @@ export class DatepickerComponent
       return;
     }
 
-    const result = this.pasteParser.parse(
+    const result = this.parser.parse(
       pastedValue,
       {
         value: input.value,

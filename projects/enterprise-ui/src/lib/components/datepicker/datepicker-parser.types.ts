@@ -1,4 +1,4 @@
-export type DatepickerPasteInputState = Readonly<{
+export type DatepickerInputState = Readonly<{
   value: string;
   selectionStart: number | null;
   selectionEnd: number | null;

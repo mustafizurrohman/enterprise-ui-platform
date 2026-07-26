@@ -2347,6 +2347,7 @@ describe("DatepickerComponent", () => {
       id="signal"
       testId="signal-datepicker"
       [(value)]="signalValue"
+      dateFormat="dd.MM.yyyy"
     />
   `,
 })
@@ -2447,5 +2448,21 @@ describe("DatepickerComponent Forms Compatibility", () => {
     expect(DateTime.fromJSDate(host.signalValue() as Date).toISODate()).toBe(
       "2026-07-14",
     );
+  });
+
+  it("should normalize separators when value model is set to a string", async () => {
+    // Default format is dd.MM.yyyy
+    const testValue = "15-07-2026";
+    host.signalValue.set(testValue);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      "#signal input",
+    ) as HTMLInputElement;
+    // Should be normalized to 15.07.2026
+    expect(input.value).toContain("15.07.2026");
+    expect(host.signalValue() instanceof Date).toBeTruthy();
   });
 });
