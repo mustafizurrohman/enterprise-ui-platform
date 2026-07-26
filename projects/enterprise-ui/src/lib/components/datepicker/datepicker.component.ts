@@ -247,22 +247,13 @@ export class DatepickerComponent
   );
 
   readonly grid = computed(() => {
-    const startOfMonth = this.viewDate().startOf("month");
-    const daysInMonth = startOfMonth.daysInMonth ?? 0;
-    const firstDayWeekday = startOfMonth.weekday;
-
-    // Monday-based index: 0 = Mon, 6 = Sun
-    const mondayBasedFirstDayIndex = firstDayWeekday - 1;
-
-    // Align the first day of the month to its correct weekday column.
-    const leadingCellCount = mondayBasedFirstDayIndex;
-
+    const startOfMonth = this.viewDate().startOf('month');
     const cells: (DateTime | null)[] = Array.from(
-      { length: leadingCellCount },
-      () => null,
+        { length: startOfMonth.weekday - 1 },
+        () => null,
     );
 
-    for (let day = 1; day <= daysInMonth; day++) {
+    for (let day = 1; day <= (startOfMonth.daysInMonth ?? 0); day++) {
       cells.push(startOfMonth.set({ day }));
     }
 
@@ -270,17 +261,16 @@ export class DatepickerComponent
       cells.push(null);
     }
 
-    const gridResult: { weekNumber: number; days: (DateTime | null)[] }[] = [];
-    for (let i = 0; i < cells.length; i += 7) {
-      const weekDays = cells.slice(i, i + 7);
-      const firstDate = weekDays.find((d) => d !== null);
-      const weekNumber = firstDate
-        ? firstDate.weekNumber
-        : startOfMonth.minus({ weeks: 1 }).weekNumber;
+    return Array.from({ length: cells.length / 7 }, (_, weekIndex) => {
+      const days = cells.slice(weekIndex * 7, weekIndex * 7 + 7);
 
-      gridResult.push({ weekNumber, days: weekDays });
-    }
-    return gridResult;
+      return {
+        weekNumber:
+            days.find((date): date is DateTime => date !== null)?.weekNumber ??
+            startOfMonth.minus({ weeks: 1 }).weekNumber,
+        days,
+      };
+    });
   });
 
   protected readonly dialogContext = computed<DatepickerDialogContext>(() => ({
