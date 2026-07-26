@@ -10,6 +10,57 @@ import type {
   NormalizedSelection,
 } from "./datepicker-paste-parser.types";
 
+const NUMERIC_SEGMENT_TOKENS = new Set([
+  "y",
+  "yy",
+  "yyyy",
+  "yyyyy",
+  "yyyyyy",
+  "M",
+  "MM",
+  "L",
+  "LL",
+  "d",
+  "dd",
+  "o",
+  "ooo",
+  "H",
+  "HH",
+  "h",
+  "hh",
+  "m",
+  "mm",
+  "s",
+  "ss",
+  "S",
+  "SSS",
+  "u",
+  "uu",
+  "uuu",
+  "q",
+  "qq",
+  "kk",
+  "kkkk",
+  "W",
+  "WW",
+  "E",
+  "c",
+]);
+
+const TEXT_SEGMENT_TOKENS = new Set([
+  "MMM",
+  "MMMM",
+  "LLL",
+  "LLLL",
+  "a",
+  "EEE",
+  "EEEE",
+  "ccc",
+  "cccc",
+]);
+
+const SEGMENT_PATTERN = /[\p{L}\p{M}\d]+/gu;
+
 @Injectable({
   providedIn: "root",
 })
@@ -71,8 +122,10 @@ export class DatepickerPasteParserService {
       normalizedPastedValue,
       selection,
     );
+    let normalizedCombinedResult: DateInputAutocompleteResult | null = null;
+
     if (nextValueNormalized !== nextValue) {
-      const normalizedCombinedResult = autocomplete.processPastedValue(
+      normalizedCombinedResult = autocomplete.processPastedValue(
         nextValueNormalized,
         options,
       );
@@ -81,53 +134,184 @@ export class DatepickerPasteParserService {
       }
     }
 
-    return combinedResult;
+    return normalizedCombinedResult ?? combinedResult;
   }
 }
 
+/**
+ * Rebuilds a supported date/time value with the separators and literals from
+ * its configured Luxon format. Input separators may be mixed or completely
+ * different, while field order remains defined exclusively by the format.
+ *
+ * Complex Luxon tokens such as macros, eras, offsets, and IANA zones are left
+ * untouched. Their values can contain meaningful punctuation or multiple word
+ * segments and are therefore delegated to the original parser unchanged.
+ */
 function normalizeSeparators(pastedValue: string, format: string): string {
-  const parts = pastedValue.match(/[\p{L}\d]+/ug);
-  if (!parts || parts.length === 0) {
+  const formatParts = parseLuxonFormat(format);
+  if (!supportsSeparatorNormalization(formatParts)) {
     return pastedValue;
   }
 
-  const formatParts = parseLuxonFormat(format);
-  let result = "";
-  let partIndex = 0;
+  const segments = extractValueSegments(pastedValue, formatParts);
+  if (segments.length === 0) {
+    return pastedValue;
+  }
 
-  for (const fp of formatParts) {
-    if (fp.literal) {
-      if (partIndex > 0) {
-        const literalValue = fp.value.trim().toLowerCase();
-        const isAlphanumericLiteral = /[\p{L}\d]/u.test(literalValue);
+  let normalizedValue = "";
+  let segmentIndex = 0;
+  let consumedTokenCount = 0;
+  let hasIncompatibleSegment = false;
 
-        if (isAlphanumericLiteral) {
-          if (
-            partIndex < parts.length &&
-            parts[partIndex].toLowerCase() === literalValue
-          ) {
-            result += fp.value;
-            partIndex++;
-          } else {
-            return pastedValue;
-          }
-        } else {
-          if (partIndex < parts.length) {
-            result += fp.value;
-          }
-        }
-      }
-    } else {
-      if (partIndex < parts.length) {
-        result += parts[partIndex];
-        partIndex++;
-      } else {
+  for (let partIndex = 0; partIndex < formatParts.length; partIndex++) {
+    const formatPart = formatParts[partIndex];
+
+    if (!formatPart.literal) {
+      const segment = segments[segmentIndex];
+      if (!segment) {
         break;
       }
+      if (!matchesTokenSegment(segment, formatPart.value)) {
+        hasIncompatibleSegment = true;
+        break;
+      }
+
+      normalizedValue += segment;
+      segmentIndex++;
+      consumedTokenCount++;
+      continue;
+    }
+
+    const literalWords = formatPart.value.match(SEGMENT_PATTERN) ?? [];
+    const consumedLiteralWordCount = countMatchingLiteralWords(
+      segments,
+      segmentIndex,
+      literalWords,
+    );
+    const hasMatchedLiteralWords =
+      literalWords.length > 0 &&
+      consumedLiteralWordCount === literalWords.length;
+
+    if (hasMatchedLiteralWords) {
+      segmentIndex += consumedLiteralWordCount;
+    }
+
+    const remainingTokenCount = countRemainingTokens(
+      formatParts,
+      partIndex + 1,
+    );
+    const hasSegmentForNextToken = segmentIndex < segments.length;
+    const isLeadingLiteral = consumedTokenCount === 0;
+    const isTrailingLiteral = remainingTokenCount === 0;
+
+    if (isLeadingLiteral) {
+      if (hasMatchedLiteralWords) {
+        normalizedValue += formatPart.value;
+      }
+      continue;
+    }
+
+    if (isTrailingLiteral) {
+      normalizedValue += formatPart.value;
+      continue;
+    }
+
+    if (hasSegmentForNextToken) {
+      normalizedValue += formatPart.value;
     }
   }
 
-  return result || pastedValue;
+  return consumedTokenCount > 0 && !hasIncompatibleSegment
+    ? normalizedValue
+    : pastedValue;
+}
+
+function extractValueSegments(
+  pastedValue: string,
+  formatParts: ReturnType<typeof parseLuxonFormat>,
+): readonly string[] {
+  const literalWords = formatParts
+    .filter((part) => part.literal)
+    .flatMap((part) => part.value.match(SEGMENT_PATTERN) ?? [])
+    .sort((left, right) => right.length - left.length);
+  let tokenizableValue = pastedValue;
+
+  for (const literalWord of literalWords) {
+    const escapedLiteral = escapeRegExp(literalWord);
+    const literalPattern = new RegExp(
+      `(^|[^\\p{L}\\p{M}])(${escapedLiteral})(?=$|[^\\p{L}\\p{M}])`,
+      "giu",
+    );
+    tokenizableValue = tokenizableValue.replace(
+      literalPattern,
+      (_match, prefix: string, matchedLiteral: string) =>
+        `${prefix} ${matchedLiteral} `,
+    );
+  }
+
+  return tokenizableValue.match(SEGMENT_PATTERN) ?? [];
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+function supportsSeparatorNormalization(
+  formatParts: ReturnType<typeof parseLuxonFormat>,
+): boolean {
+  return formatParts.some((part) => !part.literal) &&
+    formatParts
+      .filter((part) => !part.literal)
+      .every(
+        (part) =>
+          NUMERIC_SEGMENT_TOKENS.has(part.value) ||
+          TEXT_SEGMENT_TOKENS.has(part.value),
+      );
+}
+
+function matchesTokenSegment(segment: string, token: string): boolean {
+  if (NUMERIC_SEGMENT_TOKENS.has(token)) {
+    return /^\d+$/u.test(segment);
+  }
+
+  return TEXT_SEGMENT_TOKENS.has(token) && /^[\p{L}\p{M}]+$/u.test(segment);
+}
+
+function countMatchingLiteralWords(
+  segments: readonly string[],
+  startIndex: number,
+  literalWords: readonly string[],
+): number {
+  if (literalWords.length === 0) {
+    return 0;
+  }
+
+  for (let index = 0; index < literalWords.length; index++) {
+    const segment = segments[startIndex + index];
+    if (
+      !segment ||
+      segment.toLocaleLowerCase() !== literalWords[index].toLocaleLowerCase()
+    ) {
+      return 0;
+    }
+  }
+
+  return literalWords.length;
+}
+
+function countRemainingTokens(
+  formatParts: ReturnType<typeof parseLuxonFormat>,
+  startIndex: number,
+): number {
+  let count = 0;
+
+  for (let index = startIndex; index < formatParts.length; index++) {
+    if (!formatParts[index].literal) {
+      count++;
+    }
+  }
+
+  return count;
 }
 
 function normalizeSelection(

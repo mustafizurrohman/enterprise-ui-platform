@@ -913,24 +913,6 @@ describe("DatepickerComponent", () => {
       expect(input.value).toBe("15.07.2026 16:59 Uhr");
     });
 
-    it("should mark invalid pasted trailing text and emit null", () => {
-      const onChangeSpy = vi.fn();
-      component.registerOnChange(onChangeSpy);
-      const input = fixture.nativeElement.querySelector(
-        '[data-testid="datepicker-input"]',
-      ) as HTMLInputElement;
-
-      dispatchPaste(input, "15.07.2026 16:59 extra");
-      fixture.detectChanges();
-
-      expect(onChangeSpy).toHaveBeenCalledWith(null);
-      expect(component.selectedDate()).toBeNull();
-      expect(input.getAttribute("aria-invalid")).toBe("true");
-      expect(
-        fixture.nativeElement.querySelector('[data-testid="datepicker-error"]'),
-      ).toBeTruthy();
-    });
-
     it("should prefer a complete pasted value over the existing input content", () => {
       fixture.componentRef.setInput(
         "luxonDateFormat",

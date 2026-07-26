@@ -8,7 +8,7 @@ const DEFAULT_DATETIME_FORMAT = "dd.MM.yyyy HH:mm 'Uhr'";
 
 type FormatCase = Readonly<{
   format: string;
-  locale: "de-DE" | "en-US";
+  locale: string;
 }>;
 
 const SUPPORTED_PASTE_FORMATS: readonly FormatCase[] = [
@@ -410,52 +410,198 @@ describe("DatepickerPasteParserService", () => {
   });
 
   describe("separator normalization", () => {
-    it("should parse 20-07-2024 for dd.MM.yyyy format", () => {
-      const autocomplete = new LuxonDateInputAutocomplete("dd.MM.yyyy", "de-DE");
+    it.each([
+      ["hyphen", "20-07-2024"],
+      ["slash", "20/07/2024"],
+      ["space", "20 07 2024"],
+      ["comma", "20,07,2024"],
+      ["mixed separators", "20-07/2024"],
+      ["Unicode and symbol separators", "20—07_2024"],
+    ])(
+      "parses a German date using %s",
+      (_, pastedValue) => {
+        const autocomplete = new LuxonDateInputAutocomplete(
+          "dd.MM.yyyy",
+          "de-DE",
+        );
+
+        const result = service.parse(
+          pastedValue,
+          { value: "", selectionStart: 0, selectionEnd: 0 },
+          autocomplete,
+          { now, locale: "de-DE" },
+        );
+
+        expect(result.valid).toBe(true);
+        expect(result.complete).toBe(true);
+        expect(result.value).toBe("20.07.2024");
+        expect(result.date?.toISODate()).toBe("2024-07-20");
+      },
+    );
+
+    it("normalizes mixed date and time separators including the Uhr literal", () => {
+      const autocomplete = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy HH:mm:ss 'Uhr'",
+        "de-DE",
+      );
+
       const result = service.parse(
-        "20-07-2024",
+        "20/07-2024,20.45-52 uHr",
         { value: "", selectionStart: 0, selectionEnd: 0 },
         autocomplete,
         { now, locale: "de-DE" },
       );
+
       expect(result.valid).toBe(true);
-      expect(result.value).toBe("20.07.2024");
+      expect(result.value).toBe("20.07.2024 20:45:52 Uhr");
+      expect(result.date?.toISO()).toContain("2024-07-20T20:45:52");
     });
 
-    it("should parse 20/07/2024 for dd.MM.yyyy format", () => {
-      const autocomplete = new LuxonDateInputAutocomplete("dd.MM.yyyy", "de-DE");
+    it("inserts a required ISO T literal when a different separator is pasted", () => {
+      const autocomplete = new LuxonDateInputAutocomplete(
+        "yyyy-MM-dd'T'HH:mm:ss",
+        "de-DE",
+      );
+
       const result = service.parse(
-        "20/07/2024",
+        "2024/07.20 20-45,52",
         { value: "", selectionStart: 0, selectionEnd: 0 },
         autocomplete,
         { now, locale: "de-DE" },
       );
+
       expect(result.valid).toBe(true);
-      expect(result.value).toBe("20.07.2024");
+      expect(result.value).toBe("2024-07-20T20:45:52");
+      expect(result.date?.toISO()).toContain("2024-07-20T20:45:52");
     });
 
-    it("should parse 20.07.2024 20:45:52 for dd.MM.yyyy format", () => {
-      const autocomplete = new LuxonDateInputAutocomplete("dd.MM.yyyy", "de-DE");
-      const result = service.parse(
-        "20.07.2024 20:45:52",
+    it.each([
+      {
+        name: "US month-first",
+        format: "MM/dd/yyyy",
+        locale: "en-US",
+        pastedValue: "07-20.2024",
+        expectedValue: "07/20/2024",
+        expectedIsoDate: "2024-07-20",
+      },
+      {
+        name: "British day-first",
+        format: "dd/MM/yyyy",
+        locale: "en-GB",
+        pastedValue: "20.07-2024",
+        expectedValue: "20/07/2024",
+        expectedIsoDate: "2024-07-20",
+      },
+      {
+        name: "French textual month",
+        format: "dd MMMM yyyy",
+        locale: "fr-FR",
+        pastedValue: "20-juillet/2024",
+        expectedValue: "20 juillet 2024",
+        expectedIsoDate: "2024-07-20",
+      },
+      {
+        name: "Japanese year-first",
+        format: "yyyy/MM/dd",
+        locale: "ja-JP",
+        pastedValue: "2024-07.20",
+        expectedValue: "2024/07/20",
+        expectedIsoDate: "2024-07-20",
+      },
+    ])(
+      "normalizes separators for $name format",
+      ({ format, locale, pastedValue, expectedValue, expectedIsoDate }) => {
+        const autocomplete = new LuxonDateInputAutocomplete(format, locale);
+
+        const result = service.parse(
+          pastedValue,
+          { value: "", selectionStart: 0, selectionEnd: 0 },
+          autocomplete,
+          { now, locale },
+        );
+
+        expect(result.valid).toBe(true);
+        expect(result.complete).toBe(true);
+        expect(result.value).toBe(expectedValue);
+        expect(result.date?.toISODate()).toBe(expectedIsoDate);
+      },
+    );
+
+    it("uses the configured token order for an otherwise ambiguous value", () => {
+      const pastedValue = "07-08-2024";
+      const usResult = service.parse(
+        pastedValue,
         { value: "", selectionStart: 0, selectionEnd: 0 },
-        autocomplete,
-        { now, locale: "de-DE" },
+        new LuxonDateInputAutocomplete("MM/dd/yyyy", "en-US"),
+        { now, locale: "en-US" },
       );
-      expect(result.valid).toBe(true);
-      expect(result.value).toBe("20.07.2024");
+      const britishResult = service.parse(
+        pastedValue,
+        { value: "", selectionStart: 0, selectionEnd: 0 },
+        new LuxonDateInputAutocomplete("dd/MM/yyyy", "en-GB"),
+        { now, locale: "en-GB" },
+      );
+
+      expect(usResult.date?.toISODate()).toBe("2024-07-08");
+      expect(britishResult.date?.toISODate()).toBe("2024-08-07");
     });
 
-    it("should parse 20-07-2024 20:45:52 for dd.MM.yyyy format", () => {
-      const autocomplete = new LuxonDateInputAutocomplete("dd.MM.yyyy", "de-DE");
+    it.each([
+      ["20.07.2024 20:45:52", "20.07.2024"],
+      ["20-07/2024 20:45:52", "20.07.2024"],
+    ])(
+      "ignores trailing time fields when the configured format is date-only",
+      (pastedValue, expectedValue) => {
+        const autocomplete = new LuxonDateInputAutocomplete(
+          "dd.MM.yyyy",
+          "de-DE",
+        );
+
+        const result = service.parse(
+          pastedValue,
+          { value: "", selectionStart: 0, selectionEnd: 0 },
+          autocomplete,
+          { now, locale: "de-DE" },
+        );
+
+        expect(result.valid).toBe(true);
+        expect(result.value).toBe(expectedValue);
+      },
+    );
+
+    it("does not make an invalid calendar date valid", () => {
+      const autocomplete = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy",
+        "de-DE",
+      );
+
       const result = service.parse(
-        "20-07-2024 20:45:52",
+        "31-02/2024",
         { value: "", selectionStart: 0, selectionEnd: 0 },
         autocomplete,
         { now, locale: "de-DE" },
       );
-      expect(result.valid).toBe(true);
-      expect(result.value).toBe("20.07.2024");
+
+      expect(result.valid).toBe(false);
+      expect(result.date).toBeNull();
+      expect(result.error?.code).toBe("INVALID_DAY_FOR_MONTH");
+    });
+
+    it("does not treat letters between numeric fields as separators", () => {
+      const autocomplete = new LuxonDateInputAutocomplete(
+        "dd.MM.yyyy",
+        "de-DE",
+      );
+
+      const result = service.parse(
+        "20x07x2024",
+        { value: "", selectionStart: 0, selectionEnd: 0 },
+        autocomplete,
+        { now, locale: "de-DE" },
+      );
+
+      expect(result.valid).toBe(false);
+      expect(result.date).toBeNull();
     });
   });
 
