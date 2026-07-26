@@ -1,5 +1,5 @@
-@use "sass:color";
-@use "@angular/cdk";
+@use 'sass:color';
+@use '@angular/cdk';
 
 @include cdk.a11y-visually-hidden();
 

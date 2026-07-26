@@ -6,20 +6,20 @@ import {
   input,
   output,
   viewChildren,
-} from "@angular/core";
-import { DateTime } from "luxon";
+} from '@angular/core';
+import { DateTime } from 'luxon';
 import {
   type DatepickerGridContext,
   type DatepickerGridKeydown,
   type DatepickerWeek,
-} from "./datepicker-grid.types";
-import { DatepickerIdService } from "./datepicker-id.service";
+} from './datepicker-grid.types';
+import { DatepickerIdService } from './datepicker-id.service';
 
 @Component({
-  selector: "datepicker-grid",
+  selector: 'datepicker-grid',
   standalone: true,
-  templateUrl: "./datepicker-grid.component.html",
-  styleUrl: "./datepicker-grid.component.scss",
+  templateUrl: './datepicker-grid.component.html',
+  styleUrl: './datepicker-grid.component.scss',
 })
 export class DatepickerGridComponent {
   private readonly idService = inject(DatepickerIdService);
@@ -36,14 +36,11 @@ export class DatepickerGridComponent {
   protected readonly activeDate = computed(() => this.context().activeDate);
   protected readonly today = computed(() => this.context().today);
   protected readonly viewDate = computed(() => this.context().viewDate);
-  protected readonly monthHeadingId = computed(
-    () => this.context().monthHeadingId,
-  );
+  protected readonly monthHeadingId = computed(() => this.context().monthHeadingId);
   protected readonly testIdPrefix = computed(() => this.context().testIdPrefix);
   protected readonly locale = computed(() => this.context().locale);
 
-  private readonly calendarDayButtons =
-    viewChildren<ElementRef<HTMLButtonElement>>("calendarDay");
+  private readonly calendarDayButtons = viewChildren<ElementRef<HTMLButtonElement>>('calendarDay');
 
   focusDate(date: DateTime): boolean {
     const isoDate = date.toISODate();
@@ -53,7 +50,7 @@ export class DatepickerGridComponent {
     }
 
     const button = this.calendarDayButtons().find(
-      ({ nativeElement }) => nativeElement.dataset["date"] === isoDate,
+      ({ nativeElement }) => nativeElement.dataset['date'] === isoDate,
     )?.nativeElement;
 
     if (!button) {
@@ -77,15 +74,15 @@ export class DatepickerGridComponent {
   }
 
   protected isSelected(date: DateTime): boolean {
-    return !!this.selectedDate()?.hasSame(date, "day");
+    return !!this.selectedDate()?.hasSame(date, 'day');
   }
 
   protected isToday(date: DateTime | null): boolean {
-    return !!date?.hasSame(this.today(), "day");
+    return !!date?.hasSame(this.today(), 'day');
   }
 
   protected isActiveDate(date: DateTime): boolean {
-    return this.activeDate().hasSame(date, "day");
+    return this.activeDate().hasSame(date, 'day');
   }
 
   protected isCurrentWeek(week: DatepickerWeek): boolean {
@@ -97,18 +94,15 @@ export class DatepickerGridComponent {
   }
 
   protected isCurrentWeekday(weekday: number): boolean {
-    return (
-      this.today().weekday === weekday &&
-      this.today().hasSame(this.viewDate(), "month")
-    );
+    return this.today().weekday === weekday && this.today().hasSame(this.viewDate(), 'month');
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {
     return date.setLocale(this.locale()).toLocaleString({
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     });
   }
 

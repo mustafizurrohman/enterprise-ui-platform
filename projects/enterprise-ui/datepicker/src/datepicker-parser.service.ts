@@ -1,71 +1,65 @@
-import { Injectable } from "@angular/core";
-import { DateTime } from "luxon";
-import {
-  LuxonDateInputAutocomplete,
-  parseLuxonFormat,
-} from "./luxon-date-input-autocomplete";
+import { Injectable } from '@angular/core';
+import { DateTime } from 'luxon';
+import { LuxonDateInputAutocomplete, parseLuxonFormat } from './luxon-date-input-autocomplete';
 import type {
   DateInputAutocompleteResult,
   DateInputAutocompleteOptions,
-} from "./luxon-date-input-autocomplete.types";
-import type {
-  DatepickerInputState,
-  NormalizedSelection,
-} from "./datepicker-parser.types";
+} from './luxon-date-input-autocomplete.types';
+import type { DatepickerInputState, NormalizedSelection } from './datepicker-parser.types';
 
 const NUMERIC_SEGMENT_TOKENS = new Set([
-  "y",
-  "yy",
-  "yyyy",
-  "yyyyy",
-  "yyyyyy",
-  "M",
-  "MM",
-  "L",
-  "LL",
-  "d",
-  "dd",
-  "o",
-  "ooo",
-  "H",
-  "HH",
-  "h",
-  "hh",
-  "m",
-  "mm",
-  "s",
-  "ss",
-  "S",
-  "SSS",
-  "u",
-  "uu",
-  "uuu",
-  "q",
-  "qq",
-  "kk",
-  "kkkk",
-  "W",
-  "WW",
-  "E",
-  "c",
+  'y',
+  'yy',
+  'yyyy',
+  'yyyyy',
+  'yyyyyy',
+  'M',
+  'MM',
+  'L',
+  'LL',
+  'd',
+  'dd',
+  'o',
+  'ooo',
+  'H',
+  'HH',
+  'h',
+  'hh',
+  'm',
+  'mm',
+  's',
+  'ss',
+  'S',
+  'SSS',
+  'u',
+  'uu',
+  'uuu',
+  'q',
+  'qq',
+  'kk',
+  'kkkk',
+  'W',
+  'WW',
+  'E',
+  'c',
 ]);
 
 const TEXT_SEGMENT_TOKENS = new Set([
-  "MMM",
-  "MMMM",
-  "LLL",
-  "LLLL",
-  "a",
-  "EEE",
-  "EEEE",
-  "ccc",
-  "cccc",
+  'MMM',
+  'MMMM',
+  'LLL',
+  'LLLL',
+  'a',
+  'EEE',
+  'EEEE',
+  'ccc',
+  'cccc',
 ]);
 
 const SEGMENT_PATTERN = /[\p{L}\p{M}\d]+/gu;
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root',
 })
 export class DatepickerParserService {
   /**
@@ -98,10 +92,7 @@ export class DatepickerParserService {
     const format = autocomplete.getDateFormat();
     const normalizedPastedValue = normalizeSeparators(pastedValue, format);
 
-    const pastedResult = autocomplete.processPastedValue(
-      pastedValue,
-      parseOptions,
-    );
+    const pastedResult = autocomplete.processPastedValue(pastedValue, parseOptions);
     if (isCompleteDateResult(pastedResult)) {
       return pastedResult;
     }
@@ -117,15 +108,8 @@ export class DatepickerParserService {
     }
 
     const selection = normalizeSelection(inputState);
-    const nextValue = replaceSelection(
-      inputState.value,
-      pastedValue,
-      selection,
-    );
-    const combinedResult = autocomplete.processPastedValue(
-      nextValue,
-      parseOptions,
-    );
+    const nextValue = replaceSelection(inputState.value, pastedValue, selection);
+    const combinedResult = autocomplete.processPastedValue(nextValue, parseOptions);
     if (isCompleteDateResult(combinedResult)) {
       return combinedResult;
     }
@@ -138,10 +122,7 @@ export class DatepickerParserService {
     let normalizedCombinedResult: DateInputAutocompleteResult | null = null;
 
     if (nextValueNormalized !== nextValue) {
-      normalizedCombinedResult = autocomplete.processPastedValue(
-        nextValueNormalized,
-        parseOptions,
-      );
+      normalizedCombinedResult = autocomplete.processPastedValue(nextValueNormalized, parseOptions);
       if (isCompleteDateResult(normalizedCombinedResult)) {
         return normalizedCombinedResult;
       }
@@ -175,7 +156,7 @@ function normalizeSeparators(pastedValue: string, format: string): string {
     return pastedValue;
   }
 
-  let normalizedValue = "";
+  let normalizedValue = '';
   let segmentIndex = 0;
   let consumedTokenCount = 0;
   let hasIncompatibleSegment = false;
@@ -207,8 +188,7 @@ function normalizeSeparators(pastedValue: string, format: string): string {
       literalWords,
     );
     const hasMatchedLiteralWords =
-      literalWords.length > 0 &&
-      consumedLiteralWordCount === literalWords.length;
+      literalWords.length > 0 && consumedLiteralWordCount === literalWords.length;
 
     if (hasMatchedLiteralWords) {
       segmentIndex += consumedLiteralWordCount;
@@ -216,10 +196,7 @@ function normalizeSeparators(pastedValue: string, format: string): string {
       allLiteralsMatched = false;
     }
 
-    const remainingTokenCount = countRemainingTokens(
-      formatParts,
-      partIndex + 1,
-    );
+    const remainingTokenCount = countRemainingTokens(formatParts, partIndex + 1);
     const hasSegmentForNextToken = segmentIndex < segments.length;
     const isLeadingLiteral = consumedTokenCount === 0;
     const isTrailingLiteral = remainingTokenCount === 0;
@@ -266,12 +243,11 @@ function extractValueSegments(
     const escapedLiteral = escapeRegExp(literalWord);
     const literalPattern = new RegExp(
       `(^|[^\\p{L}\\p{M}])(${escapedLiteral})(?=$|[^\\p{L}\\p{M}])`,
-      "giu",
+      'giu',
     );
     tokenizableValue = tokenizableValue.replace(
       literalPattern,
-      (_match, prefix: string, matchedLiteral: string) =>
-        `${prefix} ${matchedLiteral} `,
+      (_match, prefix: string, matchedLiteral: string) => `${prefix} ${matchedLiteral} `,
     );
   }
 
@@ -279,20 +255,18 @@ function extractValueSegments(
 }
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 }
 
-function supportsSeparatorNormalization(
-  formatParts: ReturnType<typeof parseLuxonFormat>,
-): boolean {
-  return formatParts.some((part) => !part.literal) &&
+function supportsSeparatorNormalization(formatParts: ReturnType<typeof parseLuxonFormat>): boolean {
+  return (
+    formatParts.some((part) => !part.literal) &&
     formatParts
       .filter((part) => !part.literal)
       .every(
-        (part) =>
-          NUMERIC_SEGMENT_TOKENS.has(part.value) ||
-          TEXT_SEGMENT_TOKENS.has(part.value),
-      );
+        (part) => NUMERIC_SEGMENT_TOKENS.has(part.value) || TEXT_SEGMENT_TOKENS.has(part.value),
+      )
+  );
 }
 
 function matchesTokenSegment(segment: string, token: string): boolean {
@@ -314,10 +288,7 @@ function countMatchingLiteralWords(
 
   for (let index = 0; index < literalWords.length; index++) {
     const segment = segments[startIndex + index];
-    if (
-      !segment ||
-      segment.toLocaleLowerCase() !== literalWords[index].toLocaleLowerCase()
-    ) {
+    if (!segment || segment.toLocaleLowerCase() !== literalWords[index].toLocaleLowerCase()) {
       return 0;
     }
   }
@@ -340,9 +311,7 @@ function countRemainingTokens(
   return count;
 }
 
-function normalizeSelection(
-  inputState: DatepickerInputState,
-): NormalizedSelection {
+function normalizeSelection(inputState: DatepickerInputState): NormalizedSelection {
   const valueLength = inputState.value.length;
   const rawStart = inputState.selectionStart ?? 0;
   const rawEnd = inputState.selectionEnd ?? valueLength;
@@ -357,21 +326,13 @@ function replaceSelection(
   pastedValue: string,
   selection: NormalizedSelection,
 ): string {
-  return (
-    currentValue.slice(0, selection.start) +
-    pastedValue +
-    currentValue.slice(selection.end)
-  );
+  return currentValue.slice(0, selection.start) + pastedValue + currentValue.slice(selection.end);
 }
-
 
 function hasRelevantNormalizedError(
   result: DateInputAutocompleteResult | null,
 ): result is DateInputAutocompleteResult {
-  return (
-    result?.error?.code === "INVALID_DAY_FOR_MONTH" ||
-    result?.error?.code === "OUT_OF_RANGE"
-  );
+  return result?.error?.code === 'INVALID_DAY_FOR_MONTH' || result?.error?.code === 'OUT_OF_RANGE';
 }
 
 function isCompleteDateResult(result: DateInputAutocompleteResult): boolean {

@@ -1,5 +1,5 @@
-@use "sass:color";
-@use "@angular/cdk";
+@use 'sass:color';
+@use '@angular/cdk';
 
 @include cdk.a11y-visually-hidden();
 
@@ -21,7 +21,7 @@ $calendar-header-background: #f5f5f5; // Added this line to ensure $calendar-hea
 
 .datepicker {
   display: inline-block;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
   width: var(--datepicker-input-width);
 
   .datepicker-label {
@@ -105,7 +105,9 @@ $calendar-header-background: #f5f5f5; // Added this line to ensure $calendar-hea
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: color 0.3s, background-color 0.3s;
+      transition:
+        color 0.3s,
+        background-color 0.3s;
 
       &:hover:not(:disabled):not(.datepicker-icon--disabled) {
         background-color: $hover-background;

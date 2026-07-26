@@ -1,5 +1,5 @@
-@use "sass:color";
-@use "@angular/cdk";
+@use 'sass:color';
+@use '@angular/cdk';
 
 @include cdk.a11y-visually-hidden();
 
@@ -16,19 +16,19 @@ $divider: rgba(0, 0, 0, 0.12);
 }
 
 .datepicker-calendar {
-    background: $background-card;
-    border-radius: 4px;
-    border: 1px solid $divider;
-    overflow: hidden;
-    box-shadow:
-      0 2px 4px -1px rgba(0, 0, 0, 0.2),
-      0 4px 5px 0 rgba(0, 0, 0, 0.14),
-      0 1px 10px 0 rgba(0, 0, 0, 0.12);
+  background: $background-card;
+  border-radius: 4px;
+  border: 1px solid $divider;
+  overflow: hidden;
+  box-shadow:
+    0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    0 4px 5px 0 rgba(0, 0, 0, 0.14),
+    0 1px 10px 0 rgba(0, 0, 0, 0.12);
   padding: 8px;
   width: 393px;
   max-width: calc(100vw - 16px);
   user-select: none;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
 
   ::ng-deep {
     .datepicker-grid {
@@ -81,4 +81,3 @@ $divider: rgba(0, 0, 0, 0.12);
     outline: 2px solid CanvasText;
   }
 }
-

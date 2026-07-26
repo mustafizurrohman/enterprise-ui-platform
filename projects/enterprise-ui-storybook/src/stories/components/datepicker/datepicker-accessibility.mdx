@@ -1,7 +1,10 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 import * as DateTimeStories from './date-time/date-time.stories';
 
-<Meta of={DateTimeStories} name="Accessibility" />
+<Meta
+  of={DateTimeStories}
+  name="Accessibility"
+/>
 
 # Accessibility
 
@@ -13,33 +16,33 @@ Full keyboard support is provided for efficient, mouse-free operation:
 
 ### Focus Management
 
-| Key | Action |
-| :--- | :--- |
-| **ArrowDown** / **Alt + ArrowDown** | Opens the calendar overlay. |
-| **Enter** | Commits manual input or selects the focused date. |
-| **Escape** | Closes the calendar and returns focus to the last active trigger element. |
-| **Backspace** | Intelligent deletion for localized literals (e.g., " Uhr"). |
+| Key                                 | Action                                                                    |
+| :---------------------------------- | :------------------------------------------------------------------------ |
+| **ArrowDown** / **Alt + ArrowDown** | Opens the calendar overlay.                                               |
+| **Enter**                           | Commits manual input or selects the focused date.                         |
+| **Escape**                          | Closes the calendar and returns focus to the last active trigger element. |
+| **Backspace**                       | Intelligent deletion for localized literals (e.g., " Uhr").               |
 
 ### Calendar Navigation
 
-| Key | Action |
-| :--- | :--- |
-| **Arrow Keys** | Navigates between days (Left/Right) or weeks (Up/Down) in the calendar grid. |
-| **Home** / **End** | Moves focus to the first or last day of the current week. |
-| **PageUp** / **PageDown** | Switches to the previous or next month. |
-| **Shift + PageUp** / **Shift + PageDown** | Switches to the previous or next year. |
-| **Space** / **Enter** | Selects the currently focused date. |
-| **Escape** | Closes the calendar without making a selection. |
+| Key                                       | Action                                                                       |
+| :---------------------------------------- | :--------------------------------------------------------------------------- |
+| **Arrow Keys**                            | Navigates between days (Left/Right) or weeks (Up/Down) in the calendar grid. |
+| **Home** / **End**                        | Moves focus to the first or last day of the current week.                    |
+| **PageUp** / **PageDown**                 | Switches to the previous or next month.                                      |
+| **Shift + PageUp** / **Shift + PageDown** | Switches to the previous or next year.                                       |
+| **Space** / **Enter**                     | Selects the currently focused date.                                          |
+| **Escape**                                | Closes the calendar without making a selection.                              |
 
 ### Time Selection
 
-| Key | Action |
-| :--- | :--- |
+| Key                         | Action                                                        |
+| :-------------------------- | :------------------------------------------------------------ |
 | **ArrowUp** / **ArrowDown** | Increments or decrements the value of the focused time wheel. |
-| **PageUp** / **PageDown** | Adjusts the value by a factor of 10. |
-| **Home** / **End** | Jumps to the minimum or maximum value of the focused unit. |
-| **Numeric Keys** | Directly enters values for hours, minutes, or seconds. |
-| **Space** / **Enter** | (Meridiem toggle) Selects AM or PM. |
+| **PageUp** / **PageDown**   | Adjusts the value by a factor of 10.                          |
+| **Home** / **End**          | Jumps to the minimum or maximum value of the focused unit.    |
+| **Numeric Keys**            | Directly enters values for hours, minutes, or seconds.        |
+| **Space** / **Enter**       | (Meridiem toggle) Selects AM or PM.                           |
 
 ## Screen Reader Support
 

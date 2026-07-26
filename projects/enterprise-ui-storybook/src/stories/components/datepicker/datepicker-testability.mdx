@@ -1,7 +1,10 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 import * as DateTimeStories from './date-time/date-time.stories';
 
-<Meta of={DateTimeStories} name="Testability" />
+<Meta
+  of={DateTimeStories}
+  name="Testability"
+/>
 
 # Testability
 
@@ -13,60 +16,61 @@ The component supports a `testId` input which serves as a prefix for all interna
 
 ### Root & Input Elements
 
-| Selector | Description |
-| :--- | :--- |
-| `[data-testid="your-id"]` | The root component container. |
-| `[data-testid="your-id-label"]` | The associated label element. |
+| Selector                                | Description                                                |
+| :-------------------------------------- | :--------------------------------------------------------- |
+| `[data-testid="your-id"]`               | The root component container.                              |
+| `[data-testid="your-id-label"]`         | The associated label element.                              |
 | `[data-testid="your-id-input-wrapper"]` | The container for the input and integrated action buttons. |
-| `[data-testid="your-id-input"]` | The interactive text input for manual entry. |
-| `[data-testid="your-id-clear"]` | The button to reset the current value. |
-| `[data-testid="your-id-clear-icon"]` | The icon inside the clear button. |
-| `[data-testid="your-id-now-input"]` | The "Now" or "Today" shortcut button. |
-| `[data-testid="your-id-now-icon"]` | The icon inside the "Now" button. |
-| `[data-testid="your-id-toggle"]` | The trigger button to open the calendar dialog. |
-| `[data-testid="your-id-toggle-icon"]` | The icon inside the toggle button. |
-| `[data-testid="your-id-hint"]` | Visually hidden instructions regarding supported formats. |
-| `[data-testid="your-id-input-status"]` | Live region for manual input feedback. |
-| `[data-testid="your-id-error"]` | Validation error message display. |
+| `[data-testid="your-id-input"]`         | The interactive text input for manual entry.               |
+| `[data-testid="your-id-clear"]`         | The button to reset the current value.                     |
+| `[data-testid="your-id-clear-icon"]`    | The icon inside the clear button.                          |
+| `[data-testid="your-id-now-input"]`     | The "Now" or "Today" shortcut button.                      |
+| `[data-testid="your-id-now-icon"]`      | The icon inside the "Now" button.                          |
+| `[data-testid="your-id-toggle"]`        | The trigger button to open the calendar dialog.            |
+| `[data-testid="your-id-toggle-icon"]`   | The icon inside the toggle button.                         |
+| `[data-testid="your-id-hint"]`          | Visually hidden instructions regarding supported formats.  |
+| `[data-testid="your-id-input-status"]`  | Live region for manual input feedback.                     |
+| `[data-testid="your-id-error"]`         | Validation error message display.                          |
 
 ### Calendar Dialog & Navigation
 
-| Selector | Description |
-| :--- | :--- |
-| `[data-testid="your-id-dialog"]` | The main calendar overlay container. |
-| `[data-testid="your-id-dialog-title"]` | The visually hidden title of the dialog. |
-| `[data-testid="your-id-dialog-description"]` | Live region for navigation instructions and announcements. |
-| `[data-testid="your-id-month-navigation"]` | Container for month switching controls. |
-| `[data-testid="your-id-previous-month"]` / `next-month` | Buttons for month-by-month navigation. |
-| `[data-testid="your-id-month-reset"]` | Button to jump to the current month. |
-| `[data-testid="your-id-month-select"]` | Dropdown for direct month selection. |
-| `[data-testid="your-id-month-heading"]` | Visually hidden heading for the currently displayed month. |
-| `[data-testid="your-id-year-navigation"]` | Container for year switching controls. |
-| `[data-testid="your-id-previous-year"]` / `next-year` | Buttons for year-by-year navigation. |
-| `[data-testid="your-id-year-reset"]` | Button to jump to the current year. |
-| `[data-testid="your-id-year-display"]` | Input field for direct year entry. |
-| `[data-testid="your-id-calendar-grid"]` | The interactive date selection grid (role="grid"). |
-| `[data-testid="your-id-day-YYYY-MM-DD"]` | Individual day cells (e.g., `your-id-day-2026-07-19`). |
-| `[data-testid="your-id-date-status"]` | Live region for date selection confirmation. |
+| Selector                                                | Description                                                |
+| :------------------------------------------------------ | :--------------------------------------------------------- |
+| `[data-testid="your-id-dialog"]`                        | The main calendar overlay container.                       |
+| `[data-testid="your-id-dialog-title"]`                  | The visually hidden title of the dialog.                   |
+| `[data-testid="your-id-dialog-description"]`            | Live region for navigation instructions and announcements. |
+| `[data-testid="your-id-month-navigation"]`              | Container for month switching controls.                    |
+| `[data-testid="your-id-previous-month"]` / `next-month` | Buttons for month-by-month navigation.                     |
+| `[data-testid="your-id-month-reset"]`                   | Button to jump to the current month.                       |
+| `[data-testid="your-id-month-select"]`                  | Dropdown for direct month selection.                       |
+| `[data-testid="your-id-month-heading"]`                 | Visually hidden heading for the currently displayed month. |
+| `[data-testid="your-id-year-navigation"]`               | Container for year switching controls.                     |
+| `[data-testid="your-id-previous-year"]` / `next-year`   | Buttons for year-by-year navigation.                       |
+| `[data-testid="your-id-year-reset"]`                    | Button to jump to the current year.                        |
+| `[data-testid="your-id-year-display"]`                  | Input field for direct year entry.                         |
+| `[data-testid="your-id-calendar-grid"]`                 | The interactive date selection grid (role="grid").         |
+| `[data-testid="your-id-day-YYYY-MM-DD"]`                | Individual day cells (e.g., `your-id-day-2026-07-19`).     |
+| `[data-testid="your-id-date-status"]`                   | Live region for date selection confirmation.               |
 
 ### Time Selection Controls
 
-| Selector | Description |
-| :--- | :--- |
-| `[data-testid="your-id-time-picker"]` | Container for all time-related selection components. |
-| `[data-testid="your-id-time-wheels"]` | Group containing hour, minute, and second controls. |
-| `[data-testid="your-id-hour-label"]` / `minute-label` / `second-label` | The visual label for the time unit. |
-| `[data-testid="your-id-hour-input"]` / `minute-input` / `second-input` | Interactive inputs for specific time units. |
-| `[data-testid="your-id-hour-increment"]` / `decrement` | Buttons for stepping time units. |
-| `[data-testid="your-id-meridiem-toggle"]` | Radio group for AM/PM selection. |
-| `[data-testid="your-id-meridiem-am"]` / `meridiem-pm` | Individual AM/PM radio options. |
-| `[data-testid="your-id-time-adjustments"]` | Container for quick-adjustment buttons. |
-| `[data-testid="your-id-hour-adjustment-group"]` / `minute-adjustment-group` | Groups for specific time unit adjustments. |
-| `[data-testid="your-id-time-status"]` | Live region for time selection updates. |
+| Selector                                                                    | Description                                          |
+| :-------------------------------------------------------------------------- | :--------------------------------------------------- |
+| `[data-testid="your-id-time-picker"]`                                       | Container for all time-related selection components. |
+| `[data-testid="your-id-time-wheels"]`                                       | Group containing hour, minute, and second controls.  |
+| `[data-testid="your-id-hour-label"]` / `minute-label` / `second-label`      | The visual label for the time unit.                  |
+| `[data-testid="your-id-hour-input"]` / `minute-input` / `second-input`      | Interactive inputs for specific time units.          |
+| `[data-testid="your-id-hour-increment"]` / `decrement`                      | Buttons for stepping time units.                     |
+| `[data-testid="your-id-meridiem-toggle"]`                                   | Radio group for AM/PM selection.                     |
+| `[data-testid="your-id-meridiem-am"]` / `meridiem-pm`                       | Individual AM/PM radio options.                      |
+| `[data-testid="your-id-time-adjustments"]`                                  | Container for quick-adjustment buttons.              |
+| `[data-testid="your-id-hour-adjustment-group"]` / `minute-adjustment-group` | Groups for specific time unit adjustments.           |
+| `[data-testid="your-id-time-status"]`                                       | Live region for time selection updates.              |
 
 ## Integration Standards
 
 Leveraging standard Angular protocols, the component ensures robust compatibility with modern testing frameworks:
+
 - **Reactive & Template-driven Forms**: Full support for state tracking and validation testing.
 - **Async Testing**: Compatible with `fakeAsync` and `waitForAsync` for overlay and animation handling.
 - **Signal-based Architecture**: Optimized for modern Angular change detection strategies.
@@ -74,6 +78,7 @@ Leveraging standard Angular protocols, the component ensures robust compatibilit
 ## Testing Paste Functionality
 
 When testing clipboard operations, ensure that:
+
 1.  **Events**: Trigger the `paste` event on the `[data-testid="your-id-input"]` element with a `ClipboardEvent`.
 2.  **Feedback**: Verify that `[data-testid="your-id-input-status"]` (the live region) announces the successful insertion (e.g., "Eingefügtes Datum übernommen").
 3.  **Validation**: Check that the internal value updates correctly even if pasted separators differ from the configured format.

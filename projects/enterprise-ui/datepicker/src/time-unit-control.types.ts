@@ -1,6 +1,6 @@
-export type TimeUnit = "hour" | "minute" | "second";
-export type TimeUnitControlHourCycle = "h12" | "h23";
-export type TimeUnitControlMeridiem = "AM" | "PM";
+export type TimeUnit = 'hour' | 'minute' | 'second';
+export type TimeUnitControlHourCycle = 'h12' | 'h23';
+export type TimeUnitControlMeridiem = 'AM' | 'PM';
 
 export type TimeUnitControlContext = Readonly<{
   unit: TimeUnit;
@@ -21,8 +21,8 @@ export type TimeUnitConfiguration = {
   maximum: number;
 };
 
-export type TimeUnitControlAnimationDirection = "increment" | "decrement";
-export type TimeUnitControlAnimationPhase = "a" | "b";
+export type TimeUnitControlAnimationDirection = 'increment' | 'decrement';
+export type TimeUnitControlAnimationPhase = 'a' | 'b';
 
 export type TimeUnitControlAnimationState = Readonly<{
   direction: TimeUnitControlAnimationDirection;

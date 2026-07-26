@@ -21,7 +21,7 @@ const meta: Meta<ReactiveFormWrapperComponent> = {
     showQuickTimeControls: {
       control: 'boolean',
       description: 'Whether to show quick time adjustment buttons',
-    }
+    },
   },
 };
 

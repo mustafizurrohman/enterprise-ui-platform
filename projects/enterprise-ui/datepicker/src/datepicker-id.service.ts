@@ -1,19 +1,15 @@
-import { computed, Injectable, signal } from "@angular/core";
+import { computed, Injectable, signal } from '@angular/core';
 
 @Injectable()
 export class DatepickerIdService {
   private static nextId = 0;
 
-  private readonly componentIdSignal = signal(
-    `datepicker-${DatepickerIdService.nextId++}`,
-  );
+  private readonly componentIdSignal = signal(`datepicker-${DatepickerIdService.nextId++}`);
   private readonly testIdSignal = signal<string | null>(null);
 
   readonly componentId = this.componentIdSignal.asReadonly();
 
-  readonly testIdPrefix = computed(
-    () => this.testIdSignal()?.trim() || this.componentIdSignal(),
-  );
+  readonly testIdPrefix = computed(() => this.testIdSignal()?.trim() || this.componentIdSignal());
 
   readonly ids = computed(() => {
     const root = this.componentIdSignal();

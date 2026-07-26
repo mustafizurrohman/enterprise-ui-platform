@@ -32,8 +32,9 @@ export class ReactiveFormWrapperComponent implements OnInit, OnChanges, OnDestro
   }
 
   ngOnInit(): void {
-    this.form.get('date')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
+    this.form
+      .get('date')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((value) => {
         console.log('Datepicker value updated:', value);
       });

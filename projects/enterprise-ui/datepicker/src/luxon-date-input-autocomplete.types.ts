@@ -1,23 +1,17 @@
-import { DateTime } from "luxon";
+import { DateTime } from 'luxon';
 
-export type LuxonDateField =
-  | "year"
-  | "month"
-  | "day"
-  | "hour"
-  | "minute"
-  | "second";
+export type LuxonDateField = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second';
 
 export type DateInputErrorCode =
-  | "UNSUPPORTED_FORMAT"
-  | "INVALID_CHARACTER"
-  | "OUT_OF_RANGE"
-  | "INVALID_DAY_FOR_MONTH"
-  | "INVALID_DATE"
-  | "UNEXPECTED_INPUT";
+  | 'UNSUPPORTED_FORMAT'
+  | 'INVALID_CHARACTER'
+  | 'OUT_OF_RANGE'
+  | 'INVALID_DAY_FOR_MONTH'
+  | 'INVALID_DATE'
+  | 'UNEXPECTED_INPUT';
 
 export type NumericFieldToken = Readonly<{
-  type: "field";
+  type: 'field';
   field: LuxonDateField;
   token: string;
   minimumWidth: number;
@@ -27,12 +21,12 @@ export type NumericFieldToken = Readonly<{
 }>;
 
 export type MeridiemToken = Readonly<{
-  type: "meridiem";
-  token: "a";
+  type: 'meridiem';
+  token: 'a';
 }>;
 
 export type LiteralToken = Readonly<{
-  type: "literal";
+  type: 'literal';
   value: string;
   isLuxonToken?: boolean;
 }>;
@@ -47,7 +41,7 @@ export type LuxonFormatPart = Readonly<{
 export type NormalizedInput = Readonly<{
   value: string;
   fields: Partial<Record<LuxonDateField, string>>;
-  meridiem: "AM" | "PM" | null;
+  meridiem: 'AM' | 'PM' | null;
   error: DateInputError | null;
 }>;
 

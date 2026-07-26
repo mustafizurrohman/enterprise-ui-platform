@@ -80,9 +80,7 @@ describe('RepeatClickDirective', () => {
     vi.advanceTimersByTime(1);
     expect(component.onTrigger).toHaveBeenCalledTimes(2);
 
-    const acceleratingDelays = [
-      294, 288, 282, 276, 270, 264, 258, 252, 246, 240,
-    ];
+    const acceleratingDelays = [294, 288, 282, 276, 270, 264, 258, 252, 246, 240];
 
     for (const [index, delay] of acceleratingDelays.entries()) {
       vi.advanceTimersByTime(delay);
@@ -94,8 +92,7 @@ describe('RepeatClickDirective', () => {
     vi.useFakeTimers();
     const customFixture = TestBed.createComponent(CustomDelayTestComponent);
     const customComponent = customFixture.componentInstance;
-    const customButton: HTMLButtonElement =
-      customFixture.nativeElement.querySelector('button');
+    const customButton: HTMLButtonElement = customFixture.nativeElement.querySelector('button');
     customFixture.detectChanges();
 
     customButton.dispatchEvent(

@@ -1,16 +1,13 @@
-import { DateTime } from "luxon";
-import {
-  type DatepickerWeek,
-  type DatepickerWeekday,
-} from "./datepicker-grid.types";
-import { type TimeUnit } from "./time-unit-control.types";
+import { DateTime } from 'luxon';
+import { type DatepickerWeek, type DatepickerWeekday } from './datepicker-grid.types';
+import { type TimeUnit } from './time-unit-control.types';
 
 export type DatepickerTimeChange = {
   unit: TimeUnit;
   value: number;
 };
 
-export type DatepickerMeridiem = "AM" | "PM";
+export type DatepickerMeridiem = 'AM' | 'PM';
 
 export type DatepickerDialogContext = Readonly<{
   dialogId: string;

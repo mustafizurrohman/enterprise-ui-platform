@@ -4,16 +4,10 @@
 
 .datepicker-time-unit-control {
   --time-unit-control-accent: var(--mat-sys-primary, #005cbb);
-  --time-unit-control-field-surface: var(
-    --mat-sys-surface-container-low,
-    #f7f2fa
-  );
+  --time-unit-control-field-surface: var(--mat-sys-surface-container-low, #f7f2fa);
   --time-unit-control-button-surface: var(--mat-sys-surface, #fff);
   --time-unit-control-on-surface: var(--mat-sys-on-surface, #1d1b20);
-  --time-unit-control-label-color: var(
-    --mat-sys-on-surface-variant,
-    #49454f
-  );
+  --time-unit-control-label-color: var(--mat-sys-on-surface-variant, #49454f);
   --time-unit-control-outline: var(--mat-sys-outline-variant, #cac4d0);
 
   display: grid;
@@ -154,23 +148,19 @@
     will-change: opacity, transform;
   }
 
-  .datepicker-time-value[data-animation="increment-a"]
-  .datepicker-time-select {
+  .datepicker-time-value[data-animation='increment-a'] .datepicker-time-select {
     animation-name: datepicker-time-increment-a;
   }
 
-  .datepicker-time-value[data-animation="increment-b"]
-  .datepicker-time-select {
+  .datepicker-time-value[data-animation='increment-b'] .datepicker-time-select {
     animation-name: datepicker-time-increment-b;
   }
 
-  .datepicker-time-value[data-animation="decrement-a"]
-  .datepicker-time-select {
+  .datepicker-time-value[data-animation='decrement-a'] .datepicker-time-select {
     animation-name: datepicker-time-decrement-a;
   }
 
-  .datepicker-time-value[data-animation="decrement-b"]
-  .datepicker-time-select {
+  .datepicker-time-value[data-animation='decrement-b'] .datepicker-time-select {
     animation-name: datepicker-time-decrement-b;
   }
 }

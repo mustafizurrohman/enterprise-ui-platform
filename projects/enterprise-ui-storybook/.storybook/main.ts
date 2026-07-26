@@ -28,8 +28,14 @@ const config: StorybookConfig = {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@mr/enterprise-ui/datepicker': path.resolve(__dirname, '../../enterprise-ui/datepicker/public-api.ts'),
-      '@mr/enterprise-ui/common': path.resolve(__dirname, '../../enterprise-ui/common/public-api.ts'),
+      '@mr/enterprise-ui/datepicker': path.resolve(
+        __dirname,
+        '../../enterprise-ui/datepicker/public-api.ts',
+      ),
+      '@mr/enterprise-ui/common': path.resolve(
+        __dirname,
+        '../../enterprise-ui/common/public-api.ts',
+      ),
       '@mr/enterprise-ui': path.resolve(__dirname, '../../enterprise-ui/common/public-api.ts'),
     };
     return config;

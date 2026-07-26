@@ -17,11 +17,9 @@
     [id]="idFor('time-instructions')"
     [attr.data-testid]="testIdFor('time-instructions')"
   >
-    Verwenden Sie die Pfeiltasten oder geben Sie zweistellige Werte direkt
-    ein.
+    Verwenden Sie die Pfeiltasten oder geben Sie zweistellige Werte direkt ein.
     @if (showMeridiem()) {
-      Wählen Sie zusätzlich AM für vormittags oder PM für nachmittags und
-      abends.
+      Wählen Sie zusätzlich AM für vormittags oder PM für nachmittags und abends.
     }
   </p>
 
@@ -43,7 +41,8 @@
         <span
           aria-hidden="true"
           class="datepicker-time-separator"
-        >:</span>
+          >:</span
+        >
       }
     }
 
@@ -131,7 +130,7 @@
                 (click)="emitTimeAdjustment(group.unit, adjustment.value)"
                 [attr.data-testid]="testIdFor(adjustment.id)"
               >
-                {{ adjustment.value > 0 ? "+" : "" }}{{ adjustment.value }}
+                {{ adjustment.value > 0 ? '+' : '' }}{{ adjustment.value }}
               </button>
             }
           </div>

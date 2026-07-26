@@ -60,27 +60,24 @@ export class RepeatClickDirective implements OnDestroy {
    * @example
    * ```html
    * <button
- *   type="button"
- *   pressHoldInitialDelayMs="500"
- *   (repeatClick)="increment()"
- * >
+   *   type="button"
+   *   pressHoldInitialDelayMs="500"
+   *   (repeatClick)="increment()"
+   * >
    *   Increment
    * </button>
    * ```
    */
-  readonly pressHoldInitialDelayMs = input(
-    DEFAULT_PRESS_HOLD_INITIAL_DELAY_MS,
-    { transform: numberAttribute },
-  );
+  readonly pressHoldInitialDelayMs = input(DEFAULT_PRESS_HOLD_INITIAL_DELAY_MS, {
+    transform: numberAttribute,
+  });
 
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   private clickSuppressionTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private delay = DEFAULT_PRESS_HOLD_INITIAL_DELAY_MS;
-  private minimumDelay =
-    DEFAULT_PRESS_HOLD_INITIAL_DELAY_MS * PRESS_HOLD_MINIMUM_DELAY_FACTOR;
+  private minimumDelay = DEFAULT_PRESS_HOLD_INITIAL_DELAY_MS * PRESS_HOLD_MINIMUM_DELAY_FACTOR;
   private accelerationStep =
-    DEFAULT_PRESS_HOLD_INITIAL_DELAY_MS *
-    PRESS_HOLD_ACCELERATION_STEP_FACTOR;
+    DEFAULT_PRESS_HOLD_INITIAL_DELAY_MS * PRESS_HOLD_ACCELERATION_STEP_FACTOR;
   private active = false;
   private suppressNextClick = false;
 
@@ -106,17 +103,13 @@ export class RepeatClickDirective implements OnDestroy {
     this.active = true;
     this.delay = initialDelay;
     this.minimumDelay = initialDelay * PRESS_HOLD_MINIMUM_DELAY_FACTOR;
-    this.accelerationStep =
-      initialDelay * PRESS_HOLD_ACCELERATION_STEP_FACTOR;
+    this.accelerationStep = initialDelay * PRESS_HOLD_ACCELERATION_STEP_FACTOR;
 
     this.repeatClick.emit();
     this.scheduleNext();
 
     const button = this.elementRef.nativeElement;
-    if (
-      typeof button.setPointerCapture === 'function' &&
-      Number.isInteger(event.pointerId)
-    ) {
+    if (typeof button.setPointerCapture === 'function' && Number.isInteger(event.pointerId)) {
       try {
         button.setPointerCapture(event.pointerId);
       } catch {
@@ -159,10 +152,7 @@ export class RepeatClickDirective implements OnDestroy {
 
       this.repeatClick.emit();
 
-      this.delay = Math.max(
-        this.minimumDelay,
-        this.delay - this.accelerationStep,
-      );
+      this.delay = Math.max(this.minimumDelay, this.delay - this.accelerationStep);
       this.scheduleNext();
     }, this.delay);
   }

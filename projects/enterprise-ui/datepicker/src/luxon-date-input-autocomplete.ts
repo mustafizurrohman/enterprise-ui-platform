@@ -1,9 +1,9 @@
-import { DateTime } from "luxon";
+import { DateTime } from 'luxon';
 import {
   DEFAULT_DATE_FORMAT,
   DEFAULT_DATETIME_FORMAT,
   DEFAULT_DATETIME_SECONDS_FORMAT,
-} from "./datepicker-formats";
+} from './datepicker-formats';
 import {
   type DateInputAutocompleteOptions,
   type DateInputAutocompleteResult,
@@ -13,95 +13,93 @@ import {
   type NormalizedInput,
   type NumericFieldToken,
   type SmartToken,
-} from "./luxon-date-input-autocomplete.types";
+} from './luxon-date-input-autocomplete.types';
 
-const NUMERIC_FIELD_TOKENS: Readonly<
-  Record<string, Omit<NumericFieldToken, "type" | "token">>
-> = {
+const NUMERIC_FIELD_TOKENS: Readonly<Record<string, Omit<NumericFieldToken, 'type' | 'token'>>> = {
   yyyy: {
-    field: "year",
+    field: 'year',
     minimumWidth: 4,
     maximumWidth: 4,
     padded: true,
   },
   yy: {
-    field: "year",
+    field: 'year',
     minimumWidth: 2,
     maximumWidth: 2,
     padded: true,
   },
   MM: {
-    field: "month",
+    field: 'month',
     minimumWidth: 2,
     maximumWidth: 2,
     padded: true,
   },
   M: {
-    field: "month",
+    field: 'month',
     minimumWidth: 1,
     maximumWidth: 2,
     padded: false,
   },
   dd: {
-    field: "day",
+    field: 'day',
     minimumWidth: 2,
     maximumWidth: 2,
     padded: true,
   },
   d: {
-    field: "day",
+    field: 'day',
     minimumWidth: 1,
     maximumWidth: 2,
     padded: false,
   },
   HH: {
-    field: "hour",
+    field: 'hour',
     minimumWidth: 2,
     maximumWidth: 2,
     padded: true,
     hourCycle: 24,
   },
   H: {
-    field: "hour",
+    field: 'hour',
     minimumWidth: 1,
     maximumWidth: 2,
     padded: false,
     hourCycle: 24,
   },
   hh: {
-    field: "hour",
+    field: 'hour',
     minimumWidth: 2,
     maximumWidth: 2,
     padded: true,
     hourCycle: 12,
   },
   h: {
-    field: "hour",
+    field: 'hour',
     minimumWidth: 1,
     maximumWidth: 2,
     padded: false,
     hourCycle: 12,
   },
   mm: {
-    field: "minute",
+    field: 'minute',
     minimumWidth: 2,
     maximumWidth: 2,
     padded: true,
   },
   m: {
-    field: "minute",
+    field: 'minute',
     minimumWidth: 1,
     maximumWidth: 2,
     padded: false,
   },
   ss: {
-    field: "second",
+    field: 'second',
     minimumWidth: 2,
     maximumWidth: 2,
     padded: true,
   },
   s: {
-    field: "second",
+    field: 'second',
     minimumWidth: 1,
     maximumWidth: 2,
     padded: false,
@@ -109,75 +107,75 @@ const NUMERIC_FIELD_TOKENS: Readonly<
 };
 
 const PARSEABLE_LUXON_TOKENS = new Set([
-  "G",
-  "GG",
-  "y",
-  "yy",
-  "yyyy",
-  "yyyyy",
-  "yyyyyy",
-  "M",
-  "MM",
-  "MMM",
-  "MMMM",
-  "L",
-  "LL",
-  "LLL",
-  "LLLL",
-  "d",
-  "dd",
-  "o",
-  "ooo",
-  "H",
-  "HH",
-  "h",
-  "hh",
-  "m",
-  "mm",
-  "s",
-  "ss",
-  "S",
-  "SSS",
-  "u",
-  "uu",
-  "uuu",
-  "a",
-  "q",
-  "qq",
-  "kk",
-  "kkkk",
-  "W",
-  "WW",
-  "E",
-  "EEE",
-  "EEEE",
-  "c",
-  "ccc",
-  "cccc",
-  "Z",
-  "ZZ",
-  "ZZZ",
-  "z",
-  "D",
-  "DD",
-  "DDD",
-  "DDDD",
-  "t",
-  "tt",
-  "ttt",
-  "tttt",
-  "T",
-  "TT",
-  "TTT",
-  "TTTT",
-  "f",
-  "ff",
-  "fff",
-  "ffff",
-  "F",
-  "FF",
-  "FFF",
-  "FFFF",
+  'G',
+  'GG',
+  'y',
+  'yy',
+  'yyyy',
+  'yyyyy',
+  'yyyyyy',
+  'M',
+  'MM',
+  'MMM',
+  'MMMM',
+  'L',
+  'LL',
+  'LLL',
+  'LLLL',
+  'd',
+  'dd',
+  'o',
+  'ooo',
+  'H',
+  'HH',
+  'h',
+  'hh',
+  'm',
+  'mm',
+  's',
+  'ss',
+  'S',
+  'SSS',
+  'u',
+  'uu',
+  'uuu',
+  'a',
+  'q',
+  'qq',
+  'kk',
+  'kkkk',
+  'W',
+  'WW',
+  'E',
+  'EEE',
+  'EEEE',
+  'c',
+  'ccc',
+  'cccc',
+  'Z',
+  'ZZ',
+  'ZZZ',
+  'z',
+  'D',
+  'DD',
+  'DDD',
+  'DDDD',
+  't',
+  'tt',
+  'ttt',
+  'tttt',
+  'T',
+  'TT',
+  'TTT',
+  'TTTT',
+  'f',
+  'ff',
+  'fff',
+  'ffff',
+  'F',
+  'FF',
+  'FFF',
+  'FFFF',
 ]);
 
 const FORMAT_VALIDATION_DATE = DateTime.fromObject(
@@ -190,14 +188,13 @@ const FORMAT_VALIDATION_DATE = DateTime.fromObject(
     second: 31,
     millisecond: 456,
   },
-  { zone: "Europe/Berlin" },
+  { zone: 'Europe/Berlin' },
 );
 
 export class LuxonDateInputAutocomplete {
   public static readonly DEFAULT_FORMAT = DEFAULT_DATE_FORMAT;
   public static readonly DEFAULT_DATETIME_FORMAT = DEFAULT_DATETIME_FORMAT;
-  public static readonly DEFAULT_DATETIME_SECONDS_FORMAT =
-    DEFAULT_DATETIME_SECONDS_FORMAT;
+  public static readonly DEFAULT_DATETIME_SECONDS_FORMAT = DEFAULT_DATETIME_SECONDS_FORMAT;
 
   private readonly dateFormat: string;
   private readonly locale: string;
@@ -206,47 +203,34 @@ export class LuxonDateInputAutocomplete {
   private readonly hasUhrLiteral: boolean;
   private readonly hasMeridiem: boolean;
 
-  constructor(dateFormat: string, locale = "de-DE") {
+  constructor(dateFormat: string, locale = 'de-DE') {
     this.locale = locale;
-    this.dateFormat = LuxonDateInputAutocomplete.assertValidFormat(
-      dateFormat,
-      locale,
-    );
+    this.dateFormat = LuxonDateInputAutocomplete.assertValidFormat(dateFormat, locale);
 
     const formatParts = parseLuxonFormat(this.dateFormat);
     const smartTokens = toSmartAutocompleteTokens(formatParts);
 
     this.usesSmartAutocomplete = smartTokens !== null;
     this.tokens = smartTokens ?? [];
-    this.hasUhrLiteral = formatParts.some(
-      (part) => part.literal && /uhr/iu.test(part.value),
-    );
-    this.hasMeridiem = formatParts.some(
-      (part) => !part.literal && part.value === "a",
-    );
+    this.hasUhrLiteral = formatParts.some((part) => part.literal && /uhr/iu.test(part.value));
+    this.hasMeridiem = formatParts.some((part) => !part.literal && part.value === 'a');
   }
 
-  public static assertValidFormat(
-    dateFormat: string,
-    locale = "de-DE",
-  ): string {
-    if (typeof dateFormat !== "string") {
-      throw invalidFormatError(
-        String(dateFormat),
-        "the format must be a string",
-      );
+  public static assertValidFormat(dateFormat: string, locale = 'de-DE'): string {
+    if (typeof dateFormat !== 'string') {
+      throw invalidFormatError(String(dateFormat), 'the format must be a string');
     }
 
     const normalizedFormat = dateFormat.trim();
 
     if (!normalizedFormat) {
-      throw invalidFormatError(dateFormat, "the format must not be empty");
+      throw invalidFormatError(dateFormat, 'the format must not be empty');
     }
 
     parseLuxonFormat(normalizedFormat);
 
     try {
-      const explanation = DateTime.fromFormatExplain("", normalizedFormat, {
+      const explanation = DateTime.fromFormatExplain('', normalizedFormat, {
         locale,
         setZone: true,
       });
@@ -257,55 +241,43 @@ export class LuxonDateInputAutocomplete {
       if (meaningfulTokens.length === 0) {
         throw invalidFormatError(
           dateFormat,
-          "the format must contain at least one Luxon date or time token",
+          'the format must contain at least one Luxon date or time token',
         );
       }
 
       for (const token of meaningfulTokens) {
         if (!PARSEABLE_LUXON_TOKENS.has(token.val)) {
-          throw invalidFormatError(
-            dateFormat,
-            `unsupported or non-parseable token "${token.val}"`,
-          );
+          throw invalidFormatError(dateFormat, `unsupported or non-parseable token "${token.val}"`);
         }
       }
 
       if (
-        meaningfulTokens.some((token) => token.val === "a") &&
-        meaningfulTokens.some(
-          (token) => token.val === "H" || token.val === "HH",
-        )
+        meaningfulTokens.some((token) => token.val === 'a') &&
+        meaningfulTokens.some((token) => token.val === 'H' || token.val === 'HH')
       ) {
         throw invalidFormatError(
           dateFormat,
-          "24-hour tokens H/HH cannot be combined with meridiem token a",
+          '24-hour tokens H/HH cannot be combined with meridiem token a',
         );
       }
 
       const validationDate = FORMAT_VALIDATION_DATE.setLocale(locale);
-      const validationValue = buildParserCompatibleValue(
-        explanation.tokens,
-        validationDate,
-      );
-      const parsedValue = DateTime.fromFormat(
-        validationValue,
-        normalizedFormat,
-        {
-          locale,
-          setZone: true,
-        },
-      );
+      const validationValue = buildParserCompatibleValue(explanation.tokens, validationDate);
+      const parsedValue = DateTime.fromFormat(validationValue, normalizedFormat, {
+        locale,
+        setZone: true,
+      });
 
       if (!parsedValue.isValid) {
         throw invalidFormatError(
           dateFormat,
           parsedValue.invalidExplanation ??
             parsedValue.invalidReason ??
-            "the format cannot produce a valid Luxon DateTime",
+            'the format cannot produce a valid Luxon DateTime',
         );
       }
     } catch (error) {
-      if (error instanceof Error && error.message.startsWith("Invalid Luxon")) {
+      if (error instanceof Error && error.message.startsWith('Invalid Luxon')) {
         throw error;
       }
 
@@ -324,10 +296,7 @@ export class LuxonDateInputAutocomplete {
     return this.locale;
   }
 
-  public static getFormat(options: {
-    dateOnly?: boolean;
-    showSeconds?: boolean;
-  }): string {
+  public static getFormat(options: { dateOnly?: boolean; showSeconds?: boolean }): string {
     if (options.dateOnly) {
       return this.DEFAULT_FORMAT;
     }
@@ -342,12 +311,10 @@ export class LuxonDateInputAutocomplete {
     showSeconds?: boolean;
   }): string {
     if (options.dateOnly) {
-      return "TT.MM.JJJJ";
+      return 'TT.MM.JJJJ';
     }
 
-    return options.showSeconds
-      ? "TT.MM.JJJJ HH:mm:ss Uhr"
-      : "TT.MM.JJJJ HH:mm Uhr";
+    return options.showSeconds ? 'TT.MM.JJJJ HH:mm:ss Uhr' : 'TT.MM.JJJJ HH:mm Uhr';
   }
 
   public process(
@@ -358,17 +325,15 @@ export class LuxonDateInputAutocomplete {
       return this.processWithLuxon(rawValue, options);
     }
 
-    const now = (options.now ?? DateTime.now()).setLocale(
-      options.locale ?? this.locale,
-    );
+    const now = (options.now ?? DateTime.now()).setLocale(options.locale ?? this.locale);
     const locale = options.locale ?? this.locale;
     const normalizedRawValue = normalizeWhitespace(rawValue);
 
     if (!normalizedRawValue) {
       return {
-        value: "",
+        value: '',
         suggestedValue: formatInputValue(now, this.dateFormat, locale),
-        completionSuffix: "",
+        completionSuffix: '',
         complete: false,
         valid: true,
         date: null,
@@ -377,8 +342,7 @@ export class LuxonDateInputAutocomplete {
     }
 
     const normalized = this.normalize(normalizedRawValue, options, now);
-    const validationError =
-      normalized.error ?? this.validateKnownFields(normalized.fields);
+    const validationError = normalized.error ?? this.validateKnownFields(normalized.fields);
     const complete = this.isComplete(normalized);
     let date: DateTime | null = null;
     let parseError = validationError;
@@ -393,8 +357,8 @@ export class LuxonDateInputAutocomplete {
         date = parsed;
       } else {
         parseError = {
-          code: "INVALID_DATE",
-          message: parsed.invalidExplanation ?? "The entered date is invalid.",
+          code: 'INVALID_DATE',
+          message: parsed.invalidExplanation ?? 'The entered date is invalid.',
         };
       }
     }
@@ -406,7 +370,7 @@ export class LuxonDateInputAutocomplete {
       suggestedValue,
       completionSuffix: suggestedValue.startsWith(normalized.value)
         ? suggestedValue.slice(normalized.value.length)
-        : "",
+        : '',
       complete,
       valid: !parseError,
       date,
@@ -416,7 +380,7 @@ export class LuxonDateInputAutocomplete {
 
   public processPastedValue(
     rawValue: string,
-    options: Omit<DateInputAutocompleteOptions, "commit" | "isDeletion"> = {},
+    options: Omit<DateInputAutocompleteOptions, 'commit' | 'isDeletion'> = {},
   ): DateInputAutocompleteResult {
     const locale = options.locale ?? this.locale;
     const trimmedValue = normalizeWhitespace(rawValue.trim());
@@ -429,10 +393,7 @@ export class LuxonDateInputAutocomplete {
       return directResult;
     }
 
-    const directLuxonResult = this.parseCompleteValueWithLuxon(
-      trimmedValue,
-      locale,
-    );
+    const directLuxonResult = this.parseCompleteValueWithLuxon(trimmedValue, locale);
     if (directLuxonResult) {
       return directLuxonResult;
     }
@@ -450,10 +411,7 @@ export class LuxonDateInputAutocomplete {
         return fallbackResult;
       }
 
-      const fallbackLuxonResult = this.parseCompleteValueWithLuxon(
-        valueWithoutUhr,
-        locale,
-      );
+      const fallbackLuxonResult = this.parseCompleteValueWithLuxon(valueWithoutUhr, locale);
       if (fallbackLuxonResult) {
         return fallbackLuxonResult;
       }
@@ -469,7 +427,7 @@ export class LuxonDateInputAutocomplete {
     return {
       value,
       suggestedValue: value,
-      completionSuffix: "",
+      completionSuffix: '',
       complete: true,
       valid: true,
       date: epochDate,
@@ -499,7 +457,7 @@ export class LuxonDateInputAutocomplete {
     return {
       value: formattedValue,
       suggestedValue: formattedValue,
-      completionSuffix: "",
+      completionSuffix: '',
       complete: true,
       valid: true,
       date: parsed,
@@ -514,16 +472,14 @@ export class LuxonDateInputAutocomplete {
     const locale = options.locale ?? this.locale;
     const now = (options.now ?? DateTime.now()).setLocale(locale);
     const commit = options.commit === true;
-    const value = commit
-      ? normalizeWhitespace(rawValue.trim())
-      : normalizeWhitespace(rawValue);
+    const value = commit ? normalizeWhitespace(rawValue.trim()) : normalizeWhitespace(rawValue);
     const suggestedValue = formatInputValue(now, this.dateFormat, locale);
 
     if (!value) {
       return {
         value,
         suggestedValue,
-        completionSuffix: "",
+        completionSuffix: '',
         complete: false,
         valid: true,
         date: null,
@@ -532,11 +488,7 @@ export class LuxonDateInputAutocomplete {
     }
 
     const candidateValues = [value];
-    if (
-      commit &&
-      this.hasUhrLiteral &&
-      removeOptionalUhrSuffix(value) === value
-    ) {
+    if (commit && this.hasUhrLiteral && removeOptionalUhrSuffix(value) === value) {
       candidateValues.unshift(`${value.trimEnd()} Uhr`);
     }
 
@@ -554,7 +506,7 @@ export class LuxonDateInputAutocomplete {
       return {
         value: formattedValue,
         suggestedValue: formattedValue,
-        completionSuffix: "",
+        completionSuffix: '',
         complete: true,
         valid: true,
         date: parsed,
@@ -565,15 +517,13 @@ export class LuxonDateInputAutocomplete {
     return {
       value,
       suggestedValue,
-      completionSuffix: suggestedValue.startsWith(value)
-        ? suggestedValue.slice(value.length)
-        : "",
+      completionSuffix: suggestedValue.startsWith(value) ? suggestedValue.slice(value.length) : '',
       complete: false,
       valid: !commit,
       date: null,
       error: commit
         ? {
-            code: "INVALID_DATE",
+            code: 'INVALID_DATE',
             message: `The entered value does not match Luxon format "${this.dateFormat}".`,
           }
         : null,
@@ -590,17 +540,15 @@ export class LuxonDateInputAutocomplete {
     const isDeletion = options.isDeletion === true;
     const source = normalizeWhitespace(rawValue);
     let sourceIndex = 0;
-    let value = "";
-    let meridiem: "AM" | "PM" | null = null;
+    let value = '';
+    let meridiem: 'AM' | 'PM' | null = null;
     let startedParsing = false;
 
     for (let tokenIndex = 0; tokenIndex < this.tokens.length; tokenIndex++) {
       const token = this.tokens[tokenIndex];
 
-      if (token.type === "literal") {
-        const expectedValue = token.isLuxonToken
-          ? parserTokenValue(token.value, now)
-          : token.value;
+      if (token.type === 'literal') {
+        const expectedValue = token.isLuxonToken ? parserTokenValue(token.value, now) : token.value;
         const consumed = consumeLiteral(source, sourceIndex, expectedValue);
 
         if (!startedParsing && consumed === 0) {
@@ -620,13 +568,13 @@ export class LuxonDateInputAutocomplete {
         continue;
       }
 
-      if (token.type === "meridiem") {
+      if (token.type === 'meridiem') {
         const parsedMeridiem = readMeridiem(source, sourceIndex, commit);
 
         if (!startedParsing && !parsedMeridiem.value) {
           // If next digit is still far away, we can fill meridiem
           if (!/^\s*\d/u.test(source.slice(sourceIndex))) {
-            const meridiemValue = now.toFormat("a").toUpperCase();
+            const meridiemValue = now.toFormat('a').toUpperCase();
             value += meridiemValue;
             continue;
           }
@@ -639,9 +587,7 @@ export class LuxonDateInputAutocomplete {
         }
 
         value += parsedMeridiem.value;
-        meridiem = parsedMeridiem.complete
-          ? (parsedMeridiem.value as "AM" | "PM")
-          : null;
+        meridiem = parsedMeridiem.complete ? (parsedMeridiem.value as 'AM' | 'PM') : null;
 
         startedParsing = true;
         if (!parsedMeridiem.complete) {
@@ -665,7 +611,7 @@ export class LuxonDateInputAutocomplete {
           // But since it's numeric and we have no digits, it's a non-match.
           // For leading tokens, we fill them.
           const fallbackValue =
-            token.field === "hour" && token.hourCycle === 12
+            token.field === 'hour' && token.hourCycle === 12
               ? now.hour % 12 || 12
               : now[token.field];
           const fallback = formatNumericTokenValue(token, fallbackValue);
@@ -677,7 +623,7 @@ export class LuxonDateInputAutocomplete {
           const remainingTrimmed = source.slice(sourceIndex).trim();
           if (!remainingTrimmed) {
             const fallbackValue =
-              token.field === "hour" && token.hourCycle === 12
+              token.field === 'hour' && token.hourCycle === 12
                 ? now.hour % 12 || 12
                 : now[token.field];
             const fallback = formatNumericTokenValue(token, fallbackValue);
@@ -726,12 +672,12 @@ export class LuxonDateInputAutocomplete {
       meridiem,
       error: invalidCharacter
         ? {
-            code: "INVALID_CHARACTER",
+            code: 'INVALID_CHARACTER',
             message: `Unsupported character: ${invalidCharacter}`,
           }
         : unexpectedInput
           ? {
-              code: "UNEXPECTED_INPUT",
+              code: 'UNEXPECTED_INPUT',
               message: `Unexpected trailing input: ${unexpectedInput}`,
             }
           : null,
@@ -742,7 +688,7 @@ export class LuxonDateInputAutocomplete {
     fields: Partial<Record<LuxonDateField, string>>,
   ): DateInputError | null {
     for (const token of this.tokens) {
-      if (token.type !== "field") {
+      if (token.type !== 'field') {
         continue;
       }
 
@@ -755,24 +701,24 @@ export class LuxonDateInputAutocomplete {
       const [minimum, maximum] = rangeForToken(token);
       if (value < minimum || value > maximum) {
         return {
-          code: "OUT_OF_RANGE",
+          code: 'OUT_OF_RANGE',
           field: token.field,
           message: `${token.field} must be between ${minimum} and ${maximum}.`,
         };
       }
     }
 
-    const day = completedNumber("day", fields, this.tokens);
-    const month = completedNumber("month", fields, this.tokens);
-    const rawYear = completedRawValue("year", fields, this.tokens);
+    const day = completedNumber('day', fields, this.tokens);
+    const month = completedNumber('month', fields, this.tokens);
+    const rawYear = completedRawValue('year', fields, this.tokens);
     const year = rawYear === null ? null : normalizeCalendarYear(rawYear);
 
     if (day !== null && month !== null) {
       const maximumDay = maximumDayForKnownDate(month, year);
       if (day > maximumDay) {
         return {
-          code: "INVALID_DAY_FOR_MONTH",
-          field: "day",
+          code: 'INVALID_DAY_FOR_MONTH',
+          field: 'day',
           message: `Day ${day} is invalid for month ${month}.`,
         };
       }
@@ -783,7 +729,7 @@ export class LuxonDateInputAutocomplete {
 
   private isComplete(normalized: NormalizedInput): boolean {
     const fieldsComplete = this.tokens.every((token) => {
-      if (token.type !== "field") {
+      if (token.type !== 'field') {
         return true;
       }
 
@@ -791,16 +737,10 @@ export class LuxonDateInputAutocomplete {
       return value !== undefined && isNumericTokenComplete(token, value);
     });
 
-    return (
-      fieldsComplete && (!this.hasMeridiem || normalized.meridiem !== null)
-    );
+    return fieldsComplete && (!this.hasMeridiem || normalized.meridiem !== null);
   }
 
-  private buildSuggestion(
-    normalized: NormalizedInput,
-    now: DateTime,
-    locale: string,
-  ): string {
+  private buildSuggestion(normalized: NormalizedInput, now: DateTime, locale: string): string {
     const completeNowValue = formatInputValue(now, this.dateFormat, locale);
     if (!normalized.value) {
       return completeNowValue;
@@ -821,19 +761,17 @@ export class LuxonDateInputAutocomplete {
     for (let i = 0; i < this.tokens.length; i++) {
       const token = this.tokens[i];
 
-      if (token.type === "literal") {
-        const expectedValue = token.isLuxonToken
-          ? parserTokenValue(token.value, now)
-          : token.value;
+      if (token.type === 'literal') {
+        const expectedValue = token.isLuxonToken ? parserTokenValue(token.value, now) : token.value;
         tokensWithLeadingValues.push(expectedValue);
         continue;
       }
 
-      if (token.type === "meridiem") {
+      if (token.type === 'meridiem') {
         if (normalized.meridiem) {
           tokensWithLeadingValues.push(normalized.meridiem);
         } else {
-          const fallback = now.toFormat("a").toUpperCase();
+          const fallback = now.toFormat('a').toUpperCase();
           tokensWithLeadingValues.push(fallback);
         }
         continue;
@@ -845,17 +783,15 @@ export class LuxonDateInputAutocomplete {
           tokensWithLeadingValues.push(current);
         } else {
           const fallbackValue =
-            token.field === "hour" && token.hourCycle === 12
+            token.field === 'hour' && token.hourCycle === 12
               ? valuesByField.hour % 12 || 12
               : valuesByField[token.field];
           const fallback = formatNumericTokenValue(token, fallbackValue);
-          tokensWithLeadingValues.push(
-            fallback.startsWith(current) ? fallback : current,
-          );
+          tokensWithLeadingValues.push(fallback.startsWith(current) ? fallback : current);
         }
       } else {
         const fallbackValue =
-          token.field === "hour" && token.hourCycle === 12
+          token.field === 'hour' && token.hourCycle === 12
             ? valuesByField.hour % 12 || 12
             : valuesByField[token.field];
         const fallback = formatNumericTokenValue(token, fallbackValue);
@@ -863,7 +799,7 @@ export class LuxonDateInputAutocomplete {
       }
     }
 
-    return tokensWithLeadingValues.join("");
+    return tokensWithLeadingValues.join('');
   }
 }
 
@@ -876,18 +812,17 @@ function readNumericField(
 ): Readonly<{ value: string; nextIndex: number; complete: boolean }> {
   const digits = readDigits(source, startIndex, token.maximumWidth);
   if (!digits.value) {
-    return { value: "", nextIndex: startIndex, complete: false };
+    return { value: '', nextIndex: startIndex, complete: false };
   }
 
-  const nextCharacter = source[digits.nextIndex] ?? "";
+  const nextCharacter = source[digits.nextIndex] ?? '';
   const explicitlySeparated =
-    nextToken?.type === "literal" &&
+    nextToken?.type === 'literal' &&
     nextCharacter.length > 0 &&
     literalStartsWith(nextToken.value, nextCharacter);
   const reachedMaximumWidth = digits.value.length === token.maximumWidth;
   const unambiguous = isUnambiguousSingleDigit(token, digits.value);
-  const canPadSingleDigit =
-    token.padded && token.maximumWidth === 2 && digits.value.length === 1;
+  const canPadSingleDigit = token.padded && token.maximumWidth === 2 && digits.value.length === 1;
   const canCompleteShortValue =
     (digits.value.length >= token.minimumWidth || canPadSingleDigit) &&
     (explicitlySeparated || commit || unambiguous);
@@ -903,7 +838,7 @@ function readNumericField(
 
   const normalizedValue =
     token.padded && digits.value.length < token.maximumWidth
-      ? digits.value.padStart(token.maximumWidth, "0")
+      ? digits.value.padStart(token.maximumWidth, '0')
       : digits.value;
 
   return {
@@ -918,18 +853,18 @@ function readMeridiem(
   startIndex: number,
   commit: boolean,
 ): Readonly<{
-  value: "" | "A" | "P" | "AM" | "PM";
+  value: '' | 'A' | 'P' | 'AM' | 'PM';
   nextIndex: number;
   complete: boolean;
 }> {
   const match = /^[ap](?:m)?/iu.exec(source.slice(startIndex));
   if (!match) {
-    return { value: "", nextIndex: startIndex, complete: false };
+    return { value: '', nextIndex: startIndex, complete: false };
   }
 
   const raw = match[0].toUpperCase();
   const complete = raw.length === 2 || commit;
-  const value = complete ? (`${raw[0]}M` as "AM" | "PM") : (raw as "A" | "P");
+  const value = complete ? (`${raw[0]}M` as 'AM' | 'PM') : (raw as 'A' | 'P');
 
   return {
     value,
@@ -938,11 +873,7 @@ function readMeridiem(
   };
 }
 
-function formatInputValue(
-  date: DateTime,
-  format: string,
-  locale: string,
-): string {
+function formatInputValue(date: DateTime, format: string, locale: string): string {
   const localizedDate = date.setLocale(locale);
   const formattedValue = localizedDate.toFormat(format);
   const roundTrip = DateTime.fromFormat(formattedValue, format, {
@@ -954,7 +885,7 @@ function formatInputValue(
     return formattedValue;
   }
 
-  const explanation = DateTime.fromFormatExplain("", format, {
+  const explanation = DateTime.fromFormatExplain('', format, {
     locale,
     setZone: true,
   });
@@ -967,114 +898,114 @@ function buildParserCompatibleValue(
 ): string {
   return tokens
     .map((token) => {
-      if (token.literal || token.val === " " || !/^\p{L}+$/u.test(token.val)) {
+      if (token.literal || token.val === ' ' || !/^\p{L}+$/u.test(token.val)) {
         return token.val;
       }
 
       return parserTokenValue(token.val, date);
     })
-    .join("");
+    .join('');
 }
 
 function parserTokenValue(token: string, date: DateTime): string {
   switch (token) {
-    case "y":
+    case 'y':
       return String(date.year);
-    case "yy":
-      return String(Math.abs(date.year) % 100).padStart(2, "0");
-    case "yyyy":
+    case 'yy':
+      return String(Math.abs(date.year) % 100).padStart(2, '0');
+    case 'yyyy':
       return formatSignedYear(date.year, 4);
-    case "yyyyy":
+    case 'yyyyy':
       return formatSignedYear(date.year, 5);
-    case "yyyyyy":
+    case 'yyyyyy':
       return formatSignedYear(date.year, 6);
-    case "M":
-    case "L":
+    case 'M':
+    case 'L':
       return String(date.month);
-    case "MM":
-    case "LL":
-      return String(date.month).padStart(2, "0");
-    case "d":
+    case 'MM':
+    case 'LL':
+      return String(date.month).padStart(2, '0');
+    case 'd':
       return String(date.day);
-    case "dd":
-      return String(date.day).padStart(2, "0");
-    case "o":
+    case 'dd':
+      return String(date.day).padStart(2, '0');
+    case 'o':
       return String(date.ordinal);
-    case "ooo":
-      return String(date.ordinal).padStart(3, "0");
-    case "H":
+    case 'ooo':
+      return String(date.ordinal).padStart(3, '0');
+    case 'H':
       return String(date.hour);
-    case "HH":
-      return String(date.hour).padStart(2, "0");
-    case "h":
+    case 'HH':
+      return String(date.hour).padStart(2, '0');
+    case 'h':
       return String(date.hour % 12 || 12);
-    case "hh":
-      return String(date.hour % 12 || 12).padStart(2, "0");
-    case "m":
+    case 'hh':
+      return String(date.hour % 12 || 12).padStart(2, '0');
+    case 'm':
       return String(date.minute);
-    case "mm":
-      return String(date.minute).padStart(2, "0");
-    case "s":
+    case 'mm':
+      return String(date.minute).padStart(2, '0');
+    case 's':
       return String(date.second);
-    case "ss":
-      return String(date.second).padStart(2, "0");
-    case "S":
+    case 'ss':
+      return String(date.second).padStart(2, '0');
+    case 'S':
       return String(date.millisecond);
-    case "SSS":
-    case "u":
-      return String(date.millisecond).padStart(3, "0");
-    case "uu":
-      return String(Math.floor(date.millisecond / 10)).padStart(2, "0");
-    case "uuu":
+    case 'SSS':
+    case 'u':
+      return String(date.millisecond).padStart(3, '0');
+    case 'uu':
+      return String(Math.floor(date.millisecond / 10)).padStart(2, '0');
+    case 'uuu':
       return String(Math.floor(date.millisecond / 100));
-    case "q":
+    case 'q':
       return String(date.quarter);
-    case "qq":
-      return String(date.quarter).padStart(2, "0");
-    case "kk":
-      return String(Math.abs(date.weekYear) % 100).padStart(2, "0");
-    case "kkkk":
+    case 'qq':
+      return String(date.quarter).padStart(2, '0');
+    case 'kk':
+      return String(Math.abs(date.weekYear) % 100).padStart(2, '0');
+    case 'kkkk':
       return formatSignedYear(date.weekYear, 4);
-    case "W":
+    case 'W':
       return String(date.weekNumber);
-    case "WW":
-      return String(date.weekNumber).padStart(2, "0");
-    case "E":
-    case "c":
+    case 'WW':
+      return String(date.weekNumber).padStart(2, '0');
+    case 'E':
+    case 'c':
       return String(date.weekday);
-    case "Z":
-    case "ZZ":
-    case "ZZZ":
-    case "z":
+    case 'Z':
+    case 'ZZ':
+    case 'ZZZ':
+    case 'z':
       return date.toFormat(token);
-    case "G":
-    case "GG":
-    case "MMM":
-    case "MMMM":
-    case "LLL":
-    case "LLLL":
-    case "EEE":
-    case "EEEE":
-    case "ccc":
-    case "cccc":
-    case "a":
-      return date.toFormat(token).replace(/\./gu, "");
+    case 'G':
+    case 'GG':
+    case 'MMM':
+    case 'MMMM':
+    case 'LLL':
+    case 'LLLL':
+    case 'EEE':
+    case 'EEEE':
+    case 'ccc':
+    case 'cccc':
+    case 'a':
+      return date.toFormat(token).replace(/\./gu, '');
     default:
       return date.toFormat(token);
   }
 }
 
 function formatSignedYear(year: number, width: number): string {
-  const absoluteYear = String(Math.abs(year)).padStart(width, "0");
+  const absoluteYear = String(Math.abs(year)).padStart(width, '0');
   return year < 0 ? `-${absoluteYear}` : absoluteYear;
 }
 
 function normalizeWhitespace(value: string): string {
-  return value.replace(/\u00a0/gu, " ");
+  return value.replace(/\u00a0/gu, ' ');
 }
 
 function removeOptionalUhrSuffix(value: string): string {
-  return value.replace(/(?:\s|\u00a0)*uhr(?:\s|\u00a0)*$/iu, "").trimEnd();
+  return value.replace(/(?:\s|\u00a0)*uhr(?:\s|\u00a0)*$/iu, '').trimEnd();
 }
 
 function parseEpoch(value: string, locale: string): DateTime | null {
@@ -1087,7 +1018,7 @@ function parseEpoch(value: string, locale: string): DateTime | null {
   const [, sign, digits] = match;
   const hasUnambiguousLength = digits.length >= 9 && digits.length <= 13;
   const isExplicitlySigned = sign.length > 0 && digits.length <= 13;
-  const isEpochOrigin = sign.length === 0 && digits === "0";
+  const isEpochOrigin = sign.length === 0 && digits === '0';
 
   if (!hasUnambiguousLength && !isExplicitlySigned && !isEpochOrigin) {
     return null;
@@ -1110,7 +1041,7 @@ export function parseLuxonFormat(format: string): readonly LuxonFormatPart[] {
 
   while (index < format.length) {
     if (format[index] === "'") {
-      let literal = "";
+      let literal = '';
       index++;
       let closed = false;
 
@@ -1133,10 +1064,7 @@ export function parseLuxonFormat(format: string): readonly LuxonFormatPart[] {
       }
 
       if (!closed) {
-        throw invalidFormatError(
-          format,
-          "unclosed apostrophe-delimited literal",
-        );
+        throw invalidFormatError(format, 'unclosed apostrophe-delimited literal');
       }
 
       pushFormatPart(parts, { literal: true, value: literal });
@@ -1186,19 +1114,19 @@ function toSmartAutocompleteTokens(
 
   for (const part of parts) {
     if (part.literal) {
-      tokens.push({ type: "literal", value: part.value, isLuxonToken: false });
+      tokens.push({ type: 'literal', value: part.value, isLuxonToken: false });
       continue;
     }
 
-    if (part.value === "a") {
-      tokens.push({ type: "meridiem", token: "a" });
+    if (part.value === 'a') {
+      tokens.push({ type: 'meridiem', token: 'a' });
       continue;
     }
 
     const numericDefinition = NUMERIC_FIELD_TOKENS[part.value];
     if (numericDefinition) {
       tokens.push({
-        type: "field",
+        type: 'field',
         token: part.value,
         ...numericDefinition,
       });
@@ -1211,7 +1139,7 @@ function toSmartAutocompleteTokens(
     // starting with e.g. weekday (cccc) while maintaining compatibility
     // with existing formats where such tokens appear in the middle or end.
     if (!sawNumericField && /^\p{L}+$/u.test(part.value)) {
-      tokens.push({ type: "literal", value: part.value, isLuxonToken: true });
+      tokens.push({ type: 'literal', value: part.value, isLuxonToken: true });
       continue;
     }
 
@@ -1230,7 +1158,7 @@ function readDigits(
   startIndex: number,
   maximumLength: number,
 ): Readonly<{ value: string; nextIndex: number }> {
-  let value = "";
+  let value = '';
   let index = startIndex;
 
   while (index < source.length && value.length < maximumLength) {
@@ -1246,11 +1174,7 @@ function readDigits(
   return { value, nextIndex: index };
 }
 
-function consumeLiteral(
-  source: string,
-  startIndex: number,
-  literal: string,
-): number {
+function consumeLiteral(source: string, startIndex: number, literal: string): number {
   let sourceIndex = startIndex;
   let literalIndex = 0;
 
@@ -1258,10 +1182,7 @@ function consumeLiteral(
     const literalCharacter = literal[literalIndex];
 
     if (/\s/u.test(literalCharacter)) {
-      while (
-        literalIndex < literal.length &&
-        /\s/u.test(literal[literalIndex])
-      ) {
+      while (literalIndex < literal.length && /\s/u.test(literal[literalIndex])) {
         literalIndex++;
       }
 
@@ -1274,8 +1195,7 @@ function consumeLiteral(
     const sourceCharacter = source[sourceIndex];
     if (
       !sourceCharacter ||
-      sourceCharacter.toLocaleLowerCase() !==
-        literalCharacter.toLocaleLowerCase()
+      sourceCharacter.toLocaleLowerCase() !== literalCharacter.toLocaleLowerCase()
     ) {
       return 0;
     }
@@ -1288,63 +1208,53 @@ function consumeLiteral(
 }
 
 function literalStartsWith(literal: string, character: string): boolean {
-  const firstVisibleCharacter = [...literal].find(
-    (candidate) => !/\s/u.test(candidate),
-  );
+  const firstVisibleCharacter = [...literal].find((candidate) => !/\s/u.test(candidate));
 
   if (!firstVisibleCharacter) {
     return /\s/u.test(character);
   }
 
-  return (
-    firstVisibleCharacter.toLocaleLowerCase() === character.toLocaleLowerCase()
-  );
+  return firstVisibleCharacter.toLocaleLowerCase() === character.toLocaleLowerCase();
 }
 
-function isUnambiguousSingleDigit(
-  token: NumericFieldToken,
-  digits: string,
-): boolean {
+function isUnambiguousSingleDigit(token: NumericFieldToken, digits: string): boolean {
   if (digits.length !== 1) {
     return false;
   }
 
   const value = Number(digits);
   switch (token.field) {
-    case "month":
+    case 'month':
       return value > 1;
-    case "day":
+    case 'day':
       return value > 3;
-    case "hour":
+    case 'hour':
       return token.hourCycle === 12 ? value > 1 : value > 2;
-    case "minute":
-    case "second":
+    case 'minute':
+    case 'second':
       return value > 5;
-    case "year":
+    case 'year':
       return false;
   }
 }
 
 function rangeForToken(token: NumericFieldToken): readonly [number, number] {
   switch (token.field) {
-    case "year":
+    case 'year':
       return [0, token.maximumWidth === 2 ? 99 : 9999];
-    case "month":
+    case 'month':
       return [1, 12];
-    case "day":
+    case 'day':
       return [1, 31];
-    case "hour":
+    case 'hour':
       return token.hourCycle === 12 ? [1, 12] : [0, 23];
-    case "minute":
-    case "second":
+    case 'minute':
+    case 'second':
       return [0, 59];
   }
 }
 
-function isNumericTokenComplete(
-  token: NumericFieldToken,
-  raw: string,
-): boolean {
+function isNumericTokenComplete(token: NumericFieldToken, raw: string): boolean {
   return raw.length >= token.minimumWidth && raw.length <= token.maximumWidth;
 }
 
@@ -1356,7 +1266,7 @@ function completedRawValue(
   const raw = fields[field];
   const token = tokens.find(
     (candidate): candidate is NumericFieldToken =>
-      candidate.type === "field" && candidate.field === field,
+      candidate.type === 'field' && candidate.field === field,
   );
 
   return raw && token && isNumericTokenComplete(token, raw) ? raw : null;
@@ -1376,7 +1286,7 @@ function normalizeCalendarYear(rawYear: string): number {
     return Number(rawYear);
   }
 
-  const parsed = DateTime.fromFormat(rawYear, "yy");
+  const parsed = DateTime.fromFormat(rawYear, 'yy');
   return parsed.isValid ? parsed.year : Number(rawYear);
 }
 
@@ -1392,14 +1302,11 @@ function maximumDayForKnownDate(month: number, year: number | null): number {
   return [4, 6, 9, 11].includes(month) ? 30 : 31;
 }
 
-function formatNumericTokenValue(
-  token: NumericFieldToken,
-  value: number,
-): string {
-  if (token.token === "yy") {
-    return String(Math.abs(value) % 100).padStart(2, "0");
+function formatNumericTokenValue(token: NumericFieldToken, value: number): string {
+  if (token.token === 'yy') {
+    return String(Math.abs(value) % 100).padStart(2, '0');
   }
 
   const raw = String(value);
-  return token.padded ? raw.padStart(token.maximumWidth, "0") : raw;
+  return token.padded ? raw.padStart(token.maximumWidth, '0') : raw;
 }

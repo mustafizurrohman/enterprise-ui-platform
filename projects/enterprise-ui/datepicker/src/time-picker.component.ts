@@ -1,34 +1,31 @@
-import { Component, computed, inject, input, output } from "@angular/core";
-import { MatIconModule } from "@angular/material/icon";
-import { DateTime } from "luxon";
+import { Component, computed, inject, input, output } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { DateTime } from 'luxon';
 import type {
   DatepickerDialogContext,
   DatepickerMeridiem,
   DatepickerTimeChange,
-} from "./datepicker-dialog.types";
-import { DatepickerIdService } from "./datepicker-id.service";
-import { TimeUnitControlComponent } from "./time-unit-control.component";
-import type {
-  TimeUnit,
-  TimeUnitControlContext,
-} from "./time-unit-control.types";
+} from './datepicker-dialog.types';
+import { DatepickerIdService } from './datepicker-id.service';
+import { TimeUnitControlComponent } from './time-unit-control.component';
+import type { TimeUnit, TimeUnitControlContext } from './time-unit-control.types';
 
-type TimeAdjustmentUnit = TimeUnit | "hours" | "minutes";
+type TimeAdjustmentUnit = TimeUnit | 'hours' | 'minutes';
 
 const TIME_ADJUSTMENT_KEYS = {
-  hour: "hours",
-  hours: "hours",
-  minute: "minutes",
-  minutes: "minutes",
-  second: "seconds",
+  hour: 'hours',
+  hours: 'hours',
+  minute: 'minutes',
+  minutes: 'minutes',
+  second: 'seconds',
 } as const;
 
 @Component({
-  selector: "time-picker",
+  selector: 'time-picker',
   standalone: true,
   imports: [MatIconModule, TimeUnitControlComponent],
-  templateUrl: "./time-picker.component.html",
-  styleUrl: "./time-picker.component.scss",
+  templateUrl: './time-picker.component.html',
+  styleUrl: './time-picker.component.scss',
 })
 export class TimePickerComponent {
   private readonly idService = inject(DatepickerIdService);
@@ -40,94 +37,90 @@ export class TimePickerComponent {
 
   protected readonly showSeconds = computed(() => this.context().showSeconds);
   protected readonly showMeridiem = computed(() => this.context().showMeridiem);
-  protected readonly showQuickTimeControls = computed(
-    () => this.context().showQuickTimeControls,
-  );
-  protected readonly timeAnnouncement = computed(
-    () => this.context().timeAnnouncement,
-  );
+  protected readonly showQuickTimeControls = computed(() => this.context().showQuickTimeControls);
+  protected readonly timeAnnouncement = computed(() => this.context().timeAnnouncement);
 
   protected readonly meridiemChoices = computed(() => [
     {
-      value: "AM" as const,
+      value: 'AM' as const,
       id: this.context().meridiemAmId,
-      label: "AM, vormittags",
-      testId: "meridiem-am",
+      label: 'AM, vormittags',
+      testId: 'meridiem-am',
     },
     {
-      value: "PM" as const,
+      value: 'PM' as const,
       id: this.context().meridiemPmId,
-      label: "PM, nachmittags und abends",
-      testId: "meridiem-pm",
+      label: 'PM, nachmittags und abends',
+      testId: 'meridiem-pm',
     },
   ]);
 
   protected readonly minuteAdjustments = [
-    { value: -30, label: "30 Minuten abziehen", id: "subtract-30-mins" },
-    { value: -15, label: "15 Minuten abziehen", id: "subtract-15-mins" },
-    { value: 15, label: "15 Minuten hinzufügen", id: "add-15-mins" },
-    { value: 30, label: "30 Minuten hinzufügen", id: "add-30-mins" },
+    { value: -30, label: '30 Minuten abziehen', id: 'subtract-30-mins' },
+    { value: -15, label: '15 Minuten abziehen', id: 'subtract-15-mins' },
+    { value: 15, label: '15 Minuten hinzufügen', id: 'add-15-mins' },
+    { value: 30, label: '30 Minuten hinzufügen', id: 'add-30-mins' },
   ] as const;
 
   protected readonly hourAdjustments = [
-    { value: -12, label: "12 Stunden abziehen", id: "subtract-12-hrs" },
-    { value: -6, label: "6 Stunden abziehen", id: "subtract-6-hrs" },
-    { value: 6, label: "6 Stunden hinzufügen", id: "add-6-hrs" },
-    { value: 12, label: "12 Stunden hinzufügen", id: "add-12-hrs" },
+    { value: -12, label: '12 Stunden abziehen', id: 'subtract-12-hrs' },
+    { value: -6, label: '6 Stunden abziehen', id: 'subtract-6-hrs' },
+    { value: 6, label: '6 Stunden hinzufügen', id: 'add-6-hrs' },
+    { value: 12, label: '12 Stunden hinzufügen', id: 'add-12-hrs' },
   ] as const;
 
   protected readonly adjustmentGroups = [
     {
-      unit: "minutes" as const,
-      id: "minute-adjustment-group",
-      buttonsId: "minute-adjustment-buttons",
-      label: "Minuten anpassen",
-      labelText: "Minuten",
-      icon: "schedule",
-      testId: "minute-adjustment-group",
-      iconTestId: "minute-icon",
-      labelTestId: "minute-adjustment-label",
+      unit: 'minutes' as const,
+      id: 'minute-adjustment-group',
+      buttonsId: 'minute-adjustment-buttons',
+      label: 'Minuten anpassen',
+      labelText: 'Minuten',
+      icon: 'schedule',
+      testId: 'minute-adjustment-group',
+      iconTestId: 'minute-icon',
+      labelTestId: 'minute-adjustment-label',
       adjustments: this.minuteAdjustments,
-      controlsId: "minuteSelectId" as const,
+      controlsId: 'minuteSelectId' as const,
     },
     {
-      unit: "hours" as const,
-      id: "hour-adjustment-group",
-      buttonsId: "hour-adjustment-buttons",
-      label: "Stunden anpassen",
-      labelText: "Stunden",
-      icon: "timer",
-      testId: "hour-adjustment-group",
-      iconTestId: "hour-icon",
-      labelTestId: "hour-adjustment-label",
+      unit: 'hours' as const,
+      id: 'hour-adjustment-group',
+      buttonsId: 'hour-adjustment-buttons',
+      label: 'Stunden anpassen',
+      labelText: 'Stunden',
+      icon: 'timer',
+      testId: 'hour-adjustment-group',
+      iconTestId: 'hour-icon',
+      labelTestId: 'hour-adjustment-label',
       adjustments: this.hourAdjustments,
-      controlsId: "hourSelectId" as const,
+      controlsId: 'hourSelectId' as const,
     },
   ] as const;
 
   protected readonly meridiem = computed<DatepickerMeridiem>(() =>
-    (this.context().selectedDate?.hour ?? 0) >= 12 ? "PM" : "AM",
+    (this.context().selectedDate?.hour ?? 0) >= 12 ? 'PM' : 'AM',
   );
 
   protected readonly hourControlContext = computed<TimeUnitControlContext>(() =>
-    this.createTimeUnitControlContext("hour"),
+    this.createTimeUnitControlContext('hour'),
   );
-  protected readonly minuteControlContext = computed<TimeUnitControlContext>(
-    () => this.createTimeUnitControlContext("minute"),
+  protected readonly minuteControlContext = computed<TimeUnitControlContext>(() =>
+    this.createTimeUnitControlContext('minute'),
   );
-  protected readonly secondControlContext = computed<TimeUnitControlContext>(
-    () => this.createTimeUnitControlContext("second"),
+  protected readonly secondControlContext = computed<TimeUnitControlContext>(() =>
+    this.createTimeUnitControlContext('second'),
   );
 
   protected readonly timeUnits = computed(() => {
     const units: { type: TimeUnit; context: TimeUnitControlContext }[] = [
-      { type: "hour", context: this.hourControlContext() },
-      { type: "minute", context: this.minuteControlContext() },
+      { type: 'hour', context: this.hourControlContext() },
+      { type: 'minute', context: this.minuteControlContext() },
     ];
 
     if (this.showSeconds()) {
       units.push({
-        type: "second",
+        type: 'second',
         context: this.secondControlContext(),
       });
     }
@@ -153,9 +146,9 @@ export class TimePickerComponent {
     }
 
     const currentHour = selectedDate?.hour ?? 0;
-    const hour = meridiem === "PM" ? (currentHour % 12) + 12 : currentHour % 12;
+    const hour = meridiem === 'PM' ? (currentHour % 12) + 12 : currentHour % 12;
 
-    this.timeChanged.emit({ unit: "hour", value: hour });
+    this.timeChanged.emit({ unit: 'hour', value: hour });
   }
 
   protected idFor(part: string): string {
@@ -172,11 +165,11 @@ export class TimePickerComponent {
     return {
       unit,
       value: this.getTimeValue(context.selectedDate, unit),
-      controlId: this.getTimeId(context, unit, "control"),
-      labelId: this.getTimeId(context, unit, "label"),
-      descriptionId: this.idFor("time-instructions"),
+      controlId: this.getTimeId(context, unit, 'control'),
+      labelId: this.getTimeId(context, unit, 'label'),
+      descriptionId: this.idFor('time-instructions'),
       testIdPrefix: context.testIdPrefix,
-      hourCycle: context.uses12HourClock ? "h12" : "h23",
+      hourCycle: context.uses12HourClock ? 'h12' : 'h23',
       meridiem: this.meridiem(),
     };
   }
@@ -187,11 +180,11 @@ export class TimePickerComponent {
     }
 
     switch (unit) {
-      case "hour":
+      case 'hour':
         return date.hour;
-      case "minute":
+      case 'minute':
         return date.minute;
-      case "second":
+      case 'second':
         return date.second;
     }
   }
@@ -199,25 +192,25 @@ export class TimePickerComponent {
   private getTimeId(
     context: DatepickerDialogContext,
     unit: TimeUnit,
-    type: "control" | "label",
+    type: 'control' | 'label',
   ): string {
-    if (type === "control") {
+    if (type === 'control') {
       switch (unit) {
-        case "hour":
+        case 'hour':
           return context.hourSelectId;
-        case "minute":
+        case 'minute':
           return context.minuteSelectId;
-        case "second":
+        case 'second':
           return context.secondSelectId;
       }
     }
 
     switch (unit) {
-      case "hour":
+      case 'hour':
         return context.hourLabelId;
-      case "minute":
+      case 'minute':
         return context.minuteLabelId;
-      case "second":
+      case 'second':
         return context.secondLabelId;
     }
   }

@@ -231,22 +231,55 @@
             gradientUnits="userSpaceOnUse"
           >
             <stop stop-color="#FF41F8" />
-            <stop offset=".707" stop-color="#FF41F8" stop-opacity=".5" />
-            <stop offset="1" stop-color="#FF41F8" stop-opacity="0" />
+            <stop
+              offset=".707"
+              stop-color="#FF41F8"
+              stop-opacity=".5"
+            />
+            <stop
+              offset="1"
+              stop-color="#FF41F8"
+              stop-opacity="0"
+            />
           </radialGradient>
-          <linearGradient id="b" x1="0" x2="982" y1="192" y2="192" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="b"
+            x1="0"
+            x2="982"
+            y1="192"
+            y2="192"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop stop-color="#F0060B" />
-            <stop offset="0" stop-color="#F0070C" />
-            <stop offset=".526" stop-color="#CC26D5" />
-            <stop offset="1" stop-color="#7702FF" />
+            <stop
+              offset="0"
+              stop-color="#F0070C"
+            />
+            <stop
+              offset=".526"
+              stop-color="#CC26D5"
+            />
+            <stop
+              offset="1"
+              stop-color="#7702FF"
+            />
           </linearGradient>
-          <clipPath id="a"><path fill="#fff" d="M0 0h982v239H0z" /></clipPath>
+          <clipPath id="a">
+            <path
+              fill="#fff"
+              d="M0 0h982v239H0z"
+            />
+          </clipPath>
         </defs>
       </svg>
       <h1>Hello, {{ title() }}</h1>
       <p>Congratulations! Your app is running. 🎉</p>
     </div>
-    <div class="divider" role="separator" aria-label="Divider"></div>
+    <div
+      class="divider"
+      role="separator"
+      aria-label="Divider"
+    ></div>
     <div class="right-side">
       <div class="pill-group">
         @for (
@@ -266,7 +299,12 @@
           ];
           track item.title
         ) {
-          <a class="pill" [href]="item.link" target="_blank" rel="noopener">
+          <a
+            class="pill"
+            [href]="item.link"
+            target="_blank"
+            rel="noopener"
+          >
             <span>{{ item.title }}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -302,7 +340,12 @@
             />
           </svg>
         </a>
-        <a href="https://x.com/angular" aria-label="X" target="_blank" rel="noopener">
+        <a
+          href="https://x.com/angular"
+          aria-label="X"
+          target="_blank"
+          rel="noopener"
+        >
           <svg
             width="24"
             height="24"

@@ -1,39 +1,24 @@
-import { CdkTrapFocus } from "@angular/cdk/a11y";
-import {
-  Component,
-  computed,
-  inject,
-  input,
-  output,
-  viewChild,
-} from "@angular/core";
-import { DateTime, Info } from "luxon";
-import { DatepickerGridComponent } from "./datepicker-grid.component";
-import { DatepickerIdService } from "./datepicker-id.service";
-import {
-  type DatepickerGridContext,
-  type DatepickerGridKeydown,
-} from "./datepicker-grid.types";
-import { TimePickerComponent } from "./time-picker.component";
-import { DatepickerHeaderComponent } from "./datepicker-header.component";
-import { type DatepickerHeaderContext } from "./datepicker-header.types";
+import { CdkTrapFocus } from '@angular/cdk/a11y';
+import { Component, computed, inject, input, output, viewChild } from '@angular/core';
+import { DateTime, Info } from 'luxon';
+import { DatepickerGridComponent } from './datepicker-grid.component';
+import { DatepickerIdService } from './datepicker-id.service';
+import { type DatepickerGridContext, type DatepickerGridKeydown } from './datepicker-grid.types';
+import { TimePickerComponent } from './time-picker.component';
+import { DatepickerHeaderComponent } from './datepicker-header.component';
+import { type DatepickerHeaderContext } from './datepicker-header.types';
 import {
   type DatepickerDialogContext,
   type DatepickerMeridiem,
   type DatepickerTimeChange,
-} from "./datepicker-dialog.types";
+} from './datepicker-dialog.types';
 
 @Component({
-  selector: "datepicker-dialog",
+  selector: 'datepicker-dialog',
   standalone: true,
-  imports: [
-    CdkTrapFocus,
-    DatepickerGridComponent,
-    TimePickerComponent,
-    DatepickerHeaderComponent,
-  ],
-  templateUrl: "./datepicker-dialog.component.html",
-  styleUrl: "./datepicker-dialog.component.scss",
+  imports: [CdkTrapFocus, DatepickerGridComponent, TimePickerComponent, DatepickerHeaderComponent],
+  templateUrl: './datepicker-dialog.component.html',
+  styleUrl: './datepicker-dialog.component.scss',
 })
 export class DatepickerDialogComponent {
   private readonly idService = inject(DatepickerIdService);
@@ -58,56 +43,34 @@ export class DatepickerDialogComponent {
   readonly yearSelected = output<number>();
 
   protected readonly dialogId = computed(() => this.context().dialogId);
-  protected readonly dialogTitleId = computed(
-    () => this.context().dialogTitleId,
-  );
-  protected readonly dialogDescriptionId = computed(
-    () => this.context().dialogDescriptionId,
-  );
-  protected readonly monthHeadingId = computed(
-    () => this.context().monthHeadingId,
-  );
+  protected readonly dialogTitleId = computed(() => this.context().dialogTitleId);
+  protected readonly dialogDescriptionId = computed(() => this.context().dialogDescriptionId);
+  protected readonly monthHeadingId = computed(() => this.context().monthHeadingId);
   protected readonly dialogTitle = computed(() => this.context().dialogTitle);
-  protected readonly formattedMonth = computed(
-    () => this.context().formattedMonth,
-  );
+  protected readonly formattedMonth = computed(() => this.context().formattedMonth);
   protected readonly selectedDate = computed(() => this.context().selectedDate);
   protected readonly locale = computed(() => this.context().locale);
   protected readonly shortMonths = computed(() =>
-    Info.months("short", {
+    Info.months('short', {
       locale: this.locale(),
     }),
   );
-  protected readonly selectedMonth = computed(() =>
-    this.context().viewDate.month.toString(),
-  );
+  protected readonly selectedMonth = computed(() => this.context().viewDate.month.toString());
   protected readonly testIdPrefix = computed(() => this.context().testIdPrefix);
   protected readonly dateOnly = computed(() => this.context().dateOnly);
   protected readonly showSeconds = computed(() => this.context().showSeconds);
-  protected readonly uses12HourClock = computed(
-    () => this.context().uses12HourClock,
-  );
+  protected readonly uses12HourClock = computed(() => this.context().uses12HourClock);
   protected readonly showMeridiem = computed(() => this.context().showMeridiem);
   protected readonly meridiem = computed<DatepickerMeridiem>(() =>
-    (this.selectedDate()?.hour ?? 0) >= 12 ? "PM" : "AM",
+    (this.selectedDate()?.hour ?? 0) >= 12 ? 'PM' : 'AM',
   );
-  protected readonly dateAnnouncement = computed(
-    () => this.context().dateAnnouncement,
-  );
-  protected readonly timeAnnouncement = computed(
-    () => this.context().timeAnnouncement,
-  );
-  protected readonly navigationAnnouncement = computed(
-    () => this.context().navigationAnnouncement,
-  );
-  protected readonly showQuickTimeControls = computed(
-    () => this.context().showQuickTimeControls,
-  );
+  protected readonly dateAnnouncement = computed(() => this.context().dateAnnouncement);
+  protected readonly timeAnnouncement = computed(() => this.context().timeAnnouncement);
+  protected readonly navigationAnnouncement = computed(() => this.context().navigationAnnouncement);
+  protected readonly showQuickTimeControls = computed(() => this.context().showQuickTimeControls);
 
   protected readonly selectNowLabel = computed(() =>
-    this.dateOnly()
-      ? "Heutiges Datum auswählen"
-      : "Aktuelles Datum und aktuelle Uhrzeit auswählen",
+    this.dateOnly() ? 'Heutiges Datum auswählen' : 'Aktuelles Datum und aktuelle Uhrzeit auswählen',
   );
 
   protected readonly calendarGridId = computed(() => `${this.dialogId()}-grid`);

@@ -1,23 +1,16 @@
-import {
-  Component,
-  effect,
-  inject,
-  input,
-  output,
-  signal,
-} from "@angular/core";
-import { FormControl, ReactiveFormsModule } from "@angular/forms";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatIconModule } from "@angular/material/icon";
-import { MatInputModule } from "@angular/material/input";
-import { RepeatClickDirective } from "./directives/repeat-click.directive";
-import type { DatepickerHeaderContext } from "./datepicker-header.types";
-import { DatepickerIdService } from "./datepicker-id.service";
+import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { RepeatClickDirective } from './directives/repeat-click.directive';
+import type { DatepickerHeaderContext } from './datepicker-header.types';
+import { DatepickerIdService } from './datepicker-id.service';
 
 const FOUR_DIGIT_YEAR_PATTERN = /^\d{4}$/u;
 
 @Component({
-  selector: "datepicker-header",
+  selector: 'datepicker-header',
   standalone: true,
   imports: [
     MatFormFieldModule,
@@ -26,8 +19,8 @@ const FOUR_DIGIT_YEAR_PATTERN = /^\d{4}$/u;
     ReactiveFormsModule,
     RepeatClickDirective,
   ],
-  templateUrl: "./datepicker-header.component.html",
-  styleUrl: "./datepicker-header.component.scss",
+  templateUrl: './datepicker-header.component.html',
+  styleUrl: './datepicker-header.component.scss',
 })
 export class DatepickerHeaderComponent {
   private readonly idService = inject(DatepickerIdService);
@@ -42,7 +35,7 @@ export class DatepickerHeaderComponent {
   readonly yearSelected = output<number>();
 
   protected readonly isMonthSelectFocused = signal(false);
-  protected readonly yearControl = new FormControl("", { nonNullable: true });
+  protected readonly yearControl = new FormControl('', { nonNullable: true });
 
   constructor() {
     effect(() => this.synchronizeYearControl(this.context().viewYear));
@@ -71,7 +64,7 @@ export class DatepickerHeaderComponent {
       return;
     }
 
-    const sanitizedValue = inputElement.value.replace(/\D/gu, "").slice(0, 4);
+    const sanitizedValue = inputElement.value.replace(/\D/gu, '').slice(0, 4);
 
     if (inputElement.value !== sanitizedValue) {
       inputElement.value = sanitizedValue;

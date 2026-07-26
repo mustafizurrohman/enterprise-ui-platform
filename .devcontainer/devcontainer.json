@@ -2,9 +2,7 @@
   "name": "Enterprise UI Platform",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
   "postCreateCommand": "npm ci",
-  "forwardPorts": [
-    6006
-  ],
+  "forwardPorts": [6006],
   "portsAttributes": {
     "6006": {
       "label": "Storybook",
@@ -13,10 +11,7 @@
   },
   "customizations": {
     "vscode": {
-      "extensions": [
-        "Angular.ng-template",
-        "esbenp.prettier-vscode"
-      ]
+      "extensions": ["Angular.ng-template", "esbenp.prettier-vscode"]
     }
   },
   "postStartCommand": "npm run storybook"

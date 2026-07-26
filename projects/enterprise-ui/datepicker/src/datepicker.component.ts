@@ -14,8 +14,8 @@ import {
   signal,
   untracked,
   viewChild,
-} from "@angular/core";
-import { CommonModule } from "@angular/common";
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
   type ControlValueAccessor,
@@ -25,31 +25,31 @@ import {
   NgControl,
   type ValidationErrors,
   type Validator,
-} from "@angular/forms";
+} from '@angular/forms';
 import {
   CdkConnectedOverlay,
   CdkOverlayOrigin,
   type ConnectedPosition,
-} from "@angular/cdk/overlay";
-import { MatIconModule } from "@angular/material/icon";
-import { DateTime, Info } from "luxon";
-import { DatepickerDialogComponent } from "./datepicker-dialog.component";
-import type { DatepickerDialogContext } from "./datepicker-dialog.types";
-import type { DatepickerWeek } from "./datepicker-grid.types";
-import type { TimeUnit } from "./time-unit-control.types";
-import type { DateInputAutocompleteResult } from "./luxon-date-input-autocomplete.types";
-import { LuxonDateInputAutocomplete } from "./luxon-date-input-autocomplete";
-import { DatepickerParserService } from "./datepicker-parser.service";
-import { DatepickerIdService } from "./datepicker-id.service";
+} from '@angular/cdk/overlay';
+import { MatIconModule } from '@angular/material/icon';
+import { DateTime, Info } from 'luxon';
+import { DatepickerDialogComponent } from './datepicker-dialog.component';
+import type { DatepickerDialogContext } from './datepicker-dialog.types';
+import type { DatepickerWeek } from './datepicker-grid.types';
+import type { TimeUnit } from './time-unit-control.types';
+import type { DateInputAutocompleteResult } from './luxon-date-input-autocomplete.types';
+import { LuxonDateInputAutocomplete } from './luxon-date-input-autocomplete';
+import { DatepickerParserService } from './datepicker-parser.service';
+import { DatepickerIdService } from './datepicker-id.service';
 import {
   buildCalendarWeeks,
   getLuxonFormatCapabilities,
   normalizeDateForFormat,
   resolveDatepickerLocale,
-} from "./datepicker-date.utils";
+} from './datepicker-date.utils';
 
 @Component({
-  selector: "datepicker",
+  selector: 'datepicker',
   standalone: true,
   imports: [
     CommonModule,
@@ -59,8 +59,8 @@ import {
     MatIconModule,
     DatepickerDialogComponent,
   ],
-  templateUrl: "./datepicker.component.html",
-  styleUrl: "./datepicker.component.scss",
+  templateUrl: './datepicker.component.html',
+  styleUrl: './datepicker.component.scss',
   providers: [
     DatepickerIdService,
     {
@@ -75,21 +75,19 @@ import {
     },
   ],
 })
-export class DatepickerComponent
-  implements ControlValueAccessor, Validator, OnDestroy
-{
+export class DatepickerComponent implements ControlValueAccessor, Validator, OnDestroy {
   private readonly idService = inject(DatepickerIdService);
   private readonly injector = inject(Injector);
   private readonly ngZone = inject(NgZone);
   private readonly parser = inject(DatepickerParserService);
 
-  readonly label = input<string>("Datum auswählen");
+  readonly label = input<string>('Datum auswählen');
   readonly today = input<DateTime>(DateTime.now());
   readonly testId = input<string | null>(null);
   readonly locale = input<string | null>(null);
   readonly luxonDateFormat = input<string | null>(null);
   readonly dateFormatInput = input<string | null>(null, {
-    alias: "dateFormat",
+    alias: 'dateFormat',
   });
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly showQuickTimeControls = input(false, {
@@ -99,13 +97,9 @@ export class DatepickerComponent
 
   private readonly disabledByForm = signal(false);
 
-  protected readonly computedDisabled = computed(
-    () => this.disabled() || this.disabledByForm(),
-  );
+  protected readonly computedDisabled = computed(() => this.disabled() || this.disabledByForm());
 
-  protected readonly resolvedLocale = computed(() =>
-    resolveDatepickerLocale(this.locale()),
-  );
+  protected readonly resolvedLocale = computed(() => resolveDatepickerLocale(this.locale()));
 
   protected readonly ids = this.idService.ids;
   protected readonly testIdPrefix = this.idService.testIdPrefix;
@@ -116,8 +110,7 @@ export class DatepickerComponent
 
   protected readonly dateFormat = computed(() =>
     LuxonDateInputAutocomplete.assertValidFormat(
-      this.configuredDateFormat() ??
-        LuxonDateInputAutocomplete.DEFAULT_DATETIME_FORMAT,
+      this.configuredDateFormat() ?? LuxonDateInputAutocomplete.DEFAULT_DATETIME_FORMAT,
       this.resolvedLocale(),
     ),
   );
@@ -128,32 +121,24 @@ export class DatepickerComponent
 
   readonly dateOnly = computed(() => !this.dateFormatCapabilities().hasTime);
 
-  readonly showSeconds = computed(
-    () => this.dateFormatCapabilities().hasSeconds,
-  );
+  readonly showSeconds = computed(() => this.dateFormatCapabilities().hasSeconds);
 
-  readonly uses12HourClock = computed(
-    () => this.dateFormatCapabilities().uses12HourClock,
-  );
+  readonly uses12HourClock = computed(() => this.dateFormatCapabilities().uses12HourClock);
 
-  readonly showMeridiem = computed(
-    () => this.dateFormatCapabilities().showMeridiem,
-  );
+  readonly showMeridiem = computed(() => this.dateFormatCapabilities().showMeridiem);
 
   protected readonly dateFormatDescription = computed(() => this.dateFormat());
 
-  protected readonly placeholder = computed(() =>
-    this.dateFormat().replace(/'/g, ""),
-  );
+  protected readonly placeholder = computed(() => this.dateFormat().replace(/'/g, ''));
 
   protected readonly calendarToggleLabel = computed(() => {
     if (this.isOpen()) {
-      return "Kalender schließen";
+      return 'Kalender schließen';
     }
 
     const baseLabel = this.dateOnly()
-      ? "Kalender zur Auswahl eines Datums öffnen"
-      : "Kalender zur Auswahl von Datum und Uhrzeit öffnen";
+      ? 'Kalender zur Auswahl eines Datums öffnen'
+      : 'Kalender zur Auswahl von Datum und Uhrzeit öffnen';
     const selectedDate = this.selectedDate();
 
     return selectedDate
@@ -162,85 +147,77 @@ export class DatepickerComponent
   });
 
   protected readonly selectNowLabel = computed(() =>
-    this.dateOnly()
-      ? "Heutiges Datum auswählen"
-      : "Aktuelles Datum und aktuelle Uhrzeit auswählen",
+    this.dateOnly() ? 'Heutiges Datum auswählen' : 'Aktuelles Datum und aktuelle Uhrzeit auswählen',
   );
 
   protected readonly dialogTitle = computed(() =>
-    this.dateOnly() ? "Datum auswählen" : "Datum und Uhrzeit auswählen",
+    this.dateOnly() ? 'Datum auswählen' : 'Datum und Uhrzeit auswählen',
   );
 
   protected readonly formattedMonth = computed(() =>
-    this.viewDate().setLocale(this.resolvedLocale()).toFormat("LLLL yyyy"),
+    this.viewDate().setLocale(this.resolvedLocale()).toFormat('LLLL yyyy'),
   );
 
   readonly selectedDate = signal<DateTime | null>(null);
-  protected readonly inputDisplayValue = signal("");
+  protected readonly inputDisplayValue = signal('');
   private readonly manualInputError = signal(false);
   private readonly inputAutocomplete = computed(
-    () =>
-      new LuxonDateInputAutocomplete(this.dateFormat(), this.resolvedLocale()),
+    () => new LuxonDateInputAutocomplete(this.dateFormat(), this.resolvedLocale()),
   );
   readonly viewDate = signal<DateTime>(DateTime.now());
   protected readonly isOpen = signal(false);
-  protected readonly activeDate = signal<DateTime>(
-    DateTime.local().startOf("day"),
-  );
-  protected readonly timeAnnouncement = signal("");
-  protected readonly dateAnnouncement = signal("");
-  protected readonly inputAnnouncement = signal("");
-  protected readonly navigationAnnouncement = signal("");
+  protected readonly activeDate = signal<DateTime>(DateTime.local().startOf('day'));
+  protected readonly timeAnnouncement = signal('');
+  protected readonly dateAnnouncement = signal('');
+  protected readonly inputAnnouncement = signal('');
+  protected readonly navigationAnnouncement = signal('');
 
-  private readonly dateInput =
-    viewChild<ElementRef<HTMLInputElement>>("dateInput");
+  private readonly dateInput = viewChild<ElementRef<HTMLInputElement>>('dateInput');
   private readonly calendarDialog = viewChild(DatepickerDialogComponent);
 
   protected readonly overlayPositions: ConnectedPosition[] = [
     {
-      originX: "start",
-      originY: "bottom",
-      overlayX: "start",
-      overlayY: "top",
+      originX: 'start',
+      originY: 'bottom',
+      overlayX: 'start',
+      overlayY: 'top',
       offsetY: 8,
     },
     {
-      originX: "end",
-      originY: "bottom",
-      overlayX: "end",
-      overlayY: "top",
+      originX: 'end',
+      originY: 'bottom',
+      overlayX: 'end',
+      overlayY: 'top',
       offsetY: 8,
     },
     {
-      originX: "start",
-      originY: "top",
-      overlayX: "start",
-      overlayY: "bottom",
+      originX: 'start',
+      originY: 'top',
+      overlayX: 'start',
+      overlayY: 'bottom',
       offsetY: -8,
     },
     {
-      originX: "end",
-      originY: "top",
-      overlayX: "end",
-      overlayY: "bottom",
+      originX: 'end',
+      originY: 'top',
+      overlayX: 'end',
+      overlayY: 'bottom',
       offsetY: -8,
     },
   ];
 
   readonly daysOfWeek = computed(() => {
     const locale = this.resolvedLocale();
-    const longWeekdays = Info.weekdays("long", { locale });
+    const longWeekdays = Info.weekdays('long', { locale });
 
-    return Info.weekdays("short", { locale }).map((short, index) => ({
+    return Info.weekdays('short', { locale }).map((short, index) => ({
       short,
       long: longWeekdays[index] ?? short,
       weekday: index + 1,
     }));
   });
 
-  readonly months = computed(() =>
-    Info.months("long", { locale: this.resolvedLocale() }),
-  );
+  readonly months = computed(() => Info.months('long', { locale: this.resolvedLocale() }));
 
   readonly grid = computed(() => buildCalendarWeeks(this.viewDate()));
 
@@ -285,8 +262,7 @@ export class DatepickerComponent
 
   private ngControlInstance: NgControl | null = null;
   private lastFocusedTrigger: HTMLElement | null = null;
-  private navigationAnnouncementTimer: ReturnType<typeof setTimeout> | null =
-    null;
+  private navigationAnnouncementTimer: ReturnType<typeof setTimeout> | null = null;
 
   protected get ngControl(): NgControl | null {
     if (!this.ngControlInstance) {
@@ -322,11 +298,7 @@ export class DatepickerComponent
           return;
         }
 
-        const normalizedDate = normalizeDateForFormat(
-          selectedDate,
-          dateOnly,
-          showSeconds,
-        );
+        const normalizedDate = normalizeDateForFormat(selectedDate, dateOnly, showSeconds);
 
         if (normalizedDate.toMillis() !== selectedDate.toMillis()) {
           const jsDate = normalizedDate.toJSDate();
@@ -336,9 +308,7 @@ export class DatepickerComponent
           this.onChange(jsDate);
         }
 
-        this.inputDisplayValue.set(
-          normalizedDate.setLocale(locale).toFormat(format),
-        );
+        this.inputDisplayValue.set(normalizedDate.setLocale(locale).toFormat(format));
       });
     });
   }
@@ -354,16 +324,13 @@ export class DatepickerComponent
     this.updateInternalState(value);
   }
 
-  private updateInternalState(
-    value: Date | string | null | undefined,
-    emit = false,
-  ): void {
-    if (value === null || value === undefined || value === "") {
+  private updateInternalState(value: Date | string | null | undefined, emit = false): void {
+    if (value === null || value === undefined || value === '') {
       if (this.selectedDate() !== null || this.manualInputError()) {
         this.selectedDate.set(null);
-        this.inputDisplayValue.set("");
+        this.inputDisplayValue.set('');
         this.manualInputError.set(false);
-        this.inputAnnouncement.set("");
+        this.inputAnnouncement.set('');
         this.viewDate.set(this.today());
         if (emit) {
           this.onChange(null);
@@ -373,18 +340,18 @@ export class DatepickerComponent
     }
 
     let date: DateTime | undefined;
-    let displayValue = "";
+    let displayValue = '';
 
     if (value instanceof Date) {
       date = DateTime.fromJSDate(value);
       if (date.isValid) {
         displayValue = this.formatDate(date);
       }
-    } else if (typeof value === "string") {
+    } else if (typeof value === 'string') {
       const result = this.parser.parse(
         value,
         {
-          value: "",
+          value: '',
           selectionStart: 0,
           selectionEnd: 0,
         },
@@ -403,8 +370,7 @@ export class DatepickerComponent
         const jsDate = date.toJSDate();
         const currentValue = this.value();
         const hasChanged =
-          !(currentValue instanceof Date) ||
-          currentValue.getTime() !== jsDate.getTime();
+          !(currentValue instanceof Date) || currentValue.getTime() !== jsDate.getTime();
 
         if (hasChanged) {
           this.value.set(jsDate);
@@ -437,11 +403,7 @@ export class DatepickerComponent
     }
 
     if (date?.isValid) {
-      date = normalizeDateForFormat(
-        date,
-        this.dateOnly(),
-        this.showSeconds(),
-      );
+      date = normalizeDateForFormat(date, this.dateOnly(), this.showSeconds());
 
       const currentIso = this.selectedDate()?.toISO();
       const newIso = date.toISO();
@@ -454,7 +416,7 @@ export class DatepickerComponent
         this.selectedDate.set(date);
         this.inputDisplayValue.set(displayValue);
         this.manualInputError.set(false);
-        this.inputAnnouncement.set("");
+        this.inputAnnouncement.set('');
         this.viewDate.set(date);
         if (emit) {
           this.onChange(date.toJSDate());
@@ -469,7 +431,7 @@ export class DatepickerComponent
         this.selectedDate.set(null);
         this.inputDisplayValue.set(displayValue);
         this.manualInputError.set(true);
-        this.inputAnnouncement.set("");
+        this.inputAnnouncement.set('');
         this.viewDate.set(this.today());
         if (emit) {
           this.onChange(null);
@@ -495,7 +457,7 @@ export class DatepickerComponent
       return { invalidDate: true };
     }
     const value = control.value;
-    if (value === null || value === undefined || value === "") {
+    if (value === null || value === undefined || value === '') {
       return null;
     }
     let date: DateTime;
@@ -517,8 +479,8 @@ export class DatepickerComponent
 
     this.lastFocusedTrigger =
       this.dateInput()?.nativeElement ?? trigger ?? this.getCurrentTrigger();
-    this.navigationAnnouncement.set("");
-    this.dateAnnouncement.set("");
+    this.navigationAnnouncement.set('');
+    this.dateAnnouncement.set('');
     this.isOpen.set(true);
 
     const selectedDate = this.selectedDate();
@@ -527,34 +489,31 @@ export class DatepickerComponent
     }
   }
 
-  protected handleInputKeydown(
-    event: KeyboardEvent,
-    input: HTMLInputElement,
-  ): void {
-    if (event.key === "ArrowDown" && !event.ctrlKey && !event.metaKey) {
+  protected handleInputKeydown(event: KeyboardEvent, input: HTMLInputElement): void {
+    if (event.key === 'ArrowDown' && !event.ctrlKey && !event.metaKey) {
       event.preventDefault();
       this.openCalendar(input);
       return;
     }
 
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       event.preventDefault();
       this.commitManualInput(input);
       return;
     }
 
-    if (event.key === "Escape" && this.isOpen()) {
+    if (event.key === 'Escape' && this.isOpen()) {
       event.preventDefault();
       this.closeCalendar();
       return;
     }
 
     if (
-      event.key === "Backspace" &&
+      event.key === 'Backspace' &&
       input.selectionStart === input.selectionEnd &&
       input.selectionStart === input.value.length
     ) {
-      if (input.value.endsWith(" Uhr")) {
+      if (input.value.endsWith(' Uhr')) {
         event.preventDefault();
         input.value = input.value.slice(0, -4).slice(0, -1);
         this.onManualInput(input);
@@ -563,13 +522,12 @@ export class DatepickerComponent
   }
 
   protected onOverlayAttached(): void {
-    const initialDate =
-      this.selectedDate()?.startOf("day") ?? this.today().startOf("day");
+    const initialDate = this.selectedDate()?.startOf('day') ?? this.today().startOf('day');
 
     this.activeDate.set(initialDate);
 
-    if (!this.viewDate().hasSame(initialDate, "month")) {
-      this.viewDate.set(initialDate.startOf("month"));
+    if (!this.viewDate().hasSame(initialDate, 'month')) {
+      this.viewDate.set(initialDate.startOf('month'));
     }
 
     requestAnimationFrame(() => {
@@ -599,13 +557,13 @@ export class DatepickerComponent
     const wasOpen = this.isOpen();
     this.isOpen.set(false);
     this.clearNavigationAnnouncementTimer();
-    this.navigationAnnouncement.set("");
+    this.navigationAnnouncement.set('');
     this.onTouched();
 
     const trigger = this.lastFocusedTrigger;
     this.lastFocusedTrigger = null;
 
-    if (wasOpen && trigger?.isConnected && !trigger.hasAttribute("disabled")) {
+    if (wasOpen && trigger?.isConnected && !trigger.hasAttribute('disabled')) {
       requestAnimationFrame(() => trigger.focus());
     }
   }
@@ -624,7 +582,7 @@ export class DatepickerComponent
   }
 
   protected handleOverlayKeydown(event: KeyboardEvent): void {
-    if (event.key === "Escape") {
+    if (event.key === 'Escape') {
       event.preventDefault();
       this.closeCalendar();
     }
@@ -634,53 +592,51 @@ export class DatepickerComponent
     let nextDate: DateTime | null = null;
 
     switch (event.key) {
-      case "ArrowLeft":
+      case 'ArrowLeft':
         nextDate = date.minus({ days: 1 });
         break;
 
-      case "ArrowRight":
+      case 'ArrowRight':
         nextDate = date.plus({ days: 1 });
         break;
 
-      case "ArrowUp":
+      case 'ArrowUp':
         nextDate = date.minus({ days: 7 });
         break;
 
-      case "ArrowDown":
+      case 'ArrowDown':
         nextDate = date.plus({ days: 7 });
         break;
 
-      case "Home":
+      case 'Home':
         nextDate = date.minus({
           days: date.weekday - 1,
         });
         break;
 
-      case "End":
+      case 'End':
         nextDate = date.plus({
           days: 7 - date.weekday,
         });
         break;
 
-      case "PageUp":
+      case 'PageUp':
         nextDate = event.shiftKey
           ? this.moveDateByYears(date, -1)
           : this.moveDateByMonths(date, -1);
         break;
 
-      case "PageDown":
-        nextDate = event.shiftKey
-          ? this.moveDateByYears(date, 1)
-          : this.moveDateByMonths(date, 1);
+      case 'PageDown':
+        nextDate = event.shiftKey ? this.moveDateByYears(date, 1) : this.moveDateByMonths(date, 1);
         break;
 
-      case "Enter":
-      case " ":
+      case 'Enter':
+      case ' ':
         event.preventDefault();
         this.selectDate(date);
         return;
 
-      case "Escape":
+      case 'Escape':
         event.preventDefault();
         this.closeCalendar();
         return;
@@ -694,27 +650,27 @@ export class DatepickerComponent
   }
 
   private moveDateByMonths(date: DateTime, monthDifference: number): DateTime {
-    const targetMonth = date.startOf("month").plus({ months: monthDifference });
+    const targetMonth = date.startOf('month').plus({ months: monthDifference });
     const targetDay = Math.min(date.day, targetMonth.daysInMonth ?? 1);
 
     return targetMonth.set({ day: targetDay });
   }
 
   private moveDateByYears(date: DateTime, yearDifference: number): DateTime {
-    const targetYear = date.startOf("year").plus({ years: yearDifference });
-    const targetMonth = targetYear.set({ month: date.month }).startOf("month");
+    const targetYear = date.startOf('year').plus({ years: yearDifference });
+    const targetMonth = targetYear.set({ month: date.month }).startOf('month');
     const targetDay = Math.min(date.day, targetMonth.daysInMonth ?? 1);
 
     return targetMonth.set({ day: targetDay });
   }
 
   private moveFocusToDate(date: DateTime): void {
-    const normalizedDate = date.startOf("day");
+    const normalizedDate = date.startOf('day');
 
     this.activeDate.set(normalizedDate);
 
-    if (!this.viewDate().hasSame(normalizedDate, "month")) {
-      this.viewDate.set(normalizedDate.startOf("month"));
+    if (!this.viewDate().hasSame(normalizedDate, 'month')) {
+      this.viewDate.set(normalizedDate.startOf('month'));
     }
 
     requestAnimationFrame(() => {
@@ -723,11 +679,11 @@ export class DatepickerComponent
   }
 
   protected isActiveDate(date: DateTime): boolean {
-    return this.activeDate().hasSame(date, "day");
+    return this.activeDate().hasSame(date, 'day');
   }
 
   protected setActiveDate(date: DateTime): void {
-    this.activeDate.set(date.startOf("day"));
+    this.activeDate.set(date.startOf('day'));
   }
 
   prevMonth(): void {
@@ -763,11 +719,8 @@ export class DatepickerComponent
   }
 
   private updateCalendarView(date: DateTime): void {
-    const nextViewDate = date.startOf("month");
-    const targetDay = Math.min(
-      this.activeDate().day,
-      nextViewDate.daysInMonth ?? 1,
-    );
+    const nextViewDate = date.startOf('month');
+    const targetDay = Math.min(this.activeDate().day, nextViewDate.daysInMonth ?? 1);
 
     this.viewDate.set(nextViewDate);
     this.activeDate.set(nextViewDate.set({ day: targetDay }));
@@ -778,7 +731,7 @@ export class DatepickerComponent
     let newSelectedDate: DateTime;
 
     if (this.dateOnly()) {
-      newSelectedDate = date.startOf("day");
+      newSelectedDate = date.startOf('day');
     } else if (currentDate) {
       newSelectedDate = date.set({
         hour: currentDate.hour,
@@ -795,22 +748,16 @@ export class DatepickerComponent
     this.manualInputError.set(false);
     this.value.set(jsDate);
     this.onChange(jsDate);
-    this.announceDate(
-      `Datum ausgewählt: ${this.getAccessibleDateLabel(newSelectedDate)}.`,
-    );
+    this.announceDate(`Datum ausgewählt: ${this.getAccessibleDateLabel(newSelectedDate)}.`);
   }
 
   protected selectNow(): void {
-    const now = normalizeDateForFormat(
-      DateTime.now(),
-      this.dateOnly(),
-      this.showSeconds(),
-    );
+    const now = normalizeDateForFormat(DateTime.now(), this.dateOnly(), this.showSeconds());
     const jsDate = now.toJSDate();
     this.selectedDate.set(now);
     this.inputDisplayValue.set(this.formatDate(now));
     this.manualInputError.set(false);
-    this.inputAnnouncement.set("");
+    this.inputAnnouncement.set('');
     this.value.set(jsDate);
     this.onChange(jsDate);
     this.announceInput(
@@ -830,22 +777,22 @@ export class DatepickerComponent
     event.stopPropagation();
 
     this.selectedDate.set(null);
-    this.inputDisplayValue.set("");
+    this.inputDisplayValue.set('');
     this.manualInputError.set(false);
     this.value.set(null);
     this.viewDate.set(DateTime.now());
-    this.dateAnnouncement.set("");
-    this.timeAnnouncement.set("");
-    this.announceInput("Datum gelöscht.");
+    this.dateAnnouncement.set('');
+    this.timeAnnouncement.set('');
+    this.announceInput('Datum gelöscht.');
     this.onChange(null);
     this.onTouched();
 
-    input.value = "";
+    input.value = '';
     requestAnimationFrame(() => input.focus());
   }
 
   protected onManualInput(input: HTMLInputElement): void {
-    this.inputAnnouncement.set("");
+    this.inputAnnouncement.set('');
 
     const isDeletion = input.value.length < this.inputDisplayValue().length;
     const result = this.inputAutocomplete().process(input.value, {
@@ -870,8 +817,7 @@ export class DatepickerComponent
 
   protected handlePaste(event: ClipboardEvent, input: HTMLInputElement): void {
     const clipboardData = event.clipboardData;
-    const pastedValue =
-      clipboardData?.getData("text/plain") || clipboardData?.getData("text");
+    const pastedValue = clipboardData?.getData('text/plain') || clipboardData?.getData('text');
 
     if (pastedValue === undefined) {
       return;
@@ -899,8 +845,8 @@ export class DatepickerComponent
     if (result.date) {
       this.announceInput(
         this.dateOnly()
-          ? "Eingefügtes Datum übernommen."
-          : "Eingefügtes Datum und Uhrzeit übernommen.",
+          ? 'Eingefügtes Datum übernommen.'
+          : 'Eingefügtes Datum und Uhrzeit übernommen.',
       );
     }
 
@@ -931,11 +877,7 @@ export class DatepickerComponent
   }
 
   private applyManualDate(parsedDate: DateTime): void {
-    const normalizedDate = normalizeDateForFormat(
-      parsedDate,
-      this.dateOnly(),
-      this.showSeconds(),
-    );
+    const normalizedDate = normalizeDateForFormat(parsedDate, this.dateOnly(), this.showSeconds());
     const jsDate = normalizedDate.toJSDate();
 
     this.selectedDate.set(normalizedDate);
@@ -953,19 +895,15 @@ export class DatepickerComponent
       return;
     }
 
-    const maximum = unit === "hour" ? 23 : 59;
+    const maximum = unit === 'hour' ? 23 : 59;
     const normalizedValue = Math.min(Math.max(value, 0), maximum);
-    const currentDate = this.selectedDate() ?? DateTime.local().startOf("day");
+    const currentDate = this.selectedDate() ?? DateTime.local().startOf('day');
 
     this.applyTimeChange(currentDate.set({ [unit]: normalizedValue }));
   }
 
-  protected adjustTime(adjustment: {
-    hours?: number;
-    minutes?: number;
-    seconds?: number;
-  }): void {
-    const currentDate = this.selectedDate() ?? DateTime.local().startOf("day");
+  protected adjustTime(adjustment: { hours?: number; minutes?: number; seconds?: number }): void {
+    const currentDate = this.selectedDate() ?? DateTime.local().startOf('day');
 
     this.applyTimeChange(currentDate.plus(adjustment));
   }
@@ -975,8 +913,8 @@ export class DatepickerComponent
 
     this.selectedDate.set(date);
 
-    if (!this.viewDate().hasSame(date, "month")) {
-      this.viewDate.set(date.startOf("month"));
+    if (!this.viewDate().hasSame(date, 'month')) {
+      this.viewDate.set(date.startOf('month'));
     }
 
     this.inputDisplayValue.set(this.formatDate(date));
@@ -1017,7 +955,7 @@ export class DatepickerComponent
 
         this.ngZone.run(() => {
           this.navigationAnnouncement.set(
-            "Pfeiltasten navigieren zwischen Tagen. Pos1 und Ende springen zum Wochenanfang und Wochenende. Bild auf und Bild ab wechseln den Monat; mit Umschalttaste das Jahr. Enter oder Leertaste wählen den Tag. Escape schließt den Kalender.",
+            'Pfeiltasten navigieren zwischen Tagen. Pos1 und Ende springen zum Wochenanfang und Wochenende. Bild auf und Bild ab wechseln den Monat; mit Umschalttaste das Jahr. Enter oder Leertaste wählen den Tag. Escape schließt den Kalender.',
           );
         });
       }, 150);
@@ -1032,12 +970,12 @@ export class DatepickerComponent
   }
 
   private announceInput(message: string): void {
-    this.inputAnnouncement.set("");
+    this.inputAnnouncement.set('');
     queueMicrotask(() => this.inputAnnouncement.set(message));
   }
 
   private announceDate(message: string): void {
-    this.dateAnnouncement.set("");
+    this.dateAnnouncement.set('');
     queueMicrotask(() => this.dateAnnouncement.set(message));
   }
 
@@ -1048,11 +986,11 @@ export class DatepickerComponent
   isSelected(date: DateTime | null): boolean {
     const selectedDate = this.selectedDate();
 
-    return !!date && !!selectedDate && date.hasSame(selectedDate, "day");
+    return !!date && !!selectedDate && date.hasSame(selectedDate, 'day');
   }
 
   isToday(date: DateTime | null): boolean {
-    return !!date && date.hasSame(this.today(), "day");
+    return !!date && date.hasSame(this.today(), 'day');
   }
 
   isCurrentWeek(week: DatepickerWeek): boolean {
@@ -1060,26 +998,22 @@ export class DatepickerComponent
   }
 
   isCurrentWeekday(weekday: number): boolean {
-    return (
-      this.today().weekday === weekday &&
-      this.today().hasSame(this.viewDate(), "month")
-    );
+    return this.today().weekday === weekday && this.today().hasSame(this.viewDate(), 'month');
   }
 
   protected getAccessibleDateLabel(date: DateTime): string {
     return date.setLocale(this.resolvedLocale()).toLocaleString({
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     });
   }
 
   protected hasInputError(): boolean {
     return (
       this.manualInputError() ||
-      (!!this.ngControl?.invalid &&
-        (!!this.ngControl?.touched || !!this.ngControl?.dirty))
+      (!!this.ngControl?.invalid && (!!this.ngControl?.touched || !!this.ngControl?.dirty))
     );
   }
 
@@ -1094,10 +1028,7 @@ export class DatepickerComponent
   }
 
   private getCurrentTrigger(): HTMLElement | null {
-    if (
-      typeof document !== "undefined" &&
-      document.activeElement instanceof HTMLElement
-    ) {
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
       return document.activeElement;
     }
 
