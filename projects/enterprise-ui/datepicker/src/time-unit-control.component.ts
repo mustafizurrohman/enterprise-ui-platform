@@ -7,7 +7,7 @@ import {
   signal,
 } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
-import { RepeatClickDirective } from "../../directives/repeat-click.directive";
+import { RepeatClickDirective } from "./directives/repeat-click.directive";
 import { DatepickerIdService } from "./datepicker-id.service";
 
 import {
