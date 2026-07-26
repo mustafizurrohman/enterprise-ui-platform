@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { RepeatClickDirective } from './directives/repeat-click.directive';
+import { RepeatClickDirective } from '@mr/enterprise-ui/common';
 import { DatepickerIdService } from './datepicker-id.service';
 
 import {

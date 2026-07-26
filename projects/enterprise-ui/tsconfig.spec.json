@@ -8,6 +8,8 @@
   },
   "include": [
     "datepicker/src/**/*.d.ts",
-    "datepicker/src/**/*.spec.ts"
+    "datepicker/src/**/*.spec.ts",
+    "common/**/*.d.ts",
+    "common/**/*.spec.ts"
   ]
 }

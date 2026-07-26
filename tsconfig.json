@@ -6,6 +6,7 @@
     "paths": {
       "enterprise-ui": ["./dist/enterprise-ui"],
       "@mr/enterprise-ui": ["./projects/enterprise-ui/public-api.ts"],
+      "@mr/enterprise-ui/common": ["./projects/enterprise-ui/common/public-api.ts"],
       "@mr/enterprise-ui/datepicker": ["./projects/enterprise-ui/datepicker/public-api.ts"]
     },
     "noImplicitOverride": true,
