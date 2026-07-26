@@ -1,27 +1,28 @@
 import {
   Component,
+  effect,
+  inject,
   input,
   output,
   signal,
-  effect,
-  untracked,
-  inject,
 } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
+import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
-import { MatFormFieldModule } from "@angular/material/form-field";
 import { RepeatClickDirective } from "../../directives/repeat-click.directive";
-import { DatepickerHeaderContext } from "./datepicker-header.types";
+import type { DatepickerHeaderContext } from "./datepicker-header.types";
 import { DatepickerIdService } from "./datepicker-id.service";
+
+const FOUR_DIGIT_YEAR_PATTERN = /^\d{4}$/u;
 
 @Component({
   selector: "datepicker-header",
   standalone: true,
   imports: [
+    MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatFormFieldModule,
     ReactiveFormsModule,
     RepeatClickDirective,
   ],
@@ -30,6 +31,7 @@ import { DatepickerIdService } from "./datepicker-id.service";
 })
 export class DatepickerHeaderComponent {
   private readonly idService = inject(DatepickerIdService);
+
   readonly context = input.required<DatepickerHeaderContext>();
 
   readonly previousMonth = output<void>();
@@ -40,27 +42,20 @@ export class DatepickerHeaderComponent {
   readonly yearSelected = output<number>();
 
   protected readonly isMonthSelectFocused = signal(false);
-  protected readonly yearControl = new FormControl<string>("", {
-    nonNullable: true,
-  });
+  protected readonly yearControl = new FormControl("", { nonNullable: true });
 
   constructor() {
-    effect(() => {
-      const context = this.context();
-      untracked(() => {
-        const yearStr = context.viewYear.toString();
-        if (this.yearControl.value !== yearStr) {
-          this.yearControl.setValue(yearStr, { emitEvent: false });
-        }
-      });
-    });
+    effect(() => this.synchronizeYearControl(this.context().viewYear));
   }
 
   protected onMonthChange(event: Event): void {
-    const month = Number.parseInt(
-      (event.target as HTMLSelectElement).value,
-      10,
-    );
+    const selectElement = event.target;
+
+    if (!(selectElement instanceof HTMLSelectElement)) {
+      return;
+    }
+
+    const month = Number.parseInt(selectElement.value, 10);
 
     if (Number.isInteger(month) && month >= 1 && month <= 12) {
       this.monthSelected.emit(month);
@@ -70,11 +65,16 @@ export class DatepickerHeaderComponent {
   }
 
   protected onYearInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const sanitizedValue = input.value.replace(/\D/g, "").slice(0, 4);
+    const inputElement = event.target;
 
-    if (input.value !== sanitizedValue) {
-      input.value = sanitizedValue;
+    if (!(inputElement instanceof HTMLInputElement)) {
+      return;
+    }
+
+    const sanitizedValue = inputElement.value.replace(/\D/gu, "").slice(0, 4);
+
+    if (inputElement.value !== sanitizedValue) {
+      inputElement.value = sanitizedValue;
     }
 
     if (this.yearControl.value !== sanitizedValue) {
@@ -83,14 +83,18 @@ export class DatepickerHeaderComponent {
   }
 
   protected onYearEnter(event: Event): void {
-    (event.target as HTMLInputElement).blur();
+    const inputElement = event.target;
+
+    if (inputElement instanceof HTMLInputElement) {
+      inputElement.blur();
+    }
   }
 
   protected onYearBlur(): void {
-    const value = this.yearControl.value;
+    const year = this.yearControl.value;
 
-    if (/^\d{4}$/.test(value) && Number(value) > 0) {
-      this.yearSelected.emit(Number(value));
+    if (FOUR_DIGIT_YEAR_PATTERN.test(year) && Number(year) > 0) {
+      this.yearSelected.emit(Number(year));
       return;
     }
 
@@ -105,9 +109,19 @@ export class DatepickerHeaderComponent {
     return this.idService.testIdFor(part, this.context().testIdPrefix);
   }
 
+  private synchronizeYearControl(year: number): void {
+    const yearValue = year.toString();
+
+    if (this.yearControl.value === yearValue) {
+      return;
+    }
+
+    // The control mirrors calendar navigation; emitting would incorrectly
+    // treat a programmatic month/year change as user input.
+    this.yearControl.setValue(yearValue, { emitEvent: false });
+  }
+
   private restoreCurrentYear(): void {
-    this.yearControl.setValue(this.context().viewYear.toString(), {
-      emitEvent: false,
-    });
+    this.synchronizeYearControl(this.context().viewYear);
   }
 }

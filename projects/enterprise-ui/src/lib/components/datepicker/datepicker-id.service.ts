@@ -4,19 +4,19 @@ import { computed, Injectable, signal } from "@angular/core";
 export class DatepickerIdService {
   private static nextId = 0;
 
-  private readonly _componentId = signal(
+  private readonly componentIdSignal = signal(
     `datepicker-${DatepickerIdService.nextId++}`,
   );
-  private readonly _testId = signal<string | null>(null);
+  private readonly testIdSignal = signal<string | null>(null);
 
-  readonly componentId = this._componentId.asReadonly();
+  readonly componentId = this.componentIdSignal.asReadonly();
 
   readonly testIdPrefix = computed(
-    () => this._testId()?.trim() || this._componentId(),
+    () => this.testIdSignal()?.trim() || this.componentIdSignal(),
   );
 
   readonly ids = computed(() => {
-    const root = this._componentId();
+    const root = this.componentIdSignal();
     return {
       root,
       inputWrapper: `${root}-input-wrapper`,
@@ -49,7 +49,7 @@ export class DatepickerIdService {
    * @param id The component ID.
    */
   setComponentId(id: string): void {
-    this._componentId.set(id);
+    this.componentIdSignal.set(id);
   }
 
   /**
@@ -57,7 +57,7 @@ export class DatepickerIdService {
    * @param value The test ID prefix.
    */
   setTestId(value: string | null): void {
-    this._testId.set(value);
+    this.testIdSignal.set(value);
   }
 
   /**
@@ -78,6 +78,6 @@ export class DatepickerIdService {
    * @returns The computed ID.
    */
   idFor(part: string, baseId?: string): string {
-    return `${baseId ?? this._componentId()}-${part}`;
+    return `${baseId ?? this.componentIdSignal()}-${part}`;
   }
 }

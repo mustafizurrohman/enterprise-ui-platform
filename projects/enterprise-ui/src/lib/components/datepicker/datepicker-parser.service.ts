@@ -93,14 +93,14 @@ export class DatepickerParserService {
   ): DateInputAutocompleteResult {
     const now = options.now ?? DateTime.now();
     const locale = options.locale ?? autocomplete.getLocale();
-    const luxonOptions = { ...options, now, locale };
+    const parseOptions = { ...options, now, locale };
 
     const format = autocomplete.getDateFormat();
     const normalizedPastedValue = normalizeSeparators(pastedValue, format);
 
     const pastedResult = autocomplete.processPastedValue(
       pastedValue,
-      luxonOptions,
+      parseOptions,
     );
     if (isCompleteDateResult(pastedResult)) {
       return pastedResult;
@@ -109,7 +109,7 @@ export class DatepickerParserService {
     if (normalizedPastedValue !== pastedValue) {
       const normalizedPastedResult = autocomplete.processPastedValue(
         normalizedPastedValue,
-        luxonOptions,
+        parseOptions,
       );
       if (isCompleteDateResult(normalizedPastedResult)) {
         return normalizedPastedResult;
@@ -124,7 +124,7 @@ export class DatepickerParserService {
     );
     const combinedResult = autocomplete.processPastedValue(
       nextValue,
-      luxonOptions,
+      parseOptions,
     );
     if (isCompleteDateResult(combinedResult)) {
       return combinedResult;
@@ -140,19 +140,18 @@ export class DatepickerParserService {
     if (nextValueNormalized !== nextValue) {
       normalizedCombinedResult = autocomplete.processPastedValue(
         nextValueNormalized,
-        luxonOptions,
+        parseOptions,
       );
       if (isCompleteDateResult(normalizedCombinedResult)) {
         return normalizedCombinedResult;
       }
     }
 
-    return normalizedCombinedResult &&
-      (isCompleteDateResult(normalizedCombinedResult) ||
-        normalizedCombinedResult.error?.code === "INVALID_DAY_FOR_MONTH" ||
-        normalizedCombinedResult.error?.code === "OUT_OF_RANGE")
-      ? normalizedCombinedResult
-      : combinedResult;
+    if (hasRelevantNormalizedError(normalizedCombinedResult)) {
+      return normalizedCombinedResult;
+    }
+
+    return combinedResult;
   }
 }
 
@@ -362,6 +361,16 @@ function replaceSelection(
     currentValue.slice(0, selection.start) +
     pastedValue +
     currentValue.slice(selection.end)
+  );
+}
+
+
+function hasRelevantNormalizedError(
+  result: DateInputAutocompleteResult | null,
+): result is DateInputAutocompleteResult {
+  return (
+    result?.error?.code === "INVALID_DAY_FOR_MONTH" ||
+    result?.error?.code === "OUT_OF_RANGE"
   );
 }
 

@@ -1,51 +1,56 @@
 <div
-  [id]="idFor('header')"
   class="datepicker-header"
+  [id]="idFor('header')"
   [attr.data-testid]="testIdFor('header')"
 >
   <div
-    [id]="idFor('month-navigation')"
-    class="datepicker-navigation-group datepicker-navigation-group--month"
     role="group"
     aria-label="Monatsnavigation"
+    class="datepicker-navigation-group datepicker-navigation-group--month"
+    [id]="idFor('month-navigation')"
     [attr.data-testid]="testIdFor('month-navigation')"
   >
     <div
-      [id]="idFor('month-navigation-controls')"
       class="datepicker-navigation-controls"
+      [id]="idFor('month-navigation-controls')"
       [attr.data-testid]="testIdFor('month-navigation-controls')"
     >
       <button
-        [id]="idFor('previous-month')"
         type="button"
-        class="datepicker-navigation"
         aria-label="Vorherigen Monat anzeigen"
         aria-keyshortcuts="PageUp"
+        class="datepicker-navigation"
+        [id]="idFor('previous-month')"
         [attr.aria-controls]="context().calendarGridId"
-        [attr.data-testid]="testIdFor('previous-month')"
         (repeatClick)="previousMonth.emit()"
+        [attr.data-testid]="testIdFor('previous-month')"
       >
-        <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('previous-month-icon')">chevron_left</mat-icon>
+        <mat-icon
+          aria-hidden="true"
+          [attr.data-testid]="testIdFor('previous-month-icon')"
+        >
+          chevron_left
+        </mat-icon>
       </button>
 
       <div
-        [id]="idFor('month-period-control')"
         class="datepicker-period-control datepicker-period-control--month"
+        [id]="idFor('month-period-control')"
         [attr.data-testid]="testIdFor('month-period-control')"
       >
         <select
-          [id]="idFor('month-select')"
-          class="datepicker-month-select"
-          [value]="context().selectedMonth"
           aria-label="Monat auswählen"
+          class="datepicker-month-select"
+          [id]="idFor('month-select')"
+          [value]="context().selectedMonth"
           [attr.aria-controls]="context().calendarGridId"
-          [attr.data-testid]="testIdFor('month-select')"
           (change)="onMonthChange($event)"
           (blur)="isMonthSelectFocused.set(false)"
           (mousedown)="isMonthSelectFocused.set(true)"
           (keydown.enter)="isMonthSelectFocused.set(true)"
           (keydown.space)="isMonthSelectFocused.set(true)"
           (keydown.alt.arrowdown)="isMonthSelectFocused.set(true)"
+          [attr.data-testid]="testIdFor('month-select')"
         >
           @for (month of context().shortMonths; track $index) {
             <option
@@ -65,73 +70,89 @@
         </select>
 
         <button
-          [id]="idFor('month-reset')"
           type="button"
-          class="datepicker-navigation-reset"
-          aria-label="Zum aktuellen Monat springen"
           title="Aktueller Monat"
+          aria-label="Zum aktuellen Monat springen"
+          class="datepicker-navigation-reset"
+          [id]="idFor('month-reset')"
           [attr.aria-controls]="context().calendarGridId"
-          [attr.data-testid]="testIdFor('month-reset')"
           (click)="monthSelected.emit(context().todayMonth)"
+          [attr.data-testid]="testIdFor('month-reset')"
         >
-          <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('month-reset-icon')">calendar_month</mat-icon>
+          <mat-icon
+            aria-hidden="true"
+            [attr.data-testid]="testIdFor('month-reset-icon')"
+          >
+            calendar_month
+          </mat-icon>
         </button>
       </div>
 
       <button
-        [id]="idFor('next-month')"
         type="button"
-        class="datepicker-navigation"
         aria-label="Nächsten Monat anzeigen"
         aria-keyshortcuts="PageDown"
+        class="datepicker-navigation"
+        [id]="idFor('next-month')"
         [attr.aria-controls]="context().calendarGridId"
-        [attr.data-testid]="testIdFor('next-month')"
         (repeatClick)="nextMonth.emit()"
+        [attr.data-testid]="testIdFor('next-month')"
       >
-        <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('next-month-icon')">chevron_right</mat-icon>
+        <mat-icon
+          aria-hidden="true"
+          [attr.data-testid]="testIdFor('next-month-icon')"
+        >
+          chevron_right
+        </mat-icon>
       </button>
     </div>
   </div>
 
-  <span class="datepicker-navigation-divider" aria-hidden="true"></span>
+  <span
+    aria-hidden="true"
+    class="datepicker-navigation-divider"
+  ></span>
 
   <div
-    [id]="idFor('year-navigation')"
-    class="datepicker-navigation-group datepicker-navigation-group--year"
     role="group"
     aria-label="Jahresnavigation"
+    class="datepicker-navigation-group datepicker-navigation-group--year"
+    [id]="idFor('year-navigation')"
     [attr.data-testid]="testIdFor('year-navigation')"
   >
     <div
-      [id]="idFor('year-navigation-controls')"
       class="datepicker-navigation-controls"
+      [id]="idFor('year-navigation-controls')"
       [attr.data-testid]="testIdFor('year-navigation-controls')"
     >
       <button
-        [id]="idFor('previous-year')"
         type="button"
-        class="datepicker-navigation"
         aria-label="Vorheriges Jahr anzeigen"
         aria-keyshortcuts="Shift+PageUp"
+        class="datepicker-navigation"
+        [id]="idFor('previous-year')"
         [attr.aria-controls]="context().calendarGridId"
-        [attr.data-testid]="testIdFor('previous-year')"
         (repeatClick)="previousYear.emit()"
+        [attr.data-testid]="testIdFor('previous-year')"
       >
-        <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('previous-year-icon')">keyboard_double_arrow_left</mat-icon>
+        <mat-icon
+          aria-hidden="true"
+          [attr.data-testid]="testIdFor('previous-year-icon')"
+        >
+          keyboard_double_arrow_left
+        </mat-icon>
       </button>
 
       <div
-        [id]="idFor('year-period-control')"
         class="datepicker-period-control datepicker-period-control--year"
+        [id]="idFor('year-period-control')"
         [attr.data-testid]="testIdFor('year-period-control')"
       >
         <mat-form-field
-          class="datepicker-year-field"
           subscriptSizing="dynamic"
+          class="datepicker-year-field"
         >
           <input
-            [id]="idFor('year-input')"
-            matInput
             type="text"
             inputmode="numeric"
             autocomplete="off"
@@ -139,49 +160,61 @@
             pattern="[0-9]{4}"
             aria-keyshortcuts="Enter"
             aria-label="Vierstellige Jahreszahl eingeben"
-            [attr.aria-controls]="context().calendarGridId"
+            matInput
+            [id]="idFor('year-input')"
             [formControl]="yearControl"
-            [attr.data-testid]="testIdFor('year-display')"
+            [attr.aria-controls]="context().calendarGridId"
             (input)="onYearInput($event)"
             (blur)="onYearBlur()"
             (keydown.enter)="onYearEnter($event)"
+            [attr.data-testid]="testIdFor('year-display')"
           />
         </mat-form-field>
 
         <button
-          [id]="idFor('year-reset')"
           type="button"
-          class="datepicker-navigation-reset"
-          aria-label="Zum aktuellen Jahr springen"
           title="Aktuelles Jahr"
+          aria-label="Zum aktuellen Jahr springen"
+          class="datepicker-navigation-reset"
+          [id]="idFor('year-reset')"
           [attr.aria-controls]="context().calendarGridId"
-          [attr.data-testid]="testIdFor('year-reset')"
           (click)="yearSelected.emit(context().todayYear)"
+          [attr.data-testid]="testIdFor('year-reset')"
         >
-          <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('year-reset-icon')">date_range</mat-icon>
+          <mat-icon
+            aria-hidden="true"
+            [attr.data-testid]="testIdFor('year-reset-icon')"
+          >
+            date_range
+          </mat-icon>
         </button>
       </div>
 
       <button
-        [id]="idFor('next-year')"
         type="button"
-        class="datepicker-navigation"
         aria-label="Nächstes Jahr anzeigen"
         aria-keyshortcuts="Shift+PageDown"
+        class="datepicker-navigation"
+        [id]="idFor('next-year')"
         [attr.aria-controls]="context().calendarGridId"
-        [attr.data-testid]="testIdFor('next-year')"
         (repeatClick)="nextYear.emit()"
+        [attr.data-testid]="testIdFor('next-year')"
       >
-        <mat-icon aria-hidden="true" [attr.data-testid]="testIdFor('next-year-icon')">keyboard_double_arrow_right</mat-icon>
+        <mat-icon
+          aria-hidden="true"
+          [attr.data-testid]="testIdFor('next-year-icon')"
+        >
+          keyboard_double_arrow_right
+        </mat-icon>
       </button>
     </div>
   </div>
 
   <h3
-    [id]="context().monthHeadingId"
-    class="cdk-visually-hidden"
     aria-live="polite"
     aria-atomic="true"
+    class="cdk-visually-hidden"
+    [id]="context().monthHeadingId"
     [attr.data-testid]="testIdFor('month-heading')"
   >
     {{ context().formattedMonth }}

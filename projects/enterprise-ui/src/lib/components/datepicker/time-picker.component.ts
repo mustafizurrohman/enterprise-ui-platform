@@ -1,25 +1,27 @@
-import {
-  Component,
-  computed,
-  inject,
-  input,
-  output,
-} from "@angular/core";
+import { Component, computed, inject, input, output } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 import { DateTime } from "luxon";
-import {
-  TimeUnitControlComponent,
-} from "./time-unit-control.component";
-import {
-  type TimeUnit,
-  type TimeUnitControlContext,
-} from "./time-unit-control.types";
-import {
-  type DatepickerDialogContext,
-  type DatepickerMeridiem,
-  type DatepickerTimeChange,
+import type {
+  DatepickerDialogContext,
+  DatepickerMeridiem,
+  DatepickerTimeChange,
 } from "./datepicker-dialog.types";
 import { DatepickerIdService } from "./datepicker-id.service";
+import { TimeUnitControlComponent } from "./time-unit-control.component";
+import type {
+  TimeUnit,
+  TimeUnitControlContext,
+} from "./time-unit-control.types";
+
+type TimeAdjustmentUnit = TimeUnit | "hours" | "minutes";
+
+const TIME_ADJUSTMENT_KEYS = {
+  hour: "hours",
+  hours: "hours",
+  minute: "minutes",
+  minutes: "minutes",
+  second: "seconds",
+} as const;
 
 @Component({
   selector: "time-picker",
@@ -30,6 +32,7 @@ import { DatepickerIdService } from "./datepicker-id.service";
 })
 export class TimePickerComponent {
   private readonly idService = inject(DatepickerIdService);
+
   readonly context = input.required<DatepickerDialogContext>();
 
   readonly timeChanged = output<DatepickerTimeChange>();
@@ -109,11 +112,11 @@ export class TimePickerComponent {
   protected readonly hourControlContext = computed<TimeUnitControlContext>(() =>
     this.createTimeUnitControlContext("hour"),
   );
-  protected readonly minuteControlContext = computed<TimeUnitControlContext>(() =>
-    this.createTimeUnitControlContext("minute"),
+  protected readonly minuteControlContext = computed<TimeUnitControlContext>(
+    () => this.createTimeUnitControlContext("minute"),
   );
-  protected readonly secondControlContext = computed<TimeUnitControlContext>(() =>
-    this.createTimeUnitControlContext("second"),
+  protected readonly secondControlContext = computed<TimeUnitControlContext>(
+    () => this.createTimeUnitControlContext("second"),
   );
 
   protected readonly timeUnits = computed(() => {
@@ -136,13 +139,10 @@ export class TimePickerComponent {
     this.timeChanged.emit({ unit, value });
   }
 
-  protected emitTimeAdjustment(
-    unit: TimeUnit | "hours" | "minutes",
-    value: number,
-  ): void {
-    const key =
-      unit === "hour" ? "hours" : unit === "minute" ? "minutes" : unit === "second" ? "seconds" : unit;
-    this.timeAdjusted.emit({ [key]: value });
+  protected emitTimeAdjustment(unit: TimeAdjustmentUnit, value: number): void {
+    const adjustmentKey = TIME_ADJUSTMENT_KEYS[unit];
+
+    this.timeAdjusted.emit({ [adjustmentKey]: value });
   }
 
   protected selectMeridiem(meridiem: DatepickerMeridiem): void {

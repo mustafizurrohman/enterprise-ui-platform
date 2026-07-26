@@ -1,56 +1,56 @@
 <div
-  [id]="unitId()"
-  class="datepicker-time-unit-control"
   role="group"
+  class="datepicker-time-unit-control"
+  [id]="unitId()"
   [attr.aria-labelledby]="labelId()"
   [attr.data-testid]="testIdFor('unit-control')"
 >
   <div
-    [id]="valueId()"
     class="datepicker-time-value"
-    [class.datepicker-time-value--rapid]="isRapidChange()"
+    [id]="valueId()"
     [attr.data-animation]="animationName()"
+    [class.datepicker-time-value--rapid]="isRapidChange()"
     [attr.data-testid]="testIdFor('value')"
   >
     <input
       #timeInput
-      [id]="controlId()"
       type="text"
       inputmode="numeric"
       pattern="[0-9]*"
       maxlength="2"
-      role="spinbutton"
       autocomplete="off"
       spellcheck="false"
+      role="spinbutton"
       aria-keyshortcuts="ArrowUp ArrowDown PageUp PageDown Home End"
       class="datepicker-time-select"
+      [id]="controlId()"
+      [value]="formatValue(displayValue())"
       [attr.aria-labelledby]="labelId()"
       [attr.aria-describedby]="descriptionId()"
       [attr.aria-valuemin]="configuration().minimum"
       [attr.aria-valuemax]="configuration().maximum"
       [attr.aria-valuenow]="displayValue()"
       [attr.aria-valuetext]="accessibleValueText()"
-      [attr.data-testid]="testIdFor('input')"
-      [value]="formatValue(displayValue())"
       (input)="onInput($event)"
       (keydown)="onKeyDown($event)"
       (change)="commit(timeInput.value)"
+      [attr.data-testid]="testIdFor('input')"
     />
   </div>
 
   <div
-    [id]="buttonStackId()"
     class="datepicker-time-button-stack"
+    [id]="buttonStackId()"
     [attr.data-testid]="testIdFor('button-stack')"
   >
     <button
-      [id]="incrementButtonId()"
       type="button"
       class="datepicker-time-button"
+      [id]="incrementButtonId()"
       [attr.aria-controls]="controlId()"
       [attr.aria-label]="configuration().singularLabel + ' um eins erhöhen'"
-      [attr.data-testid]="testIdFor('increment')"
       (repeatClick)="onTrigger(1, 'increment')"
+      [attr.data-testid]="testIdFor('increment')"
     >
       <mat-icon
         aria-hidden="true"
@@ -61,13 +61,13 @@
     </button>
 
     <button
-      [id]="decrementButtonId()"
       type="button"
       class="datepicker-time-button"
+      [id]="decrementButtonId()"
       [attr.aria-controls]="controlId()"
       [attr.aria-label]="configuration().singularLabel + ' um eins verringern'"
-      [attr.data-testid]="testIdFor('decrement')"
       (repeatClick)="onTrigger(-1, 'decrement')"
+      [attr.data-testid]="testIdFor('decrement')"
     >
       <mat-icon
         aria-hidden="true"
@@ -79,8 +79,8 @@
   </div>
 
   <label
-    [id]="labelId()"
     class="datepicker-time-label"
+    [id]="labelId()"
     [attr.for]="controlId()"
     [attr.data-testid]="testIdFor('label')"
   >

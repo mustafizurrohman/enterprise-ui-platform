@@ -1,27 +1,27 @@
 <div
-  cdkTrapFocus
-  [cdkTrapFocusAutoCapture]="false"
-  [id]="dialogId()"
-  class="datepicker-calendar"
   role="dialog"
   aria-modal="true"
+  cdkTrapFocus
+  class="datepicker-calendar"
+  [id]="dialogId()"
+  [cdkTrapFocusAutoCapture]="false"
   [attr.aria-labelledby]="dialogTitleId()"
   [attr.data-testid]="testIdFor('dialog')"
 >
   <h2
-    [id]="dialogTitleId()"
     class="cdk-visually-hidden"
+    [id]="dialogTitleId()"
     [attr.data-testid]="testIdFor('dialog-title')"
   >
     {{ dialogTitle() }}
   </h2>
 
   <div
-    [id]="dialogDescriptionId()"
-    class="cdk-visually-hidden"
     role="status"
     aria-live="polite"
     aria-atomic="true"
+    class="cdk-visually-hidden"
+    [id]="dialogDescriptionId()"
     [attr.data-testid]="testIdFor('dialog-description')"
   >
     {{ navigationAnnouncement() }}
@@ -38,20 +38,20 @@
   />
 
   <datepicker-grid
-    [attr.id]="idFor('grid-component')"
     [context]="gridContext()"
-    [attr.data-testid]="testIdFor('grid-component')"
+    [attr.id]="idFor('grid-component')"
     (dateSelected)="dateSelected.emit($event)"
     (dateFocused)="dateFocused.emit($event)"
     (dateKeydown)="dateKeydown.emit($event)"
+    [attr.data-testid]="testIdFor('grid-component')"
   />
 
   <div
-    [id]="idFor('date-status')"
-    class="cdk-visually-hidden"
     role="status"
     aria-live="polite"
     aria-atomic="true"
+    class="cdk-visually-hidden"
+    [id]="idFor('date-status')"
     [attr.data-testid]="testIdFor('date-status')"
   >
     {{ dateAnnouncement() }}

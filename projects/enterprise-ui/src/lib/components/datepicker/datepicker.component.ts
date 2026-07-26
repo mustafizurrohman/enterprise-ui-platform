@@ -34,22 +34,19 @@ import {
 import { MatIconModule } from "@angular/material/icon";
 import { DateTime, Info } from "luxon";
 import { DatepickerDialogComponent } from "./datepicker-dialog.component";
-import {
-  type DatepickerDialogContext,
-} from "./datepicker-dialog.types";
-import { type LuxonFormatCapabilities } from "./datepicker.types";
-import type {
-  DatepickerWeek,
-} from "./datepicker-grid.types";
+import type { DatepickerDialogContext } from "./datepicker-dialog.types";
+import type { DatepickerWeek } from "./datepicker-grid.types";
 import type { TimeUnit } from "./time-unit-control.types";
-import {
-  type DateInputAutocompleteResult,
-} from "./luxon-date-input-autocomplete.types";
-import {
-  LuxonDateInputAutocomplete,
-} from "./luxon-date-input-autocomplete";
+import type { DateInputAutocompleteResult } from "./luxon-date-input-autocomplete.types";
+import { LuxonDateInputAutocomplete } from "./luxon-date-input-autocomplete";
 import { DatepickerParserService } from "./datepicker-parser.service";
 import { DatepickerIdService } from "./datepicker-id.service";
+import {
+  buildCalendarWeeks,
+  getLuxonFormatCapabilities,
+  normalizeDateForFormat,
+  resolveDatepickerLocale,
+} from "./datepicker-date.utils";
 
 @Component({
   selector: "datepicker",
@@ -82,10 +79,9 @@ export class DatepickerComponent
   implements ControlValueAccessor, Validator, OnDestroy
 {
   private readonly idService = inject(DatepickerIdService);
+  private readonly injector = inject(Injector);
   private readonly ngZone = inject(NgZone);
-  private lastFocusedTrigger: HTMLElement | null = null;
-  private navigationAnnouncementTimer: ReturnType<typeof setTimeout> | null =
-    null;
+  private readonly parser = inject(DatepickerParserService);
 
   readonly label = input<string>("Datum auswählen");
   readonly today = input<DateTime>(DateTime.now());
@@ -101,14 +97,14 @@ export class DatepickerComponent
   });
   readonly value = model<Date | string | null | undefined>(undefined);
 
-  private readonly _disabledForm = signal(false);
+  private readonly disabledByForm = signal(false);
 
   protected readonly computedDisabled = computed(
-    () => this.disabled() || this._disabledForm(),
+    () => this.disabled() || this.disabledByForm(),
   );
 
   protected readonly resolvedLocale = computed(() =>
-    resolveLocale(this.locale()),
+    resolveDatepickerLocale(this.locale()),
   );
 
   protected readonly ids = this.idService.ids;
@@ -246,32 +242,7 @@ export class DatepickerComponent
     Info.months("long", { locale: this.resolvedLocale() }),
   );
 
-  readonly grid = computed(() => {
-    const startOfMonth = this.viewDate().startOf('month');
-    const cells: (DateTime | null)[] = Array.from(
-        { length: startOfMonth.weekday - 1 },
-        () => null,
-    );
-
-    for (let day = 1; day <= (startOfMonth.daysInMonth ?? 0); day++) {
-      cells.push(startOfMonth.set({ day }));
-    }
-
-    while (cells.length % 7 !== 0) {
-      cells.push(null);
-    }
-
-    return Array.from({ length: cells.length / 7 }, (_, weekIndex) => {
-      const days = cells.slice(weekIndex * 7, weekIndex * 7 + 7);
-
-      return {
-        weekNumber:
-            days.find((date): date is DateTime => date !== null)?.weekNumber ??
-            startOfMonth.minus({ weeks: 1 }).weekNumber,
-        days,
-      };
-    });
-  });
+  readonly grid = computed(() => buildCalendarWeeks(this.viewDate()));
 
   protected readonly dialogContext = computed<DatepickerDialogContext>(() => ({
     dialogId: this.ids().dialog,
@@ -312,18 +283,19 @@ export class DatepickerComponent
   onChange: (value: Date | null) => void = () => {};
   onTouched: () => void = () => {};
 
-  private readonly injector = inject(Injector);
-  private readonly parser = inject(DatepickerParserService);
-  private _ngControl: NgControl | null = null;
+  private ngControlInstance: NgControl | null = null;
+  private lastFocusedTrigger: HTMLElement | null = null;
+  private navigationAnnouncementTimer: ReturnType<typeof setTimeout> | null =
+    null;
 
   protected get ngControl(): NgControl | null {
-    if (!this._ngControl) {
-      this._ngControl = this.injector.get(NgControl, null, {
+    if (!this.ngControlInstance) {
+      this.ngControlInstance = this.injector.get(NgControl, null, {
         optional: true,
         self: true,
       });
     }
-    return this._ngControl;
+    return this.ngControlInstance;
   }
 
   constructor() {
@@ -332,9 +304,9 @@ export class DatepickerComponent
     });
 
     effect(() => {
-      const v = this.value();
+      const externalValue = this.value();
       untracked(() => {
-        this.updateInternalState(v, true);
+        this.updateInternalState(externalValue, true);
       });
     });
 
@@ -350,11 +322,11 @@ export class DatepickerComponent
           return;
         }
 
-        const normalizedDate = dateOnly
-          ? selectedDate.startOf("day")
-          : showSeconds
-            ? selectedDate
-            : selectedDate.set({ second: 0, millisecond: 0 });
+        const normalizedDate = normalizeDateForFormat(
+          selectedDate,
+          dateOnly,
+          showSeconds,
+        );
 
         if (normalizedDate.toMillis() !== selectedDate.toMillis()) {
           const jsDate = normalizedDate.toJSDate();
@@ -384,7 +356,7 @@ export class DatepickerComponent
 
   private updateInternalState(
     value: Date | string | null | undefined,
-    emit: boolean = false,
+    emit = false,
   ): void {
     if (value === null || value === undefined || value === "") {
       if (this.selectedDate() !== null || this.manualInputError()) {
@@ -401,7 +373,7 @@ export class DatepickerComponent
     }
 
     let date: DateTime | undefined;
-    let displayValue: string = "";
+    let displayValue = "";
 
     if (value instanceof Date) {
       date = DateTime.fromJSDate(value);
@@ -429,31 +401,32 @@ export class DatepickerComponent
         displayValue = result.value;
 
         const jsDate = date.toJSDate();
-        if (
-          this.value() instanceof Date
-            ? (this.value() as Date).getTime() !== jsDate.getTime()
-            : this.value() !== jsDate
-        ) {
+        const currentValue = this.value();
+        const hasChanged =
+          !(currentValue instanceof Date) ||
+          currentValue.getTime() !== jsDate.getTime();
+
+        if (hasChanged) {
           this.value.set(jsDate);
         }
       } else {
-        const procResult = this.inputAutocomplete().process(value, {
+        const processedResult = this.inputAutocomplete().process(value, {
           commit: true,
           now: this.today(),
           locale: this.resolvedLocale(),
         });
 
-        if (procResult.date) {
-          date = procResult.date;
-          displayValue = procResult.value;
+        if (processedResult.date) {
+          date = processedResult.date;
+          displayValue = processedResult.value;
         } else {
-          let altDate = DateTime.fromISO(value);
-          if (!altDate.isValid) {
-            altDate = DateTime.fromSQL(value);
+          let fallbackDate = DateTime.fromISO(value);
+          if (!fallbackDate.isValid) {
+            fallbackDate = DateTime.fromSQL(value);
           }
 
-          if (altDate.isValid) {
-            date = altDate;
+          if (fallbackDate.isValid) {
+            date = fallbackDate;
             displayValue = this.formatDate(date);
           } else {
             date = undefined;
@@ -463,12 +436,12 @@ export class DatepickerComponent
       }
     }
 
-    if (date && date?.isValid) {
-      if (this.dateOnly()) {
-        date = date.startOf("day");
-      } else if (!this.showSeconds()) {
-        date = date.set({ second: 0, millisecond: 0 });
-      }
+    if (date?.isValid) {
+      date = normalizeDateForFormat(
+        date,
+        this.dateOnly(),
+        this.showSeconds(),
+      );
 
       const currentIso = this.selectedDate()?.toISO();
       const newIso = date.toISO();
@@ -514,7 +487,7 @@ export class DatepickerComponent
   }
 
   setDisabledState(isDisabled: boolean): void {
-    this._disabledForm.set(isDisabled);
+    this.disabledByForm.set(isDisabled);
   }
 
   validate(control: AbstractControl): ValidationErrors | null {
@@ -548,8 +521,9 @@ export class DatepickerComponent
     this.dateAnnouncement.set("");
     this.isOpen.set(true);
 
-    if (this.selectedDate()) {
-      this.viewDate.set(this.selectedDate()!);
+    const selectedDate = this.selectedDate();
+    if (selectedDate) {
+      this.viewDate.set(selectedDate);
     }
   }
 
@@ -773,44 +747,23 @@ export class DatepickerComponent
   }
 
   setMonth(month: number): void {
-    const nextViewDate = this.viewDate().set({ month }).startOf("month");
-    const targetDay = Math.min(
-      this.activeDate().day,
-      nextViewDate.daysInMonth ?? 1,
-    );
-
-    this.viewDate.set(nextViewDate);
-    this.activeDate.set(nextViewDate.set({ day: targetDay }));
+    this.updateCalendarView(this.viewDate().set({ month }));
   }
 
   setYear(year: number): void {
-    const nextViewDate = this.viewDate().set({ year }).startOf("month");
-    const targetDay = Math.min(
-      this.activeDate().day,
-      nextViewDate.daysInMonth ?? 1,
-    );
-
-    this.viewDate.set(nextViewDate);
-    this.activeDate.set(nextViewDate.set({ day: targetDay }));
+    this.updateCalendarView(this.viewDate().set({ year }));
   }
 
   private changeViewMonth(monthDifference: number): void {
-    const nextViewDate = this.viewDate()
-      .plus({ months: monthDifference })
-      .startOf("month");
-    const targetDay = Math.min(
-      this.activeDate().day,
-      nextViewDate.daysInMonth ?? 1,
-    );
-
-    this.viewDate.set(nextViewDate);
-    this.activeDate.set(nextViewDate.set({ day: targetDay }));
+    this.updateCalendarView(this.viewDate().plus({ months: monthDifference }));
   }
 
   private changeViewYear(yearDifference: number): void {
-    const nextViewDate = this.viewDate()
-      .plus({ years: yearDifference })
-      .startOf("month");
+    this.updateCalendarView(this.viewDate().plus({ years: yearDifference }));
+  }
+
+  private updateCalendarView(date: DateTime): void {
+    const nextViewDate = date.startOf("month");
     const targetDay = Math.min(
       this.activeDate().day,
       nextViewDate.daysInMonth ?? 1,
@@ -821,15 +774,16 @@ export class DatepickerComponent
   }
 
   protected selectDate(date: DateTime): void {
+    const currentDate = this.selectedDate();
     let newSelectedDate: DateTime;
+
     if (this.dateOnly()) {
       newSelectedDate = date.startOf("day");
-    } else if (this.selectedDate()) {
-      const current = this.selectedDate()!;
+    } else if (currentDate) {
       newSelectedDate = date.set({
-        hour: current.hour,
-        minute: current.minute,
-        second: this.showSeconds() ? current.second : 0,
+        hour: currentDate.hour,
+        minute: currentDate.minute,
+        second: this.showSeconds() ? currentDate.second : 0,
       });
     } else {
       newSelectedDate = this.showSeconds() ? date : date.set({ second: 0 });
@@ -847,12 +801,11 @@ export class DatepickerComponent
   }
 
   protected selectNow(): void {
-    let now = DateTime.now();
-    if (this.dateOnly()) {
-      now = now.startOf("day");
-    } else if (!this.showSeconds()) {
-      now = now.set({ second: 0, millisecond: 0 });
-    }
+    const now = normalizeDateForFormat(
+      DateTime.now(),
+      this.dateOnly(),
+      this.showSeconds(),
+    );
     const jsDate = now.toJSDate();
     this.selectedDate.set(now);
     this.inputDisplayValue.set(this.formatDate(now));
@@ -978,11 +931,11 @@ export class DatepickerComponent
   }
 
   private applyManualDate(parsedDate: DateTime): void {
-    const normalizedDate = this.dateOnly()
-      ? parsedDate.startOf("day")
-      : this.showSeconds()
-        ? parsedDate
-        : parsedDate.set({ second: 0, millisecond: 0 });
+    const normalizedDate = normalizeDateForFormat(
+      parsedDate,
+      this.dateOnly(),
+      this.showSeconds(),
+    );
     const jsDate = normalizedDate.toJSDate();
 
     this.selectedDate.set(normalizedDate);
@@ -996,30 +949,15 @@ export class DatepickerComponent
   protected updateTime(unit: TimeUnit, rawValue: string | number): void {
     const value = Number(rawValue);
 
-    if (isNaN(value) || !Number.isInteger(value)) {
+    if (!Number.isInteger(value)) {
       return;
     }
 
     const maximum = unit === "hour" ? 23 : 59;
     const normalizedValue = Math.min(Math.max(value, 0), maximum);
-
     const currentDate = this.selectedDate() ?? DateTime.local().startOf("day");
 
-    const newDate = currentDate.set({
-      [unit]: normalizedValue,
-    });
-    const jsDate = newDate.toJSDate();
-    this.selectedDate.set(newDate);
-
-    if (!this.viewDate().hasSame(newDate, "month")) {
-      this.viewDate.set(newDate.startOf("month"));
-    }
-
-    this.inputDisplayValue.set(this.formatDate(newDate));
-    this.manualInputError.set(false);
-    this.value.set(jsDate);
-    this.onChange(jsDate);
-    this.announceTime();
+    this.applyTimeChange(currentDate.set({ [unit]: normalizedValue }));
   }
 
   protected adjustTime(adjustment: {
@@ -1028,16 +966,20 @@ export class DatepickerComponent
     seconds?: number;
   }): void {
     const currentDate = this.selectedDate() ?? DateTime.local().startOf("day");
-    const newDate = currentDate.plus(adjustment);
 
-    const jsDate = newDate.toJSDate();
-    this.selectedDate.set(newDate);
+    this.applyTimeChange(currentDate.plus(adjustment));
+  }
 
-    if (!this.viewDate().hasSame(newDate, "month")) {
-      this.viewDate.set(newDate.startOf("month"));
+  private applyTimeChange(date: DateTime): void {
+    const jsDate = date.toJSDate();
+
+    this.selectedDate.set(date);
+
+    if (!this.viewDate().hasSame(date, "month")) {
+      this.viewDate.set(date.startOf("month"));
     }
 
-    this.inputDisplayValue.set(this.formatDate(newDate));
+    this.inputDisplayValue.set(this.formatDate(date));
     this.manualInputError.set(false);
     this.value.set(jsDate);
     this.onChange(jsDate);
@@ -1104,13 +1046,13 @@ export class DatepickerComponent
   }
 
   isSelected(date: DateTime | null): boolean {
-    if (!date || !this.selectedDate()) return false;
-    return date.hasSame(this.selectedDate()!, "day");
+    const selectedDate = this.selectedDate();
+
+    return !!date && !!selectedDate && date.hasSame(selectedDate, "day");
   }
 
   isToday(date: DateTime | null): boolean {
-    if (!date) return false;
-    return date.hasSame(this.today(), "day");
+    return !!date && date.hasSame(this.today(), "day");
   }
 
   isCurrentWeek(week: DatepickerWeek): boolean {
@@ -1161,150 +1103,4 @@ export class DatepickerComponent
 
     return this.dateInput()?.nativeElement ?? null;
   }
-}
-
-const TIME_FIELD_TOKENS = new Set([
-  "H",
-  "HH",
-  "h",
-  "hh",
-  "m",
-  "mm",
-  "s",
-  "ss",
-  "S",
-  "SSS",
-  "u",
-  "uu",
-  "uuu",
-  "a",
-]);
-
-const SECOND_FIELD_TOKENS = new Set(["s", "ss", "S", "SSS", "u", "uu", "uuu"]);
-
-const TIME_MACRO_TOKENS = new Set([
-  "t",
-  "tt",
-  "ttt",
-  "tttt",
-  "T",
-  "TT",
-  "TTT",
-  "TTTT",
-  "f",
-  "ff",
-  "fff",
-  "ffff",
-  "F",
-  "FF",
-  "FFF",
-  "FFFF",
-]);
-
-const SECOND_MACRO_TOKENS = new Set([
-  "tt",
-  "ttt",
-  "tttt",
-  "TT",
-  "TTT",
-  "TTTT",
-  "F",
-  "FF",
-  "FFF",
-  "FFFF",
-]);
-
-function getLuxonFormatCapabilities(
-  format: string,
-  locale = resolveLocale(null),
-): LuxonFormatCapabilities {
-  const tokens = getUnquotedLuxonTokens(format);
-  const hasTimeMacro = tokens.some((token) => TIME_MACRO_TOKENS.has(token));
-  const hasExplicit12HourToken = tokens.some(
-    (token) => token === "h" || token === "hh",
-  );
-  const hasExplicit24HourToken = tokens.some(
-    (token) => token === "H" || token === "HH",
-  );
-  const usesLocale12HourClock =
-    hasTimeMacro && !hasExplicit24HourToken && is12HourLocale(locale);
-  const uses12HourClock = hasExplicit12HourToken || usesLocale12HourClock;
-
-  return {
-    hasTime: tokens.some(
-      (token) => TIME_FIELD_TOKENS.has(token) || TIME_MACRO_TOKENS.has(token),
-    ),
-    hasSeconds: tokens.some(
-      (token) =>
-        SECOND_FIELD_TOKENS.has(token) || SECOND_MACRO_TOKENS.has(token),
-    ),
-    uses12HourClock,
-    showMeridiem:
-      uses12HourClock &&
-      (tokens.includes("a") || hasExplicit12HourToken || hasTimeMacro),
-  };
-}
-
-function resolveLocale(configuredLocale: string | null): string {
-  const normalizedLocale = configuredLocale?.trim();
-
-  if (normalizedLocale) {
-    return normalizedLocale;
-  }
-
-  if (typeof navigator !== "undefined") {
-    const browserLocale =
-      navigator.languages?.find((locale) => locale.trim().length > 0) ??
-      navigator.language;
-
-    if (browserLocale?.trim()) {
-      return browserLocale;
-    }
-  }
-
-  return Intl.DateTimeFormat().resolvedOptions().locale || "en-US";
-}
-
-function is12HourLocale(locale: string): boolean {
-  const hourCycle = new Intl.DateTimeFormat(locale, {
-    hour: "numeric",
-  }).resolvedOptions().hourCycle;
-
-  return hourCycle === "h11" || hourCycle === "h12";
-}
-
-function getUnquotedLuxonTokens(format: string): string[] {
-  const tokens: string[] = [];
-  let insideLiteral = false;
-
-  for (let index = 0; index < format.length; ) {
-    const character = format[index];
-
-    if (character === "'") {
-      if (format[index + 1] === "'") {
-        index += 2;
-        continue;
-      }
-
-      insideLiteral = !insideLiteral;
-      index += 1;
-      continue;
-    }
-
-    if (!insideLiteral && /[A-Za-z]/u.test(character)) {
-      let tokenEnd = index + 1;
-
-      while (format[tokenEnd] === character) {
-        tokenEnd += 1;
-      }
-
-      tokens.push(format.slice(index, tokenEnd));
-      index = tokenEnd;
-      continue;
-    }
-
-    index += 1;
-  }
-
-  return tokens;
 }

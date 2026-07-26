@@ -20,7 +20,6 @@ import {
   type TimeUnitControlMeridiem,
 } from "./time-unit-control.types";
 
-
 const PRESS_HOLD_INITIAL_DELAY_MS = 300;
 const RAPID_CHANGE_THRESHOLD_MS = PRESS_HOLD_INITIAL_DELAY_MS * 1.1;
 
@@ -144,7 +143,7 @@ export class TimeUnitControlComponent {
       return;
     }
 
-    let value = inputElement.value.replace(/[^0-9]/g, "");
+    let value = inputElement.value.replace(/\D/gu, "");
 
     if (value.length > 2) {
       value = value.slice(-2);
@@ -228,10 +227,13 @@ export class TimeUnitControlComponent {
     direction: TimeUnitControlAnimationDirection,
     isButtonInteraction = false,
   ): void {
-    const nextValue = this.normalizeSteppedValue(this.value() + difference);
-    if (nextValue !== this.value()) {
+    const currentValue = this.value();
+    const nextValue = this.normalizeSteppedValue(currentValue + difference);
+
+    if (nextValue !== currentValue) {
       this.startCssAnimation(direction, isButtonInteraction);
     }
+
     this.offsetChange.emit(difference);
   }
 
@@ -253,6 +255,8 @@ export class TimeUnitControlComponent {
     isButtonInteraction: boolean,
   ): void {
     const currentTimestamp = Date.now();
+    // Repeated button emissions arrive after the directive's initial hold
+    // delay. Mark those updates as rapid so CSS can use the shorter animation.
     const rapid =
       isButtonInteraction &&
       this.lastButtonChangeTimestamp !== null &&
