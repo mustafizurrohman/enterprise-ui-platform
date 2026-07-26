@@ -45,16 +45,17 @@ quick-adjustment controls (`showQuickTimeControls`) for rapid temporal modificat
 
 ## Advanced Manual Entry & Paste Parsing
 
-For experienced developers building high-efficiency data entry interfaces, the `DatepickerComponent` provides a sophisticated manual entry system powered by the `DatepickerPasteParserService`.
+For experienced developers building high-efficiency data entry interfaces, the `DatepickerComponent` provides a sophisticated manual entry system powered by the `DatepickerParserService`.
 
 ### Paste Logic & Normalization
 
-The component implements an "Intelligent Paste" strategy that prioritizes data integrity and user intent:
+The component implements an "Intelligent Paste" strategy that prioritize data integrity and user intent by rebuilding input based on the configured Luxon format:
 
 1.  **Standalone Parsing:** If the clipboard content independently forms a valid date (ISO 8601, localized strings, or Unix timestamps), it is immediately accepted as the new value.
-2.  **Separator Normalization:** The parser automatically attempts to map alphanumeric parts of the pasted string to the expected `luxonDateFormat`. This allows users to paste dates with different delimiters (e.g., `2024/07/24` into a `dd.MM.yyyy` field) without manual correction.
-3.  **Contextual Merging:** If the pasted text is not a standalone date, it is inserted into the current input at the cursor/selection point. The resulting string is then re-evaluated.
+2.  **Separator Normalization:** The `DatepickerParserService` automatically maps alphanumeric segments of the pasted string to the expected `luxonDateFormat`. This allows users to paste dates with arbitrary delimiters (e.g., `2024/07/24` into a `dd.MM.yyyy` field) while preserving field order.
+3.  **Contextual Merging:** If the pasted text is not a standalone date, it is inserted into the current input at the selection point. The resulting string is then re-evaluated through the autocomplete parser.
 4.  **Unix Epoch Support:** Direct pasting of Unix seconds or milliseconds is supported and automatically converted to the appropriate localized display format.
+5.  **Heuristic Resilience:** Complex Luxon tokens (macros, zones, literals) are bypassed during normalization and delegated to the core parser to ensure accurate handling of punctuation-rich formats.
 
 ### Localization & Macros
 
