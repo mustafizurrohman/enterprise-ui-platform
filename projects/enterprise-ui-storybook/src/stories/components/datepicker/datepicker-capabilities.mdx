@@ -1,0 +1,41 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import * as DateTimeStories from './date-time/date-time.stories';
+
+<Meta
+  of={DateTimeStories}
+  name="Capabilities"
+/>
+
+# Key Capabilities & Technical Architecture
+
+The `DatepickerComponent` is designed for complex enterprise ecosystems, offering a robust set of features that balance developer flexibility with end-user precision.
+
+## Core Capabilities
+
+- **Intelligent Mode Switching:** The component dynamically adapts its UI and internal logic based on the provided `luxonDateFormat`. It automatically toggles between date-only and date-time modes, including smart inference for 12/24-hour cycles and seconds visibility.
+- **Flexible Data Binding:** Implements `ControlValueAccessor` for seamless integration with Angular Reactive and Template-driven forms. Supports bidirectional `value` binding for programmatic state management.
+- **Enterprise-Grade Localization:** Leverages the [Luxon](https://moment.github.io/luxon/) library for high-fidelity internationalization, supporting diverse locales and complex temporal formatting macros.
+- **Precision Time Selection:** Features high-precision time wheels and optional quick-adjustment controls (`showQuickTimeControls`) for rapid temporal modifications.
+- **Testability & Observability:** Integrated `testId` prefixing system and `aria-live` regions provide hooks for both automated testing and accessibility monitoring.
+
+## Advanced Manual Entry & Paste Parsing
+
+For high-throughput data entry scenarios, the `DatepickerComponent` employs a sophisticated parsing engine powered by the `DatepickerParserService`.
+
+### Intelligent Paste Strategy
+
+The component implements a resilient "Intelligent Paste" strategy that prioritizes data integrity by rebuilding input based on the configured Luxon format:
+
+1.  **Standalone Parsing:** Independently validates clipboard content against ISO 8601, localized strings, or Unix timestamps.
+2.  **Separator Normalization:** Automatically maps alphanumeric segments of the pasted string to the expected `luxonDateFormat`. This allows users to paste dates with arbitrary delimiters (e.g., `2024/07/24` into a `dd.MM.yyyy` field) while preserving field order.
+3.  **Contextual Merging:** Non-standalone date text is merged at the selection point and re-evaluated through the autocomplete parser.
+4.  **Unix Epoch Support:** Direct support for Unix seconds or milliseconds, with automatic conversion to the active localized display format.
+5.  **Heuristic Resilience:** Bypasses complex Luxon tokens (macros, zones, literals) during normalization, delegating to the core parser to ensure accuracy in punctuation-rich formats.
+
+### Localization & Manual Overrides
+
+Manual entry supports Luxon-based localization macros and domain-specific notations:
+
+- **"Uhr" Notation:** Optional during input in German locales but preserved in formatting to maintain consistency.
+- **Localized Months:** Supports full and abbreviated month names based on the active `locale`.
+- **Autocomplete Parser:** Provides real-time feedback and correction during manual entry to minimize input errors.

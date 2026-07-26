@@ -2,6 +2,11 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.6.
 
+## Demo & Testing
+
+A live deployment and test environment can be accessed at:
+[https://enterprise-ui-platform-demo.vercel.app/?path=/docs/configure-your-project--docs](https://enterprise-ui-platform-demo.vercel.app/?path=/docs/configure-your-project--docs)
+
 ## Development server
 
 To start a local development server, run:

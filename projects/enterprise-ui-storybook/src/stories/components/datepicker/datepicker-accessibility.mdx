@@ -6,51 +6,51 @@ import * as DateTimeStories from './date-time/date-time.stories';
   name="Accessibility"
 />
 
-# Accessibility
+# Accessibility & Compliance
 
-The `DatepickerComponent` is engineered for high accessibility, adhering to WCAG 2.1 AA standards to ensure usability for all enterprise users, including those relying on assistive technologies.
+The `DatepickerComponent` is engineered for high accessibility, strictly adhering to **WCAG 2.1 AA** standards. This ensures full usability for all enterprise users, including those relying on assistive technologies or keyboard-only workflows.
 
-## Keyboard Navigation
+## Keyboard Interaction Model
 
-Full keyboard support is provided for efficient, mouse-free operation:
+A comprehensive keyboard navigation system is implemented to support efficient, mouse-free operations in data-heavy environments.
 
-### Focus Management
+### Core Focus Management
 
 | Key                                 | Action                                                                    |
 | :---------------------------------- | :------------------------------------------------------------------------ |
 | **ArrowDown** / **Alt + ArrowDown** | Opens the calendar overlay.                                               |
 | **Enter**                           | Commits manual input or selects the focused date.                         |
-| **Escape**                          | Closes the calendar and returns focus to the last active trigger element. |
-| **Backspace**                       | Intelligent deletion for localized literals (e.g., " Uhr").               |
+| **Escape**                          | Closes the calendar and returns focus to the trigger element.             |
+| **Backspace**                       | Intelligent deletion handling for localized literals (e.g., " Uhr").      |
 
 ### Calendar Navigation
 
 | Key                                       | Action                                                                       |
 | :---------------------------------------- | :--------------------------------------------------------------------------- |
-| **Arrow Keys**                            | Navigates between days (Left/Right) or weeks (Up/Down) in the calendar grid. |
-| **Home** / **End**                        | Moves focus to the first or last day of the current week.                    |
+| **Arrow Keys**                            | Navigates between days (Left/Right) or weeks (Up/Down) in the grid.          |
+| **Home** / **End**                        | Moves focus to the start or end of the current week.                         |
 | **PageUp** / **PageDown**                 | Switches to the previous or next month.                                      |
 | **Shift + PageUp** / **Shift + PageDown** | Switches to the previous or next year.                                       |
 | **Space** / **Enter**                     | Selects the currently focused date.                                          |
 | **Escape**                                | Closes the calendar without making a selection.                              |
 
-### Time Selection
+### Time Selection Controls
 
 | Key                         | Action                                                        |
 | :-------------------------- | :------------------------------------------------------------ |
 | **ArrowUp** / **ArrowDown** | Increments or decrements the value of the focused time wheel. |
-| **PageUp** / **PageDown**   | Adjusts the value by a factor of 10.                          |
+| **PageUp** / **PageDown**   | Adjusts the value by a factor of 10 for rapid selection.      |
 | **Home** / **End**          | Jumps to the minimum or maximum value of the focused unit.    |
 | **Numeric Keys**            | Directly enters values for hours, minutes, or seconds.        |
-| **Space** / **Enter**       | (Meridiem toggle) Selects AM or PM.                           |
+| **Space** / **Enter**       | Toggles between AM and PM in meridiem modes.                  |
 
-## Screen Reader Support
+## Architectural Accessibility Features
 
-- **ARIA Roles**: Utilizes appropriate ARIA roles including `combobox` for the input, `dialog` for the overlay, `grid` for the calendar grid, and `status`/`alert` for dynamic updates and errors.
-- **Live Regions**: Employs multiple `aria-live` regions to announce:
-  - **Manual Input**: Feedback during text entry, autocomplete status, Unix timestamp conversion, and successful paste operations (including separator normalization).
-  - **Navigation**: Announcements for month and year changes, and detailed keyboard instruction summary on dialog open.
-  - **Selection**: Confirmation of selected dates, times, and clear actions.
-- **Descriptive Labels**: Every date button features a localized, descriptive label (e.g., "Montag, 12. Juli 2026") including information about today's date and selection status. The calendar toggle button provides state-aware labels including the current selection.
-- **Keyboard Shortcuts**: Common actions are mapped to standard keyboard shortcuts and announced via `aria-keyshortcuts` (e.g., "ArrowDown", "PageUp", "Escape") where appropriate.
-- **Visual Feedback**: Focus is managed explicitly, ensuring that the active element is always clear to both keyboard and screen reader users. The dialog uses `cdkTrapFocus` for secure keyboard containment.
+- **Semantic ARIA Implementation**: Utilizes appropriate ARIA roles including `combobox` for the input, `dialog` for the overlay, and `grid` for the calendar. Dynamic updates and validation errors are managed via `status` and `alert` roles.
+- **Dynamic Live Regions**: Employs multiple `aria-live` regions to announce:
+  - **Input Feedback**: Real-time status of manual entry, autocomplete results, and paste operations.
+  - **Navigation Announcements**: Confirmations for month/year changes and detailed keyboard instructions on dialog entry.
+  - **Selection Confirmation**: Auditory feedback for selected dates and times.
+- **Localized Descriptive Labels**: Date buttons feature localized labels (e.g., "Montag, 12. Juli 2026"), including state information such as "today" or "selected".
+- **Focus Containment**: Leverages Angular CDK's `FocusTrap` (`cdkTrapFocus`) within the dialog to ensure secure keyboard containment and logical focus loops.
+- **Visual Contrast & Indicators**: High-contrast focus indicators and state-aware visual feedback ensure clarity for users with low vision.

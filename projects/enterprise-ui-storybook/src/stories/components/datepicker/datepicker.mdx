@@ -10,10 +10,9 @@ import * as ReactiveFormStories from './reactive-form/reactive-form.stories';
 
 # Datepicker
 
-The `DatepickerComponent` is a high-performance, accessible date and time selection
-solution engineered for complex enterprise ecosystems. It delivers a unified
-interaction model for temporal data entry, combining intuitive graphical
-selection with high-efficiency manual input.
+The `DatepickerComponent` is a high-performance, accessible date and time selection solution engineered for complex enterprise ecosystems. It delivers a unified interaction model for temporal data entry, combining intuitive graphical selection with a high-efficiency manual input engine.
+
+Designed for Angular architects, it prioritizes compliance, testability, and seamless integration into large-scale reactive architectures.
 
 ## Interactive demo
 
@@ -23,59 +22,20 @@ selection with high-efficiency manual input.
 
 <Controls of={DateTimeStories.DateTime} />
 
-## Key Capabilities
+## Technical Overview
 
-- **Intelligent Mode Switching:** Dynamically toggles between date-only and
-  date-time configurations based on the provided `luxonDateFormat` (or its alias `dateFormat`).
-  Visibility of seconds and the 12/24-hour clock cycle are also automatically inferred from the format.
-- **Advanced Manual Entry:** Accelerates data input through smart autocomplete,
-  support for localized German "Uhr" notation, and direct Unix timestamp
-  processing (seconds and milliseconds).
-- **Intelligent Paste Parsing:** Robust clipboard processing that automatically
-  normalizes separators, handles partial replacements, and supports diverse
-  formats (ISO, localized, Unix) regardless of the current display format.
-- **Flexible Data Binding:** Supports two-way binding via `value` (standard for forms and programmatic updates).
-- **Enterprise-Grade Localization:** Seamlessly integrates with the Luxon
-  library to support diverse international date formats and locales via the `locale` input.
-- **Robust Form Integration:** Fully compatible with Angular Reactive and
-  Template-driven forms via `ControlValueAccessor` and standard validation
-  protocols.
-- **Accessibility by Design:** Adheres to WCAG 2.1 AA standards with comprehensive
-  keyboard navigation, ARIA live regions, and screen reader optimizations.
-- **Precision Time Selection:** Features high-precision time wheels and optional
-  quick-adjustment controls (`showQuickTimeControls`) for rapid temporal modifications.
-- **Testability Hooks:** Supports stable `testId` prefixes for automated testing environments.
-
-## Advanced Manual Entry & Paste Parsing
-
-For experienced developers building high-efficiency data entry interfaces, the `DatepickerComponent` provides a sophisticated manual entry system powered by the `DatepickerParserService`.
-
-### Paste Logic & Normalization
-
-The component implements an "Intelligent Paste" strategy that prioritize data integrity and user intent by rebuilding input based on the configured Luxon format:
-
-1.  **Standalone Parsing:** If the clipboard content independently forms a valid date (ISO 8601, localized strings, or Unix timestamps), it is immediately accepted as the new value.
-2.  **Separator Normalization:** The `DatepickerParserService` automatically maps alphanumeric segments of the pasted string to the expected `luxonDateFormat`. This allows users to paste dates with arbitrary delimiters (e.g., `2024/07/24` into a `dd.MM.yyyy` field) while preserving field order.
-3.  **Contextual Merging:** If the pasted text is not a standalone date, it is inserted into the current input at the selection point. The resulting string is then re-evaluated through the autocomplete parser.
-4.  **Unix Epoch Support:** Direct pasting of Unix seconds or milliseconds is supported and automatically converted to the appropriate localized display format.
-5.  **Heuristic Resilience:** Complex Luxon tokens (macros, zones, literals) are bypassed during normalization and delegated to the core parser to ensure accurate handling of punctuation-rich formats.
-
-### Localization & Macros
-
-Manual entry supports Luxon-based localization macros and German-specific notation:
-
-- **"Uhr" Notation:** In date-time mode, the "Uhr" literal is optional during input but preserved in formatting.
-- **Localized Months:** Supports full and abbreviated month names based on the active `locale`.
+For a detailed breakdown of the component's architecture, including manual entry parsing, paste logic, and localization strategies, please refer to the [Capabilities](./?path=/docs/components-datepicker--capabilities) documentation.
 
 ## Examples
 
 ### Programmatic updates
 
-The `value` model supports two-way binding and programmatic updates,
-allowing parent components to read or set the datepicker value directly.
+The `value` model supports two-way binding and programmatic updates, allowing parent components to read or set the datepicker value directly via standard Angular mechanisms.
 
 <Canvas of={DateTimeStories.DateInput} />
 
 ### Reactive form
+
+The component fully implements `ControlValueAccessor`, ensuring robust integration with Angular's `ReactiveFormsModule` and native validation protocols.
 
 <Canvas of={ReactiveFormStories.ReactiveForm} />
