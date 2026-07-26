@@ -2,13 +2,11 @@ import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { type Meta, type StoryObj } from '@storybook/angular';
 
-// @ts-ignore
-import { DatepickerComponent } from '../../../../../../enterprise-ui/datepicker/src/lib/components/datepicker/datepicker.component';
-// @ts-ignore
 import {
   COMMON_LUXON_DATE_FORMATS,
+  DatepickerComponent,
   DEFAULT_DATETIME_FORMAT,
-} from '../../../../../../enterprise-ui/datepicker/src/lib/components/datepicker/datepicker-formats';
+} from '@mr/enterprise-ui/datepicker';
 // @ts-ignore
 import template from './date-time.stories.html?raw';
 

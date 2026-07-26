@@ -2,7 +2,7 @@ import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
-import { DatepickerComponent } from '../../../../../../enterprise-ui/datepicker/src/lib/components/datepicker/datepicker.component';
+import { DatepickerComponent } from '@mr/enterprise-ui/datepicker';
 
 @Component({
   selector: 'reactive-form-wrapper',
