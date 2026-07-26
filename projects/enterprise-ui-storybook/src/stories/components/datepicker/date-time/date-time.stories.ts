@@ -1,15 +1,16 @@
 import { Component, Input } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { type Meta, type StoryObj } from '@storybook/angular';
+
 // @ts-ignore
 import { DatepickerComponent } from '../../../../../../enterprise-ui/datepicker/src/lib/components/datepicker/datepicker.component';
-// @ts-ignore
-import template from './date-time.stories.html?raw';
-import { MatIconModule } from '@angular/material/icon';
 // @ts-ignore
 import {
   COMMON_LUXON_DATE_FORMATS,
   DEFAULT_DATETIME_FORMAT,
 } from '../../../../../../enterprise-ui/datepicker/src/lib/components/datepicker/datepicker-formats';
+// @ts-ignore
+import template from './date-time.stories.html?raw';
 
 @Component({
   selector: 'date-time-story-host',
@@ -19,12 +20,12 @@ import {
   template,
 })
 class DateTimeStoryHostComponent {
-  @Input() label: string = 'Datum auswählen';
-  @Input() disabled: boolean = false;
-  @Input() locale: string = 'de-DE';
-  @Input() luxonDateFormat: string = DEFAULT_DATETIME_FORMAT;
-  @Input() showQuickTimeControls: boolean = false;
-  @Input() value: any = null;
+  @Input() label = 'Datum auswählen';
+  @Input() disabled = false;
+  @Input() locale = 'de-DE';
+  @Input() luxonDateFormat = DEFAULT_DATETIME_FORMAT;
+  @Input() showQuickTimeControls = false;
+  @Input() value: Date | string | null = null;
 }
 
 const meta = {
@@ -87,7 +88,7 @@ const meta = {
 
 export default meta;
 
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<DateTimeStoryHostComponent>;
 
 export const DateTime: Story = {};
 

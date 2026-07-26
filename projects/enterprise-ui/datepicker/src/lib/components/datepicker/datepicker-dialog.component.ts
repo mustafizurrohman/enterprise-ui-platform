@@ -14,7 +14,6 @@ import {
   type DatepickerGridContext,
   type DatepickerGridKeydown,
 } from "./datepicker-grid.types";
-import { type TimeUnit } from "./time-unit-control.types";
 import { TimePickerComponent } from "./time-picker.component";
 import { DatepickerHeaderComponent } from "./datepicker-header.component";
 import { type DatepickerHeaderContext } from "./datepicker-header.types";
