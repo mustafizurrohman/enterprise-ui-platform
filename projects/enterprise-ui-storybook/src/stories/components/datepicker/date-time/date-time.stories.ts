@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { type Meta, type StoryObj } from '@storybook/angular';
 // @ts-ignore
-import { DatepickerComponent } from '../../../../../../enterprise-ui/src/lib/components/datepicker/datepicker.component';
+import { DatepickerComponent } from '../../../../../../enterprise-ui/datepicker/src/lib/components/datepicker/datepicker.component';
 // @ts-ignore
 import template from './date-time.stories.html?raw';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import {
   COMMON_LUXON_DATE_FORMATS,
   DEFAULT_DATETIME_FORMAT,
-} from '../../../../../../enterprise-ui/src/lib/components/datepicker/datepicker-formats';
+} from '../../../../../../enterprise-ui/datepicker/src/lib/components/datepicker/datepicker-formats';
 
 @Component({
   selector: 'date-time-story-host',
