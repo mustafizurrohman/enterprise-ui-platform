@@ -1,5 +1,5 @@
 /*
- * Public API Surface of enterprise-ui
+ * Public API Surface of common
  */
 
 export * from './lib/enterprise-ui';

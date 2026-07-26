@@ -11,7 +11,7 @@
     "storybook": "ng run enterprise-ui-storybook:storybook",
     "build-storybook": "ng run enterprise-ui-storybook:build-storybook",
     "build-library": "ng build enterprise-ui",
-    "test-library": "ng test enterprise-ui --include=\"../**/*.spec.ts\"",
+    "test-library": "ng test enterprise-ui --include=\"../../**/*.spec.ts\"",
     "test-storybook": "ng test enterprise-ui-storybook"
   },
   "private": true,
