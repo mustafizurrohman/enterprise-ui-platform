@@ -10,9 +10,11 @@ import * as ReactiveFormStories from './reactive-form/reactive-form.stories';
 
 # Datepicker
 
-The `DatepickerComponent` is a high-performance, accessible date and time selection solution engineered for complex enterprise ecosystems. It delivers a unified interaction model for temporal data entry, combining intuitive graphical selection with a high-efficiency manual input engine.
+The `DatepickerComponent` is a high-performance, accessible date and time selection solution.
+It delivers a unified interaction model for temporal data entry, combining intuitive graphical
+selection with a high-efficiency manual input engine.
 
-Designed for Angular architects, it prioritizes compliance, testability, and seamless integration into large-scale reactive architectures.
+The `DatepickerComponent` testability and seamless integration into Angular Forms.
 
 ## Interactive demo
 
@@ -22,20 +24,19 @@ Designed for Angular architects, it prioritizes compliance, testability, and sea
 
 <Controls of={DateTimeStories.DateTime} />
 
-## Technical Overview
-
-For a detailed breakdown of the component's architecture, including manual entry parsing, paste logic, and localization strategies, please refer to the [Capabilities](./?path=/docs/components-datepicker--capabilities) documentation.
 
 ## Examples
 
 ### Programmatic updates
 
-The `value` model supports two-way binding and programmatic updates, allowing parent components to read or set the datepicker value directly via standard Angular mechanisms.
+The `value` model supports two-way binding and programmatic updates, allowing parent components to read
+or set the datepicker value directly via standard Angular mechanisms.
 
 <Canvas of={DateTimeStories.DateInput} />
 
 ### Reactive form
 
-The component fully implements `ControlValueAccessor`, ensuring robust integration with Angular's `ReactiveFormsModule` and native validation protocols.
+The component fully implements `ControlValueAccessor`, ensuring integration with
+Angular's `ReactiveFormsModule` and native validation protocols.
 
 <Canvas of={ReactiveFormStories.ReactiveForm} />
