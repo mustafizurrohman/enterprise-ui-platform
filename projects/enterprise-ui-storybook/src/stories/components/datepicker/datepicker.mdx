@@ -10,9 +10,9 @@ import * as ReactiveFormStories from './reactive-form/reactive-form.stories';
 
 # Datepicker
 
-The `DatepickerComponent` combines a text input with a modal calendar and, when the configured format contains time fields, time controls. It supports date-only and date-time values, manual entry, paste parsing, Angular forms, locale-aware Luxon formatting, keyboard navigation, and an explicitly prefixed test-ID surface.
+The `DatepickerComponent` combines a text input with a modal calendar and time controls. It supports date-only and date-time values, manual entry, paste parsing, Angular forms, and keyboard navigation.
 
-The component derives its mode from the configured Luxon format. A format without time tokens renders a date-only calendar. Time tokens add hour and minute controls, second tokens add a seconds control, and 12-hour tokens add an AM/PM radio group.
+The component derives its mode from the configured Luxon format. A format without time tokens renders a date-only calendar, while time tokens add hour, minute, and second controls.
 
 <Canvas of={DateTimeStories.DateTime} />
 
@@ -20,145 +20,39 @@ The component derives its mode from the configured Luxon format. A format withou
 
 ## Installation
 
-Import the standalone component from the datepicker secondary entry point:
-
-```ts
-import { DatepickerComponent } from '@mr/enterprise-ui/datepicker';
-```
-
-The library declares Angular 22, Angular Material 22, and Luxon 3 as peer dependencies. The implementation also imports Angular CDK overlay and accessibility primitives directly, so the consuming workspace must provide a compatible `@angular/cdk` version.
-
-The overlay positioning styles are global. Include the CDK overlay stylesheet once in the application:
-
-```scss
-@import '@angular/cdk/overlay-prebuilt.css';
-```
-
-The component uses `mat-icon`, `mat-form-field`, and `matInput`. Include the application's Angular Material theme and configure the Material Icons ligature font or an equivalent `MatIconRegistry` setup. No Angular Material date adapter, `MAT_DATE_LOCALE`, or datepicker provider is used by this component.
+Import the standalone `DatepickerComponent` from `@mr/enterprise-ui/datepicker`. Ensure `@angular/cdk`, Angular Material, and Luxon 3 are available in your project. Include the global CDK overlay styles in your application.
 
 ## Basic usage
 
-The following example uses Angular signal model binding. Successful user input is normalized to a JavaScript `Date`; clearing the control writes `null`.
-
-```ts
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import {
-  DatepickerComponent,
-  DEFAULT_DATE_FORMAT,
-} from '@mr/enterprise-ui/datepicker';
-
-@Component({
-  selector: 'app-start-date',
-  standalone: true,
-  imports: [DatepickerComponent],
-  templateUrl: './start-date.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class StartDateComponent {
-  readonly format = DEFAULT_DATE_FORMAT;
-  readonly value = signal<Date | null>(null);
-}
-```
-
-```html
-<datepicker
-  label="Start date"
-  locale="en-GB"
-  [luxonDateFormat]="format"
-  [(value)]="value"
-/>
-
-<p>{{ value() ?? 'No date selected' }}</p>
-```
+The component supports Angular signal model binding. User input is normalized to a JavaScript `Date`, and clearing the control sets the value to `null`.
 
 ## Forms integration
 
-`DatepickerComponent` implements `ControlValueAccessor` and `Validator`. Reactive forms and template-driven forms are covered by the component tests. For form controls, prefer `Date | null` as the value type: the component accepts strings for programmatic compatibility, but successful user interaction emits `Date` values through the forms API.
+`DatepickerComponent` supports both reactive and template-driven forms. It implements `ControlValueAccessor` and `Validator`. For form controls, `Date | null` is the preferred value type.
 
 <Canvas of={ReactiveFormStories.ReactiveForm} />
 
-### Reactive forms
+### Forms contract
 
-```ts
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import {
-  DatepickerComponent,
-  DEFAULT_DATETIME_FORMAT,
-} from '@mr/enterprise-ui/datepicker';
-
-@Component({
-  selector: 'app-appointment-form',
-  standalone: true,
-  imports: [DatepickerComponent, ReactiveFormsModule],
-  template: `
-    <datepicker
-      label="Appointment"
-      [formControl]="appointment"
-      [luxonDateFormat]="format"
-    />
-  `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class AppointmentFormComponent {
-  readonly format = DEFAULT_DATETIME_FORMAT;
-  readonly appointment = new FormControl<Date | null>(null, {
-    validators: [Validators.required],
-  });
-}
-```
-
-The forms contract is as follows:
-
-- `writeValue` accepts `Date`, `string`, `null`, or `undefined`.
-- Valid configured-format, ISO, and SQL date strings are parsed for display. A valid string supplied through the `value` model is normalized back to a `Date`.
-- Calendar selection, valid manual entry, time changes, and the current-date action emit `Date`.
-- Clearing emits `null`.
-- `null`, `undefined`, and an empty string clear the displayed value.
-- Invalid manual text remains visible. The component reports `{ invalidDate: true }`; the forms change callback receives `null` while the `value` model can temporarily contain the raw string.
-- The component calls the touched callback on input blur, calendar close, and clear.
-- A disabled form control is combined with the `disabled` input. Either source disables the component.
-- The component does not implement a required rule itself. Apply `Validators.required` when an empty value is invalid.
-
-### Template-driven forms
-
-`[(ngModel)]` is supported when `FormsModule` is imported:
-
-```html
-<datepicker
-  label="Delivery date"
-  dateFormat="dd.MM.yyyy"
-  [(ngModel)]="deliveryDate"
-/>
-```
+- **Values**: Accepts `Date`, `string`, `null`, or `undefined`. Emits `Date` on selection or `null` on clear.
+- **Parsing**: Valid format, ISO, and SQL strings are parsed. Invalid text remains visible and triggers an `invalidDate` error.
+- **State**: The touched callback is called on blur, close, or clear. The component can be disabled via input or form control.
+- **Validation**: Does not implement a required rule; use `Validators.required` if needed.
 
 ## Public configuration API
 
-| Name | Type | Default | Required | Description |
-| --- | --- | --- | --- | --- |
-| `label` | `string` | `'Datum auswählen'` | No | Text in the native `<label>`. The component appends a visually hidden date or date-time descriptor. |
-| `today` | `DateTime` | `DateTime.now()` | No | Reference date for the today state, initial calendar focus, and manual-entry completion context. The current-date action uses the actual current time rather than this override. |
-| `testId` | `string \| null` | `null` | No | Prefix for exposed `data-testid` values. A null, empty, or whitespace-only value falls back to a generated `datepicker-<number>` prefix. |
-| `locale` | `string \| null` | `null` | No | Luxon locale for formatting, parsing, month names, weekday names, and accessible date labels. Falls back to the first non-empty browser locale and then the runtime `Intl` locale. |
-| `luxonDateFormat` | `string \| null` | `null` | No | Preferred format input. The effective default is `DEFAULT_DATETIME_FORMAT`. Invalid or non-parseable formats throw an error. |
-| `dateFormat` | `string \| null` | `null` | No | Input alias for format configuration. When both format inputs are set, `luxonDateFormat` takes precedence. |
-| `disabled` | `boolean` | `false` | No | Disables the text input and calendar trigger. Uses Angular's `booleanAttribute` transform, so a bare `disabled` attribute is supported. |
-| `showQuickTimeControls` | `boolean` | `false` | No | Adds ±15/30-minute and ±6/12-hour controls in date-time mode. Uses `booleanAttribute`. |
-| `dateFilter` | `(date: DateTime) => boolean` | `() => true` | No | Returns `true` for selectable calendar dates. It affects calendar rendering, selection, and keyboard navigation; it is not a validator for manual or programmatic values. |
-| `value` | `Date \| string \| null \| undefined` | `undefined` | No | Model input for one-way or two-way binding. Valid values are displayed using the active format. |
-| `valueChange` | `Date \| string \| null \| undefined` | — | No | Output generated by the `value` model. Successful interactions normally emit `Date`; clear emits `null`; invalid manual editing can emit the raw string. |
-
-## Exported format constants
-
-The secondary entry point also exports:
-
-- `DEFAULT_DATE_FORMAT`
-- `DEFAULT_DATETIME_FORMAT`
-- `DEFAULT_DATETIME_SECONDS_FORMAT`
-- `DATE_FORMATS`
-- `COMMON_LUXON_DATE_FORMATS`
-
-`DATE_FORMATS` contains the predefined German, European, ISO-style, US, short-year, textual-month, and weekday formats used by the stories and parser tests.
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `label` | `string` | `'Datum auswählen'` | Text in the native `<label>`. |
+| `today` | `DateTime` | `DateTime.now()` | Reference date for today state and initial focus. |
+| `testId` | `string \| null` | `null` | Prefix for exposed `data-testid` values. |
+| `locale` | `string \| null` | `null` | Luxon locale for formatting and labels. |
+| `luxonDateFormat` | `string \| null` | `null` | Preferred Luxon format. |
+| `dateFormat` | `string \| null` | `null` | Input alias for format configuration. |
+| `disabled` | `boolean` | `false` | Disables the component. |
+| `showQuickTimeControls` | `boolean` | `false` | Adds quick adjustment buttons in date-time mode. |
+| `dateFilter` | `(date: DateTime) => boolean` | `() => true` | Filter for selectable calendar dates. |
+| `value` | `Date \| string \| null \| undefined` | `undefined` | Model input for binding. |
 
 ## Related documentation
 

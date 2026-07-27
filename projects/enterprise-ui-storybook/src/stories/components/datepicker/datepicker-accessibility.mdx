@@ -9,177 +9,42 @@ import * as DateTimeStories from './date-time/date-time.stories';
 
 # Datepicker accessibility
 
-This page describes the semantics implemented by the current source. It does not assert WCAG conformance or compatibility with a specific screen reader. Automated unit tests verify the documented DOM relationships; the repository does not contain recorded NVDA, JAWS, VoiceOver, or TalkBack test results.
+The `DatepickerComponent` is designed with ARIA best practices to support screen readers and keyboard navigation.
 
-## Input semantics
+## Semantic Structure
 
-The editable control remains an `<input type="text">` because it accepts locale- and format-specific date/time text. It is exposed as a `combobox` whose popup is a dialog:
+- **Input**: Exposed as a `combobox` with `aria-haspopup="dialog"`. Includes a visually hidden label suffix for date/time identification.
+- **Trigger**: A native button that opens a `role="dialog"` overlay.
+- **Overlay**: Uses `aria-modal="true"`, traps focus, and applies the `inert` attribute to background content.
+- **Calendar Grid**: Implemented as an ARIA `grid`. Each day is a native `<button>` within a `gridcell`. `aria-selected` and `aria-current="date"` indicate selection and today's date.
+- **Time Controls**: Use `role="spinbutton"` with appropriate ARIA value attributes and native increment/decrement buttons.
 
-- A native `<label for>` supplies the accessible name from the `label` input.
-- The label includes a visually hidden suffix: `Datumseingabe` for date-only formats or `Datum- und Uhrzeiteingabe` for date-time formats.
-- `aria-haspopup="dialog"` identifies the popup type.
-- `aria-expanded` reflects the overlay state.
-- `aria-controls` points to the dialog only while the dialog is open.
-- `aria-autocomplete="none"` indicates that no suggestion popup is exposed.
-- `aria-describedby` points to the built-in format instructions and, while invalid, the built-in error message.
-- `aria-errormessage` points to the built-in error while invalid.
-- `aria-invalid` reflects manual parsing errors and an attached Angular control's visible invalid state.
+## Keyboard Interaction
 
-The visually hidden type suffix identifies the field as a date or date-time input without changing native text-input behavior. The component does not use `<input type="date">` or `<input type="datetime-local">`.
-
-The input hint announces the expected Luxon format, optional `Uhr` paste behavior for date-time formats, and Unix timestamp support. It is static descriptive content, not a live region.
-
-## Trigger and dialog relationship
-
-The calendar toggle is a native button with `aria-haspopup="dialog"`, `aria-expanded`, a state-dependent accessible label, and `aria-controls` while the dialog is open. Native button semantics are preserved; the component does not replace the button role.
-
-The input-adjacent current-date/current-time and clear actions are also native buttons. Their `aria-controls` attributes point to the input they update.
-
-The overlay content uses:
-
-- `role="dialog"`;
-- `aria-modal="true"`;
-- `aria-labelledby` referencing a visually hidden dialog title;
-- `aria-describedby` referencing static keyboard instructions;
-- `cdkTrapFocus` to contain Tab navigation.
-
-The input and toggle both reference the open dialog through `aria-controls`.
-
-## Focus management
-
-When the overlay attaches, the component moves focus to:
-
-1. the selected date, when one exists; otherwise
-2. the configured `today` date;
-3. the next enabled date when the preferred date is disabled.
-
-Only the active day button has `tabindex="0"`; other rendered day buttons use `tabindex="-1"`. Arrow-key navigation updates this roving tab stop and moves DOM focus.
-
-`cdkTrapFocusAutoCapture` is disabled because the component performs the initial calendar focus itself. Once open, the CDK focus trap keeps Tab and Shift+Tab within the dialog.
-
-Closing the dialog calls the touched callback and restores focus to the element that opened it when that element is still connected and enabled. Escape closes the dialog without clearing or reverting the current value. Backdrop click and the toggle button also close it.
-
-While the modal dialog is open, the implementation applies the native `inert` attribute to other top-level `body` children, excluding the CDK overlay container or its containing element. The original inert state is restored when the overlay closes or the component is destroyed.
-
-## Calendar grid semantics
-
-The calendar uses an ARIA grid with Monday-first columns and a calendar-week column:
-
-- `role="grid"` with `aria-rowcount`, `aria-colcount`, and `aria-labelledby` referencing the displayed month/year heading;
-- `role="row"` for the weekday row and each calendar week;
-- `role="columnheader"` for calendar-week and weekday headings;
-- `role="rowheader"` for each week number;
-- `role="gridcell"` for every date position, including empty leading or trailing cells;
-- native `<button>` elements inside populated grid cells.
-
-The grid deliberately omits `aria-readonly`.
-
-### Date states
-
-| State | Implemented semantics |
+| Key | Action |
 | --- | --- |
-| Selected date | The containing `gridcell` has `aria-selected="true"`; other populated cells have `aria-selected="false"`. The day button also receives a visual selected class. |
-| Today | Only today's day button receives `aria-current="date"`. A selected date that is not today does not receive `aria-current`. |
-| Focused date | The day button is the roving tab stop and receives visual focus/focused styling. There is no additional ARIA state for focus. |
-| Current week | The week row and week-number cell receive visual current-week styling. The row header is labelled `Aktuelle Kalenderwoche <number>`. |
-| Disabled date | The day button uses the native `disabled` attribute. The containing grid cell uses `aria-disabled="true"`. |
-| Empty cell | The `gridcell` has `aria-disabled="true"` and contains no button. |
+| **ArrowDown** | Opens the calendar from the text input. |
+| **Arrow keys** | Navigate the calendar grid or adjust time spinbuttons. |
+| **Home / End** | Move to start/end of the week or min/max time unit. |
+| **PageUp / PageDown** | Navigate by month or adjust time by 10 units. |
+| **Enter / Space** | Select a date or activate controls. |
+| **Escape** | Closes the dialog and restores focus. |
 
-Date buttons have locale-sensitive accessible names containing weekday, day, month, and year. Selection is exposed on the containing grid cell rather than duplicated in the button label. Actual announcement behavior for this nested gridcell/button pattern should be verified with the screen readers supported by the consuming product.
+## Focus Management
 
-## Header controls
+Focus moves to the selected or today's date upon opening. It uses a roving tab stop for grid navigation and restores focus to the opener upon closing.
 
-Month and year navigation use native controls:
+## Announcements & Validation
 
-- previous/next month and year are native buttons with accessible labels and `aria-controls` pointing to the grid;
-- the month is a native `<select aria-label="Monat auswählen">`;
-- the year is a text input with `inputmode="numeric"`, a four-digit pattern, and an explicit accessible label;
-- current-month and current-year actions are native buttons with accessible labels and grid relationships;
-- the month and year control groups use `role="group"` with accessible labels.
+- **Status Regions**: Two `role="status"` regions announce value changes, paste success, and navigation updates.
+- **Errors**: Invalid input is associated with error messages via `aria-errormessage` and `aria-describedby`.
 
-The hidden month/year heading labels the calendar grid. Changes to the displayed period are announced through the dialog status region rather than by making the heading live.
+## Motion and Color
 
-## Time-control semantics
+The component respects `prefers-reduced-motion` for animations and supports high-contrast modes via system colors.
 
-Date-time mode renders a fieldset with a visually hidden legend and static instructions. Each time unit contains:
+## Consumer Responsibilities
 
-- a native label;
-- an input with `role="spinbutton"`;
-- `aria-valuemin`, `aria-valuemax`, `aria-valuenow`, and a localized `aria-valuetext`;
-- `aria-describedby` pointing to the time instructions;
-- native increment and decrement buttons with explicit labels and `aria-controls`.
-
-For 12-hour formats, the hour spinbutton exposes a `1` to `12` range and includes AM/PM in `aria-valuetext`. AM/PM is a native radio group labelled by a visually hidden element. Each radio controls the hour spinbutton.
-
-Quick time controls are grouped and labelled as minute or hour adjustments. Every adjustment button has an explicit action label and references the affected spinbutton.
-
-## Validation and error association
-
-Invalid manual input is left visible. The component renders an error element and associates it with the input through both `aria-describedby` and `aria-errormessage`. The error itself is not an alert or live region; the relationship allows the input's invalid state and message to be read when the field is revisited.
-
-An attached `NgControl` contributes to `aria-invalid` only after it is touched or dirty. A manual parsing error is shown immediately. The built-in message always describes an invalid value for the configured date format; it does not distinguish `required`, range, or custom validator errors.
-
-## Status announcements
-
-The component uses two status regions:
-
-| Region | Scope | Announcements |
-| --- | --- | --- |
-| Input status | Outside the dialog | Current date/time applied, value cleared, and successful paste. |
-| Dialog status | Inside the dialog | Displayed month/year changes, selected date, and time changes. |
-
-Both regions use `role="status"`, `aria-live="polite"`, and `aria-atomic="true"`. Before setting a new message, the implementation clears the region and queues the replacement so repeated updates can be announced.
-
-The dialog's keyboard instructions are connected through `aria-describedby` and are not a live region. Month and year changes share the dialog status region; the implementation does not create separate live regions for each navigation control.
-
-## Keyboard interaction
-
-| Context | Key | Action |
-| --- | --- | --- |
-| Text input | ArrowDown | Opens the calendar. |
-| Text input | Alt + ArrowDown | Opens the calendar; the handler accepts ArrowDown when Alt is pressed. |
-| Text input | Enter | Commits the current manual value. It does not open the calendar. |
-| Text input | Escape | Closes the open calendar and preserves the value. No custom action occurs when the calendar is closed. |
-| Text input | Backspace | Uses native deletion, except that a trailing ` Uhr` is removed together with the preceding final digit when the caret is at the end. |
-| Text input | ArrowUp | No custom action. |
-| Calendar toggle | Enter or Space | Uses native button activation to open or close the dialog. |
-| Clear/current-date buttons | Enter or Space | Uses native button activation. |
-| Calendar grid | ArrowLeft / ArrowRight | Moves one day backward or forward. |
-| Calendar grid | ArrowUp / ArrowDown | Moves seven days backward or forward. |
-| Calendar grid | Home | Moves to Monday of the current week. |
-| Calendar grid | End | Moves to Sunday of the current week. |
-| Calendar grid | PageUp / PageDown | Moves to the previous or next month, preserving the day where possible. |
-| Calendar grid | Shift + PageUp / Shift + PageDown | Moves to the previous or next year, preserving the month and clamping the day when required. |
-| Calendar grid | Enter or Space | Selects the focused date. The dialog remains open. |
-| Calendar grid | Escape | Closes the dialog and restores focus to the opener. |
-| Dialog | Tab / Shift + Tab | Moves through focusable controls within the CDK focus trap. |
-| Month navigation buttons | Enter or Space | Uses native button activation. Pointer press-and-hold repeats navigation. |
-| Month select | Standard select keys | Uses native `<select>` behavior. |
-| Year input | Numeric keys | Keeps at most four digits and removes non-digits. |
-| Year input | Enter | Blurs and commits a valid positive four-digit year. |
-| Year input | Tab / Shift + Tab | Native focus movement; blur commits or restores the current displayed year. |
-| Time spinbutton | ArrowUp / ArrowDown | Adds or subtracts one unit. |
-| Time spinbutton | PageUp / PageDown | Adds or subtracts ten units. |
-| Time spinbutton | Home / End | Sets the unit to its exposed minimum or maximum. |
-| Time spinbutton | Numeric keys | Replaces the editable value; non-digits are removed and committed values are clamped. |
-| Time increment/decrement buttons | Enter or Space | Uses native button activation. Pointer press-and-hold repeats the adjustment. |
-| AM/PM radio group | Standard radio keys | Uses native radio-button keyboard behavior. |
-
-Keyboard date navigation skips dates rejected by `dateFilter`. Month and year jumps clamp dates such as 31 March or 29 February to the last valid day in the target month or year.
-
-## Reduced motion and forced colors
-
-Time-value animations run only under `prefers-reduced-motion: no-preference`. Dialog/header transition rules are disabled under `prefers-reduced-motion: reduce`. Forced-colors rules add system-color outlines or borders to key focus and selection states.
-
-Not every color transition in the component is explicitly disabled by the reduced-motion media query. In particular, input/icon and calendar-day color transitions remain defined. Products with stricter motion requirements should verify the composed styles.
-
-## Consumer responsibilities and current limitations
-
-- Supply a concise, context-specific `label`. The default label and fixed internal strings are German.
-- `locale` localizes dates and calendar names, not the component's controls, instructions, status messages, or error text.
-- The component has no public input for additional hint IDs, custom error IDs, `aria-describedby`, or `aria-labelledby`. External descriptive text is not associated automatically.
-- There is no `readonly` mode. `disabled` removes the control from normal interaction and should not be presented as read-only semantics.
-- There are no built-in `min` or `max` semantics. `dateFilter` disables calendar dates but does not validate manual or programmatic values.
-- Required and custom validator errors use the same built-in invalid-format message once the control is touched or dirty.
-- Selection semantics are placed on the `gridcell` while DOM focus is on its child button. Verify the resulting state announcement with the product's supported assistive technologies.
-- The repository's unit tests verify attributes and focus behavior, but no documented manual assistive-technology test matrix is present.
+- Provide a concise `label`.
+- Note that `locale` localizes dates, not internal UI strings (German).
+- Use `dateFilter` and Angular validators for range constraints.
