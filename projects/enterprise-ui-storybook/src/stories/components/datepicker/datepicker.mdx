@@ -32,13 +32,6 @@ The component supports Angular signal model binding. User input is normalized to
 
 <Canvas of={ReactiveFormStories.ReactiveForm} />
 
-### Forms contract
-
-- **Values**: Accepts `Date`, `string`, `null`, or `undefined`. Emits `Date` on selection or `null` on clear.
-- **Parsing**: Valid format, ISO, and SQL strings are parsed. Invalid text remains visible and triggers an `invalidDate` error.
-- **State**: The touched callback is called on blur, close, or clear. The component can be disabled via input or form control.
-- **Validation**: Does not implement a required rule; use `Validators.required` if needed.
-
 ## Related documentation
 
 - <a href="?path=/docs/components-datepicker--capabilities">Capabilities and formatting</a>
