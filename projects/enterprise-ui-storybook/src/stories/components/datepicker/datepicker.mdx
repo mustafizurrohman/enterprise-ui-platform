@@ -39,21 +39,6 @@ The component supports Angular signal model binding. User input is normalized to
 - **State**: The touched callback is called on blur, close, or clear. The component can be disabled via input or form control.
 - **Validation**: Does not implement a required rule; use `Validators.required` if needed.
 
-## Public configuration API
-
-| Name | Type | Default | Description |
-| --- | --- | --- | --- |
-| `label` | `string` | `'Datum auswählen'` | Text in the native `<label>`. |
-| `today` | `DateTime` | `DateTime.now()` | Reference date for today state and initial focus. |
-| `testId` | `string \| null` | `null` | Prefix for exposed `data-testid` values. |
-| `locale` | `string \| null` | `null` | Luxon locale for formatting and labels. |
-| `luxonDateFormat` | `string \| null` | `null` | Preferred Luxon format. |
-| `dateFormat` | `string \| null` | `null` | Input alias for format configuration. |
-| `disabled` | `boolean` | `false` | Disables the component. |
-| `showQuickTimeControls` | `boolean` | `false` | Adds quick adjustment buttons in date-time mode. |
-| `dateFilter` | `(date: DateTime) => boolean` | `() => true` | Filter for selectable calendar dates. |
-| `value` | `Date \| string \| null \| undefined` | `undefined` | Model input for binding. |
-
 ## Related documentation
 
 - <a href="?path=/docs/components-datepicker--capabilities">Capabilities and formatting</a>
