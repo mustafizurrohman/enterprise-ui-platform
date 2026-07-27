@@ -486,8 +486,8 @@ describe('DatepickerComponent', () => {
         '[data-testid="datepicker-error"]',
       ) as HTMLElement;
       expect(error).toBeTruthy();
-      expect(error.getAttribute('role')).toBe('alert');
-      expect(error.getAttribute('aria-atomic')).toBe('true');
+      expect(error.hasAttribute('role')).toBeFalsy();
+      expect(error.hasAttribute('aria-live')).toBeFalsy();
       expect(input.getAttribute('aria-errormessage')).toBe(error.id);
       expect(input.getAttribute('aria-describedby')?.split(' ')).toContain(error.id);
     });
@@ -971,6 +971,9 @@ describe('DatepickerComponent', () => {
     expect(root.id).toMatch(/^datepicker-\d+$/);
     expect(wrapper.id).toBe(`${root.id}-input-wrapper`);
     expect(label.textContent).toContain(component.label());
+    expect(label.querySelector('.cdk-visually-hidden')?.textContent).toContain(
+      'Datum- und Uhrzeiteingabe',
+    );
     expect(label.htmlFor).toBe(input.id);
     expect(input.id).toBe(`${root.id}-input`);
     expect(input.getAttribute('role')).toBe('combobox');
@@ -991,11 +994,50 @@ describe('DatepickerComponent', () => {
     expect(toggleButton.getAttribute('aria-label')).toContain('Kalender');
     expect(toggleButton.getAttribute('aria-haspopup')).toBe('dialog');
     expect(toggleButton.getAttribute('aria-expanded')).toBe('false');
-    expect(toggleButton.getAttribute('tabindex')).toBe('-1');
+    expect(toggleButton.hasAttribute('tabindex')).toBeFalsy();
 
     const icon = toggleButton.querySelector('mat-icon');
     expect(icon).toBeTruthy();
     expect(icon?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('should identify a date-only text field as a date input without changing its type', () => {
+    fixture.componentRef.setInput('luxonDateFormat', 'dd.MM.yyyy');
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-input"]',
+    ) as HTMLInputElement;
+    const typeDescription = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-label"] .cdk-visually-hidden',
+    ) as HTMLElement;
+
+    expect(input.type).toBe('text');
+    expect(typeDescription.textContent).toContain('Datumseingabe');
+    expect(typeDescription.textContent).not.toContain('Datum- und Uhrzeiteingabe');
+  });
+
+  it('should expose disabled dates with native and grid semantics', async () => {
+    fixture.componentRef.setInput(
+      'dateFilter',
+      (date: DateTime) => date.toISODate() !== '2026-07-16',
+    );
+    component.writeValue('2026-07-15T10:30:00');
+
+    const toggle = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-toggle"]',
+    ) as HTMLButtonElement;
+    toggle.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const disabledDay = document.querySelector(
+      '[data-testid="datepicker-day-2026-07-16"]',
+    ) as HTMLButtonElement;
+
+    expect(disabledDay.disabled).toBeTruthy();
+    expect(disabledDay.parentElement?.getAttribute('aria-disabled')).toBe('true');
+    expect(disabledDay.classList.contains('disabled')).toBeTruthy();
   });
 
   it('should expose selection on the focusable calendar gridcell', async () => {
@@ -1010,11 +1052,12 @@ describe('DatepickerComponent', () => {
     const selectedDay = document.querySelector(
       '[data-testid="datepicker-day-2026-07-15"]',
     ) as HTMLButtonElement;
+    const selectedCell = selectedDay.parentElement as HTMLElement;
 
-    expect(selectedDay.getAttribute('role')).toBe('gridcell');
-    expect(selectedDay.getAttribute('aria-selected')).toBe('true');
+    expect(selectedDay.hasAttribute('role')).toBeFalsy();
+    expect(selectedCell.getAttribute('role')).toBe('gridcell');
+    expect(selectedCell.getAttribute('aria-selected')).toBe('true');
     expect(selectedDay.getAttribute('tabindex')).toBe('0');
-    expect(selectedDay.parentElement?.getAttribute('role')).toBe('presentation');
   });
 
   it('should trap focus and have dialog attributes when calendar is open', async () => {
@@ -1041,54 +1084,93 @@ describe('DatepickerComponent', () => {
     const description = document.querySelector(
       '[data-testid="datepicker-dialog-description"]',
     ) as HTMLElement;
+    const status = document.querySelector(
+      '[data-testid="datepicker-dialog-status"]',
+    ) as HTMLElement;
+
     expect(title?.classList.contains('cdk-visually-hidden')).toBeTruthy();
-    expect(dialog.hasAttribute('aria-describedby')).toBeFalsy();
+    expect(dialog.getAttribute('aria-describedby')).toBe(description.id);
     expect(description.classList.contains('cdk-visually-hidden')).toBeTruthy();
-    expect(description.getAttribute('role')).toBe('status');
-    expect(description.getAttribute('aria-live')).toBe('polite');
-    expect(description.getAttribute('aria-atomic')).toBe('true');
+    expect(description.hasAttribute('role')).toBeFalsy();
+    expect(description.hasAttribute('aria-live')).toBeFalsy();
+    expect(description.textContent).toContain('Escape schließt den Kalender');
+    expect(status.getAttribute('role')).toBe('status');
+    expect(status.getAttribute('aria-live')).toBe('polite');
+    expect(status.getAttribute('aria-atomic')).toBe('true');
+    expect(document.querySelectorAll('.datepicker-calendar [aria-live]')).toHaveLength(1);
     expect(title?.getAttribute('data-testid')).toBe('datepicker-dialog-title');
     expect(description.getAttribute('data-testid')).toBe('datepicker-dialog-description');
   });
 
-  it('should announce grid keyboard help after focus has settled', () => {
-    vi.useFakeTimers();
-    const animationFrameSpy = vi
-      .spyOn(window, 'requestAnimationFrame')
-      .mockImplementation((callback: FrameRequestCallback): number => {
-        callback(0);
-        return 1;
-      });
+  it('should make background content inert while the modal dialog is open', async () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const bodyChild = Array.from(document.body.children).find((child) => child.contains(host)) as HTMLElement;
+    const toggle = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-toggle"]',
+    ) as HTMLButtonElement;
 
-    try {
-      const input = fixture.nativeElement.querySelector(
-        '[data-testid="datepicker-input"]',
-      ) as HTMLInputElement;
+    toggle.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowDown',
-          bubbles: true,
-          cancelable: true,
-        }),
-      );
-      fixture.detectChanges();
+    expect(bodyChild.hasAttribute('inert')).toBeTruthy();
 
-      const instructions = document.querySelector(
-        '[data-testid="datepicker-dialog-description"]',
-      ) as HTMLElement;
+    (component as any).closeCalendar();
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-      expect(instructions.textContent?.trim()).toBe('');
+    expect(bodyChild.hasAttribute('inert')).toBeFalsy();
+  });
 
-      vi.advanceTimersByTime(150);
-      fixture.detectChanges();
+  it('should announce month changes through the single dialog status region', async () => {
+    const toggle = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-toggle"]',
+    ) as HTMLButtonElement;
+    toggle.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-      expect(instructions.textContent).toContain('Pfeiltasten navigieren zwischen Tagen');
-      expect(instructions.textContent).toContain('Escape schließt');
-    } finally {
-      animationFrameSpy.mockRestore();
-      vi.useRealTimers();
-    }
+    const nextMonth = document.querySelector(
+      '[data-testid="datepicker-next-month"]',
+    ) as HTMLButtonElement;
+    nextMonth.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const status = document.querySelector(
+      '[data-testid="datepicker-dialog-status"]',
+    ) as HTMLElement;
+
+    expect(status.textContent).toContain('Angezeigt:');
+    expect(document.querySelectorAll('.datepicker-calendar [aria-live]')).toHaveLength(1);
+  });
+
+  it('should expose static keyboard instructions through aria-describedby', async () => {
+    const input = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-input"]',
+    ) as HTMLInputElement;
+
+    input.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dialog = document.querySelector(
+      '[data-testid="datepicker-dialog"]',
+    ) as HTMLElement;
+    const instructions = document.querySelector(
+      '[data-testid="datepicker-dialog-description"]',
+    ) as HTMLElement;
+
+    expect(dialog.getAttribute('aria-describedby')).toBe(instructions.id);
+    expect(instructions.textContent).toContain('Pfeiltasten navigieren zwischen Tagen');
+    expect(instructions.textContent).toContain('Escape schließt');
+    expect(instructions.hasAttribute('aria-live')).toBeFalsy();
   });
 
   it('should navigate calendar with keyboard', async () => {
@@ -1324,23 +1406,24 @@ describe('DatepickerComponent', () => {
       expect(onChangeSpy).toHaveBeenCalledWith(expect.any(Date));
       expect((onChangeSpy.mock.calls[0][0] as Date).toISOString()).toContain('2026-07-20');
       expect(
-        document.querySelector('[data-testid="datepicker-date-status"]')?.textContent,
-      ).toContain('Datum ausgewählt:');
+        document.querySelector('[data-testid="datepicker-dialog-status"]')?.textContent,
+      ).toContain('Ausgewählt:');
     });
 
-    it('should close with Escape and restore focus to the combobox', async () => {
+    it('should close with Escape, preserve the value and restore focus to the opener', async () => {
       const animationFrameSpy = vi
         .spyOn(window, 'requestAnimationFrame')
         .mockImplementation((callback: FrameRequestCallback): number => {
           callback(0);
           return 1;
         });
+      component.writeValue('2026-07-15T10:30:00');
+      fixture.detectChanges();
+
       const button = fixture.nativeElement.querySelector(
         '[data-testid="datepicker-toggle"]',
       ) as HTMLButtonElement;
-      const input = fixture.nativeElement.querySelector(
-        '[data-testid="datepicker-input"]',
-      ) as HTMLInputElement;
+      const valueBeforeEscape = component.selectedDate()?.toISO();
       button.focus();
 
       button.click();
@@ -1359,7 +1442,8 @@ describe('DatepickerComponent', () => {
 
       expect((component as any).isOpen()).toBeFalsy();
       expect(document.querySelector('[data-testid="datepicker-dialog"]')).toBeNull();
-      expect(document.activeElement).toBe(input);
+      expect(component.selectedDate()?.toISO()).toBe(valueBeforeEscape);
+      expect(document.activeElement).toBe(button);
 
       animationFrameSpy.mockRestore();
     });
@@ -1448,8 +1532,8 @@ describe('DatepickerComponent', () => {
     incrementButton.click();
     fixture.detectChanges();
 
-    expect((component as any).timeAnnouncement()).toContain('Uhrzeit');
-    expect((component as any).timeAnnouncement()).toMatch(/Uhrzeit: \d{1,2}:\d{2}/);
+    expect((component as any).dialogAnnouncement()).toContain('Uhrzeit');
+    expect((component as any).dialogAnnouncement()).toMatch(/Uhrzeit: \d{1,2}:\d{2}/);
   });
 
   describe('disabled', () => {
@@ -1814,12 +1898,12 @@ describe('DatepickerComponent', () => {
       (component as any).selectedDate.set(testDate);
 
       (component as any).announceTime();
-      expect((component as any).timeAnnouncement()).not.toContain('Sekunden');
+      expect((component as any).dialogAnnouncement()).not.toContain('Sekunden');
 
       fixture.componentRef.setInput('luxonDateFormat', "dd.MM.yyyy HH:mm:ss 'Uhr'");
       fixture.detectChanges();
       (component as any).announceTime();
-      expect((component as any).timeAnnouncement()).toContain('14:30:45');
+      expect((component as any).dialogAnnouncement()).toContain('14:30:45');
     });
 
     it('should normalize seconds according to the Luxon format', () => {

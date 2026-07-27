@@ -38,6 +38,18 @@ describe('DatepickerGridComponent', () => {
     },
     {
       weekNumber: 30,
+      days: [
+        today,
+        DateTime.fromISO('2026-07-21'),
+        DateTime.fromISO('2026-07-22'),
+        DateTime.fromISO('2026-07-23'),
+        DateTime.fromISO('2026-07-24'),
+        DateTime.fromISO('2026-07-25'),
+        DateTime.fromISO('2026-07-26'),
+      ],
+    },
+    {
+      weekNumber: 31,
       days: [null, null, null, null, null, null, null],
     },
   ];
@@ -57,6 +69,7 @@ describe('DatepickerGridComponent', () => {
     monthHeadingId: 'month-heading',
     testIdPrefix: 'datepicker',
     locale: 'de-DE',
+    isDateDisabled: (date) => date.hasSame(DateTime.fromISO('2026-07-16'), 'day'),
   };
 
   beforeEach(async () => {
@@ -86,14 +99,20 @@ describe('DatepickerGridComponent', () => {
     expect(grid.id).toBe('calendar-grid');
     expect(grid.getAttribute('role')).toBe('grid');
     expect(grid.getAttribute('aria-labelledby')).toBe('month-heading');
-    expect(grid.getAttribute('aria-rowcount')).toBe('4');
+    expect(grid.getAttribute('aria-rowcount')).toBe('5');
     expect(grid.getAttribute('aria-colcount')).toBe('8');
+    expect(grid.hasAttribute('aria-readonly')).toBeFalsy();
+    const selectedCell = selectedDay.parentElement as HTMLElement;
+
     expect(selectedDay.id).toBe('calendar-grid-day-2026-07-15');
-    expect(selectedDay.getAttribute('role')).toBe('gridcell');
-    expect(selectedDay.getAttribute('aria-rowindex')).toBe('3');
-    expect(selectedDay.getAttribute('aria-colindex')).toBe('4');
-    expect(selectedDay.getAttribute('aria-selected')).toBe('true');
+    expect(selectedDay.hasAttribute('role')).toBeFalsy();
+    expect(selectedCell.getAttribute('role')).toBe('gridcell');
+    expect(selectedCell.getAttribute('aria-rowindex')).toBe('3');
+    expect(selectedCell.getAttribute('aria-colindex')).toBe('4');
+    expect(selectedCell.getAttribute('aria-selected')).toBe('true');
     expect(selectedDay.getAttribute('tabindex')).toBe('0');
+    expect(selectedDay.classList.contains('selected')).toBeTruthy();
+    expect(selectedDay.classList.contains('focused')).toBeTruthy();
   });
 
   it('should expose explicit states and positions for all grid cells', () => {
@@ -104,14 +123,43 @@ describe('DatepickerGridComponent', () => {
       '[data-testid="datepicker-cell-0-0"]',
     ) as HTMLElement;
 
-    expect(unselectedDay.hasAttribute('aria-selected')).toBeFalsy();
-    expect(unselectedDay.getAttribute('aria-rowindex')).toBe('3');
-    expect(unselectedDay.getAttribute('aria-colindex')).toBe('3');
+    const unselectedCell = unselectedDay.parentElement as HTMLElement;
+
+    expect(unselectedCell.getAttribute('aria-selected')).toBe('false');
+    expect(unselectedCell.getAttribute('aria-rowindex')).toBe('3');
+    expect(unselectedCell.getAttribute('aria-colindex')).toBe('3');
     expect(emptyCell.id).toBe('calendar-grid-cell-0-0');
     expect(emptyCell.getAttribute('role')).toBe('gridcell');
     expect(emptyCell.getAttribute('aria-rowindex')).toBe('2');
     expect(emptyCell.getAttribute('aria-colindex')).toBe('2');
     expect(emptyCell.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('should distinguish today, the current week and disabled dates', () => {
+    const todayButton = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-day-2026-07-20"]',
+    ) as HTMLButtonElement;
+    const selectedButton = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-day-2026-07-15"]',
+    ) as HTMLButtonElement;
+    const disabledButton = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-day-2026-07-16"]',
+    ) as HTMLButtonElement;
+    const currentWeek = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-week-2"]',
+    ) as HTMLElement;
+    const currentWeekHeader = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-week-number-2"]',
+    ) as HTMLElement;
+
+    expect(todayButton.getAttribute('aria-current')).toBe('date');
+    expect(selectedButton.hasAttribute('aria-current')).toBeFalsy();
+    expect(currentWeek.classList.contains('current-week')).toBeTruthy();
+    expect(currentWeek.hasAttribute('aria-label')).toBeFalsy();
+    expect(currentWeekHeader.getAttribute('aria-label')).toBe('Aktuelle Kalenderwoche 30');
+    expect(disabledButton.disabled).toBeTruthy();
+    expect(disabledButton.classList.contains('disabled')).toBeTruthy();
+    expect(disabledButton.parentElement?.getAttribute('aria-disabled')).toBe('true');
   });
 
   it('should expose unique IDs for rendered grid elements', () => {
@@ -131,7 +179,7 @@ describe('DatepickerGridComponent', () => {
 
   it('should not display calendar week numbers for weeks without dates', () => {
     const emptyWeekNumber = fixture.nativeElement.querySelector(
-      '[data-testid="datepicker-week-number-2"] strong',
+      '[data-testid="datepicker-week-number-3"] strong',
     ) as HTMLElement;
 
     expect(emptyWeekNumber).toBeNull();

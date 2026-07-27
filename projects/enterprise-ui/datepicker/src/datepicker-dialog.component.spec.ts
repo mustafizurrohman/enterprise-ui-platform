@@ -28,6 +28,7 @@ describe('DatepickerDialogComponent', () => {
       dialogId: 'dialog',
       dialogTitleId: 'dialog-title',
       dialogDescriptionId: 'dialog-description',
+      dialogStatusId: 'dialog-status',
       monthHeadingId: 'month-heading',
       hourSelectId: 'hour',
       minuteSelectId: 'minute',
@@ -71,9 +72,8 @@ describe('DatepickerDialogComponent', () => {
       uses12HourClock: false,
       showMeridiem: false,
       locale: 'de-DE',
-      dateAnnouncement: '',
-      timeAnnouncement: '',
-      navigationAnnouncement: '',
+      isDateDisabled: () => false,
+      dialogAnnouncement: '',
       showQuickTimeControls: false,
     };
 
@@ -94,15 +94,23 @@ describe('DatepickerDialogComponent', () => {
 
     expect(dialog.getAttribute('role')).toBe('dialog');
     expect(dialog.getAttribute('aria-modal')).toBe('true');
-    expect(dialog.hasAttribute('aria-describedby')).toBeFalsy();
+    expect(dialog.getAttribute('aria-describedby')).toBe('dialog-description');
     expect(previous.getAttribute('aria-controls')).toBe(grid.id);
 
     const instructions = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-dialog-description"]',
     ) as HTMLElement;
-    expect(instructions.getAttribute('role')).toBe('status');
-    expect(instructions.getAttribute('aria-live')).toBe('polite');
-    expect(instructions.getAttribute('aria-atomic')).toBe('true');
+    expect(instructions.hasAttribute('role')).toBeFalsy();
+    expect(instructions.hasAttribute('aria-live')).toBeFalsy();
+    expect(instructions.textContent).toContain('Escape schließt den Kalender');
+
+    const status = fixture.nativeElement.querySelector(
+      '[data-testid="datepicker-dialog-status"]',
+    ) as HTMLElement;
+    expect(status.getAttribute('role')).toBe('status');
+    expect(status.getAttribute('aria-live')).toBe('polite');
+    expect(status.getAttribute('aria-atomic')).toBe('true');
+    expect(fixture.nativeElement.querySelectorAll('[aria-live]')).toHaveLength(1);
   });
 
   it('should label the grid with only the announced month and year', () => {
@@ -120,7 +128,7 @@ describe('DatepickerDialogComponent', () => {
     expect(monthHeading.id).toBe('month-heading');
     expect(monthHeading.tagName).toBe('H3');
     expect(monthHeading.hasAttribute('role')).toBeFalsy();
-    expect(monthHeading.getAttribute('aria-live')).toBe('polite');
+    expect(monthHeading.hasAttribute('aria-live')).toBeFalsy();
     expect(monthHeading.textContent?.trim()).toBe('Juli 2026');
     expect(grid.getAttribute('aria-labelledby')).toBe(monthHeading.id);
   });

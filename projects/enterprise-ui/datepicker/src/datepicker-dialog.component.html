@@ -6,6 +6,7 @@
   [id]="dialogId()"
   [cdkTrapFocusAutoCapture]="false"
   [attr.aria-labelledby]="dialogTitleId()"
+  [attr.aria-describedby]="dialogDescriptionId()"
   [attr.data-testid]="testIdFor('dialog')"
 >
   <h2
@@ -16,16 +17,15 @@
     {{ dialogTitle() }}
   </h2>
 
-  <div
-    role="status"
-    aria-live="polite"
-    aria-atomic="true"
+  <p
     class="cdk-visually-hidden"
     [id]="dialogDescriptionId()"
     [attr.data-testid]="testIdFor('dialog-description')"
   >
-    {{ navigationAnnouncement() }}
-  </div>
+    Pfeiltasten navigieren zwischen Tagen. Pos1 und Ende springen zum Wochenanfang und
+    Wochenende. Bild auf und Bild ab wechseln den Monat; mit Umschalttaste das Jahr. Enter oder
+    Leertaste wählen den Tag. Escape schließt den Kalender, ohne den ausgewählten Wert zu ändern.
+  </p>
 
   <datepicker-header
     [context]="headerContext()"
@@ -46,17 +46,6 @@
     [attr.data-testid]="testIdFor('grid-component')"
   />
 
-  <div
-    role="status"
-    aria-live="polite"
-    aria-atomic="true"
-    class="cdk-visually-hidden"
-    [id]="idFor('date-status')"
-    [attr.data-testid]="testIdFor('date-status')"
-  >
-    {{ dateAnnouncement() }}
-  </div>
-
   @if (!dateOnly()) {
     <time-picker
       [context]="context()"
@@ -64,4 +53,15 @@
       (timeAdjusted)="timeAdjusted.emit($event)"
     />
   }
+
+  <div
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+    class="cdk-visually-hidden"
+    [id]="dialogStatusId()"
+    [attr.data-testid]="testIdFor('dialog-status')"
+  >
+    {{ dialogAnnouncement() }}
+  </div>
 </div>

@@ -45,6 +45,7 @@ export class DatepickerDialogComponent {
   protected readonly dialogId = computed(() => this.context().dialogId);
   protected readonly dialogTitleId = computed(() => this.context().dialogTitleId);
   protected readonly dialogDescriptionId = computed(() => this.context().dialogDescriptionId);
+  protected readonly dialogStatusId = computed(() => this.context().dialogStatusId);
   protected readonly monthHeadingId = computed(() => this.context().monthHeadingId);
   protected readonly dialogTitle = computed(() => this.context().dialogTitle);
   protected readonly formattedMonth = computed(() => this.context().formattedMonth);
@@ -64,9 +65,7 @@ export class DatepickerDialogComponent {
   protected readonly meridiem = computed<DatepickerMeridiem>(() =>
     (this.selectedDate()?.hour ?? 0) >= 12 ? 'PM' : 'AM',
   );
-  protected readonly dateAnnouncement = computed(() => this.context().dateAnnouncement);
-  protected readonly timeAnnouncement = computed(() => this.context().timeAnnouncement);
-  protected readonly navigationAnnouncement = computed(() => this.context().navigationAnnouncement);
+  protected readonly dialogAnnouncement = computed(() => this.context().dialogAnnouncement);
   protected readonly showQuickTimeControls = computed(() => this.context().showQuickTimeControls);
 
   protected readonly selectNowLabel = computed(() =>
@@ -105,6 +104,7 @@ export class DatepickerDialogComponent {
       monthHeadingId: context.monthHeadingId,
       testIdPrefix: context.testIdPrefix,
       locale: context.locale,
+      isDateDisabled: context.isDateDisabled,
     };
   });
 

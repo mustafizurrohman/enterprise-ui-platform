@@ -9,7 +9,6 @@ import {
   Injector,
   input,
   model,
-  NgZone,
   type OnDestroy,
   signal,
   untracked,
@@ -78,7 +77,6 @@ import {
 export class DatepickerComponent implements ControlValueAccessor, Validator, OnDestroy {
   private readonly idService = inject(DatepickerIdService);
   private readonly injector = inject(Injector);
-  private readonly ngZone = inject(NgZone);
   private readonly parser = inject(DatepickerParserService);
 
   readonly label = input<string>('Datum auswählen');
@@ -93,6 +91,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
   readonly showQuickTimeControls = input(false, {
     transform: booleanAttribute,
   });
+  readonly dateFilter = input<(date: DateTime) => boolean>(() => true);
   readonly value = model<Date | string | null | undefined>(undefined);
 
   private readonly disabledByForm = signal(false);
@@ -128,6 +127,10 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
   readonly showMeridiem = computed(() => this.dateFormatCapabilities().showMeridiem);
 
   protected readonly dateFormatDescription = computed(() => this.dateFormat());
+
+  protected readonly inputTypeDescription = computed(() =>
+    this.dateOnly() ? 'Datumseingabe' : 'Datum- und Uhrzeiteingabe',
+  );
 
   protected readonly placeholder = computed(() => this.dateFormat().replace(/'/g, ''));
 
@@ -167,10 +170,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
   readonly viewDate = signal<DateTime>(DateTime.now());
   protected readonly isOpen = signal(false);
   protected readonly activeDate = signal<DateTime>(DateTime.local().startOf('day'));
-  protected readonly timeAnnouncement = signal('');
-  protected readonly dateAnnouncement = signal('');
+  protected readonly dialogAnnouncement = signal('');
   protected readonly inputAnnouncement = signal('');
-  protected readonly navigationAnnouncement = signal('');
 
   private readonly dateInput = viewChild<ElementRef<HTMLInputElement>>('dateInput');
   private readonly calendarDialog = viewChild(DatepickerDialogComponent);
@@ -225,6 +226,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     dialogId: this.ids().dialog,
     dialogTitleId: this.ids().dialogTitle,
     dialogDescriptionId: this.ids().dialogDescription,
+    dialogStatusId: this.ids().dialogStatus,
     monthHeadingId: this.ids().monthHeading,
     hourSelectId: this.ids().hourSelect,
     minuteSelectId: this.ids().minuteSelect,
@@ -251,9 +253,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     uses12HourClock: this.uses12HourClock(),
     showMeridiem: this.showMeridiem(),
     locale: this.resolvedLocale(),
-    dateAnnouncement: this.dateAnnouncement(),
-    timeAnnouncement: this.timeAnnouncement(),
-    navigationAnnouncement: this.navigationAnnouncement(),
+    isDateDisabled: (date) => this.isDateDisabled(date),
+    dialogAnnouncement: this.dialogAnnouncement(),
     showQuickTimeControls: this.showQuickTimeControls(),
   }));
 
@@ -262,7 +263,6 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
 
   private ngControlInstance: NgControl | null = null;
   private lastFocusedTrigger: HTMLElement | null = null;
-  private navigationAnnouncementTimer: ReturnType<typeof setTimeout> | null = null;
 
   protected get ngControl(): NgControl | null {
     if (!this.ngControlInstance) {
@@ -314,7 +314,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
   }
 
   ngOnDestroy(): void {
-    this.clearNavigationAnnouncementTimer();
+    this.restoreModalBackground();
   }
 
   writeValue(value: Date | string | null | undefined): void {
@@ -478,9 +478,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }
 
     this.lastFocusedTrigger =
-      this.dateInput()?.nativeElement ?? trigger ?? this.getCurrentTrigger();
-    this.navigationAnnouncement.set('');
-    this.dateAnnouncement.set('');
+      trigger ?? this.getCurrentTrigger() ?? this.dateInput()?.nativeElement ?? null;
+    this.dialogAnnouncement.set('');
     this.isOpen.set(true);
 
     const selectedDate = this.selectedDate();
@@ -522,7 +521,10 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
   }
 
   protected onOverlayAttached(): void {
-    const initialDate = this.selectedDate()?.startOf('day') ?? this.today().startOf('day');
+    this.makeModalBackgroundInert();
+
+    const preferredDate = this.selectedDate()?.startOf('day') ?? this.today().startOf('day');
+    const initialDate = this.findEnabledDate(preferredDate, 1);
 
     this.activeDate.set(initialDate);
 
@@ -532,18 +534,16 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
 
     requestAnimationFrame(() => {
       if (this.focusActiveDate()) {
-        this.scheduleNavigationAnnouncement();
         return;
       }
 
-      requestAnimationFrame(() => {
-        this.focusActiveDate();
-        this.scheduleNavigationAnnouncement();
-      });
+      requestAnimationFrame(() => this.focusActiveDate());
     });
   }
 
   protected onOverlayDetached(): void {
+    this.restoreModalBackground();
+
     if (this.isOpen()) {
       this.closeCalendar();
     }
@@ -556,8 +556,8 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
   protected closeCalendar(): void {
     const wasOpen = this.isOpen();
     this.isOpen.set(false);
-    this.clearNavigationAnnouncementTimer();
-    this.navigationAnnouncement.set('');
+    this.dialogAnnouncement.set('');
+    this.restoreModalBackground();
     this.onTouched();
 
     const trigger = this.lastFocusedTrigger;
@@ -646,7 +646,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }
 
     event.preventDefault();
-    this.moveFocusToDate(nextDate);
+    this.moveFocusToDate(nextDate, this.getNavigationDirection(event.key));
   }
 
   private moveDateByMonths(date: DateTime, monthDifference: number): DateTime {
@@ -664,18 +664,34 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     return targetMonth.set({ day: targetDay });
   }
 
-  private moveFocusToDate(date: DateTime): void {
-    const normalizedDate = date.startOf('day');
+  private moveFocusToDate(date: DateTime, direction: 1 | -1): void {
+    const normalizedDate = this.findEnabledDate(date.startOf('day'), direction);
+    const monthChanged = !this.viewDate().hasSame(normalizedDate, 'month');
 
     this.activeDate.set(normalizedDate);
 
-    if (!this.viewDate().hasSame(normalizedDate, 'month')) {
+    if (monthChanged) {
       this.viewDate.set(normalizedDate.startOf('month'));
+      this.announceDisplayedMonth();
     }
 
-    requestAnimationFrame(() => {
-      this.focusActiveDate();
-    });
+    requestAnimationFrame(() => this.focusActiveDate());
+  }
+
+  private getNavigationDirection(key: string): 1 | -1 {
+    return key === 'ArrowLeft' || key === 'ArrowUp' || key === 'PageUp' || key === 'End'
+      ? -1
+      : 1;
+  }
+
+  private findEnabledDate(date: DateTime, direction: 1 | -1): DateTime {
+    let candidate = date.startOf('day');
+
+    for (let attempts = 0; attempts < 3660 && this.isDateDisabled(candidate); attempts += 1) {
+      candidate = candidate.plus({ days: direction });
+    }
+
+    return candidate;
   }
 
   protected isActiveDate(date: DateTime): boolean {
@@ -683,7 +699,9 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
   }
 
   protected setActiveDate(date: DateTime): void {
-    this.activeDate.set(date.startOf('day'));
+    if (!this.isDateDisabled(date)) {
+      this.activeDate.set(date.startOf('day'));
+    }
   }
 
   prevMonth(): void {
@@ -721,12 +739,18 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
   private updateCalendarView(date: DateTime): void {
     const nextViewDate = date.startOf('month');
     const targetDay = Math.min(this.activeDate().day, nextViewDate.daysInMonth ?? 1);
+    const nextActiveDate = this.findEnabledDate(nextViewDate.set({ day: targetDay }), 1);
 
-    this.viewDate.set(nextViewDate);
-    this.activeDate.set(nextViewDate.set({ day: targetDay }));
+    this.viewDate.set(nextActiveDate.startOf('month'));
+    this.activeDate.set(nextActiveDate);
+    this.announceDisplayedMonth();
   }
 
   protected selectDate(date: DateTime): void {
+    if (this.isDateDisabled(date)) {
+      return;
+    }
+
     const currentDate = this.selectedDate();
     let newSelectedDate: DateTime;
 
@@ -748,10 +772,11 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.manualInputError.set(false);
     this.value.set(jsDate);
     this.onChange(jsDate);
-    this.announceDate(`Datum ausgewählt: ${this.getAccessibleDateLabel(newSelectedDate)}.`);
+    this.announceDialog(`Ausgewählt: ${this.getAccessibleDateLabel(newSelectedDate)}.`);
   }
 
   protected selectNow(): void {
+    const wasOpen = this.isOpen();
     const now = normalizeDateForFormat(DateTime.now(), this.dateOnly(), this.showSeconds());
     const jsDate = now.toJSDate();
     this.selectedDate.set(now);
@@ -767,9 +792,11 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     );
     this.closeCalendar();
 
-    const input = this.dateInput()?.nativeElement;
-    if (input) {
-      requestAnimationFrame(() => input.focus());
+    if (!wasOpen) {
+      const input = this.dateInput()?.nativeElement;
+      if (input) {
+        requestAnimationFrame(() => input.focus());
+      }
     }
   }
 
@@ -781,8 +808,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.manualInputError.set(false);
     this.value.set(null);
     this.viewDate.set(DateTime.now());
-    this.dateAnnouncement.set('');
-    this.timeAnnouncement.set('');
+    this.dialogAnnouncement.set('');
     this.announceInput('Datum gelöscht.');
     this.onChange(null);
     this.onTouched();
@@ -940,33 +966,11 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
       this.showSeconds() ? DateTime.TIME_WITH_SECONDS : DateTime.TIME_SIMPLE,
     );
 
-    this.announceTimeMessage(`Uhrzeit: ${timeText}`);
+    this.announceDialog(`Uhrzeit: ${timeText}.`);
   }
 
-  private scheduleNavigationAnnouncement(): void {
-    this.clearNavigationAnnouncementTimer();
-    this.ngZone.runOutsideAngular(() => {
-      this.navigationAnnouncementTimer = setTimeout(() => {
-        this.navigationAnnouncementTimer = null;
-
-        if (!this.isOpen()) {
-          return;
-        }
-
-        this.ngZone.run(() => {
-          this.navigationAnnouncement.set(
-            'Pfeiltasten navigieren zwischen Tagen. Pos1 und Ende springen zum Wochenanfang und Wochenende. Bild auf und Bild ab wechseln den Monat; mit Umschalttaste das Jahr. Enter oder Leertaste wählen den Tag. Escape schließt den Kalender.',
-          );
-        });
-      }, 150);
-    });
-  }
-
-  private clearNavigationAnnouncementTimer(): void {
-    if (this.navigationAnnouncementTimer !== null) {
-      clearTimeout(this.navigationAnnouncementTimer);
-      this.navigationAnnouncementTimer = null;
-    }
+  private announceDisplayedMonth(): void {
+    this.announceDialog(`Angezeigt: ${this.formattedMonth()}.`);
   }
 
   private announceInput(message: string): void {
@@ -974,13 +978,48 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     queueMicrotask(() => this.inputAnnouncement.set(message));
   }
 
-  private announceDate(message: string): void {
-    this.dateAnnouncement.set('');
-    queueMicrotask(() => this.dateAnnouncement.set(message));
+  private announceDialog(message: string): void {
+    this.dialogAnnouncement.set('');
+    queueMicrotask(() => this.dialogAnnouncement.set(message));
   }
 
-  private announceTimeMessage(message: string): void {
-    this.timeAnnouncement.set(message);
+  private readonly modalBackgroundState = new Map<HTMLElement, boolean>();
+
+  private makeModalBackgroundInert(): void {
+    if (typeof document === 'undefined' || this.modalBackgroundState.size > 0) {
+      return;
+    }
+
+    const overlayContainer = document.querySelector<HTMLElement>('.cdk-overlay-container');
+
+    for (const child of Array.from(document.body.children)) {
+      if (
+        !(child instanceof HTMLElement) ||
+        child === overlayContainer ||
+        child.contains(overlayContainer)
+      ) {
+        continue;
+      }
+
+      this.modalBackgroundState.set(child, child.hasAttribute('inert'));
+      child.setAttribute('inert', '');
+    }
+  }
+
+  private restoreModalBackground(): void {
+    for (const [element, hadInert] of this.modalBackgroundState) {
+      if (hadInert) {
+        element.setAttribute('inert', '');
+      } else {
+        element.removeAttribute('inert');
+      }
+    }
+
+    this.modalBackgroundState.clear();
+  }
+
+  protected isDateDisabled(date: DateTime): boolean {
+    return !this.dateFilter()(date);
   }
 
   isSelected(date: DateTime | null): boolean {

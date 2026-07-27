@@ -16,6 +16,7 @@
     [attr.data-testid]="testIdFor('label')"
   >
     {{ label() }}
+    <span class="cdk-visually-hidden">. {{ inputTypeDescription() }}.</span>
   </label>
 
   <div
@@ -97,7 +98,6 @@
     <button
       #calendarToggle
       type="button"
-      tabindex="-1"
       aria-haspopup="dialog"
       class="datepicker-icon"
       [id]="ids().toggleButton"
@@ -143,8 +143,6 @@
 
   @if (invalid) {
     <div
-      role="alert"
-      aria-atomic="true"
       class="datepicker-error"
       [id]="ids().inputError"
       [attr.data-testid]="testIdFor('error')"

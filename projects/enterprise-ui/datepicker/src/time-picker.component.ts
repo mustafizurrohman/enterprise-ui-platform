@@ -38,7 +38,6 @@ export class TimePickerComponent {
   protected readonly showSeconds = computed(() => this.context().showSeconds);
   protected readonly showMeridiem = computed(() => this.context().showMeridiem);
   protected readonly showQuickTimeControls = computed(() => this.context().showQuickTimeControls);
-  protected readonly timeAnnouncement = computed(() => this.context().timeAnnouncement);
 
   protected readonly meridiemChoices = computed(() => [
     {

@@ -39,6 +39,7 @@ export class DatepickerGridComponent {
   protected readonly monthHeadingId = computed(() => this.context().monthHeadingId);
   protected readonly testIdPrefix = computed(() => this.context().testIdPrefix);
   protected readonly locale = computed(() => this.context().locale);
+  protected readonly dateDisabledPredicate = computed(() => this.context().isDateDisabled);
 
   private readonly calendarDayButtons = viewChildren<ElementRef<HTMLButtonElement>>('calendarDay');
 
@@ -53,7 +54,7 @@ export class DatepickerGridComponent {
       ({ nativeElement }) => nativeElement.dataset['date'] === isoDate,
     )?.nativeElement;
 
-    if (!button) {
+    if (!button || button.disabled) {
       return false;
     }
 
@@ -62,11 +63,15 @@ export class DatepickerGridComponent {
   }
 
   protected selectDate(date: DateTime): void {
-    this.dateSelected.emit(date);
+    if (!this.isDateDisabled(date)) {
+      this.dateSelected.emit(date);
+    }
   }
 
   protected focusDateCell(date: DateTime): void {
-    this.dateFocused.emit(date);
+    if (!this.isDateDisabled(date)) {
+      this.dateFocused.emit(date);
+    }
   }
 
   protected handleDateKeydown(event: KeyboardEvent, date: DateTime): void {
@@ -85,8 +90,22 @@ export class DatepickerGridComponent {
     return this.activeDate().hasSame(date, 'day');
   }
 
+  protected isDateDisabled(date: DateTime): boolean {
+    return this.dateDisabledPredicate()(date);
+  }
+
   protected isCurrentWeek(week: DatepickerWeek): boolean {
     return week.days.some((day) => this.isToday(day));
+  }
+
+  protected weekLabel(week: DatepickerWeek): string | null {
+    if (!this.hasDates(week)) {
+      return null;
+    }
+
+    return this.isCurrentWeek(week)
+      ? `Aktuelle Kalenderwoche ${week.weekNumber}`
+      : `Kalenderwoche ${week.weekNumber}`;
   }
 
   protected hasDates(week: DatepickerWeek): boolean {

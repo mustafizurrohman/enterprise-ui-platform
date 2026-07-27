@@ -26,6 +26,7 @@ export class DatepickerIdService {
       dialog: `${root}-dialog`,
       dialogTitle: `${root}-dialog-title`,
       dialogDescription: `${root}-dialog-description`,
+      dialogStatus: `${root}-dialog-status`,
       monthHeading: `${root}-month-heading`,
       hourSelect: `${root}-hour`,
       minuteSelect: `${root}-minute`,

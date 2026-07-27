@@ -13,6 +13,7 @@ export type DatepickerDialogContext = Readonly<{
   dialogId: string;
   dialogTitleId: string;
   dialogDescriptionId: string;
+  dialogStatusId: string;
   monthHeadingId: string;
   hourSelectId: string;
   minuteSelectId: string;
@@ -39,8 +40,7 @@ export type DatepickerDialogContext = Readonly<{
   uses12HourClock: boolean;
   showMeridiem: boolean;
   locale: string;
-  dateAnnouncement: string;
-  timeAnnouncement: string;
-  navigationAnnouncement: string;
+  isDateDisabled: (date: DateTime) => boolean;
+  dialogAnnouncement: string;
   showQuickTimeControls: boolean;
 }>;

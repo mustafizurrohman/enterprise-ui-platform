@@ -27,4 +27,5 @@ export type DatepickerGridContext = Readonly<{
   monthHeadingId: string;
   testIdPrefix: string;
   locale: string;
+  isDateDisabled: (date: DateTime) => boolean;
 }>;
