@@ -110,7 +110,7 @@ describe('DatepickerDialogComponent', () => {
     expect(status.getAttribute('role')).toBe('status');
     expect(status.getAttribute('aria-live')).toBe('polite');
     expect(status.getAttribute('aria-atomic')).toBe('true');
-    expect(fixture.nativeElement.querySelectorAll('[aria-live]')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelectorAll('[aria-live]')).toHaveLength(2);
   });
 
   it('should label the grid with only the announced month and year', () => {

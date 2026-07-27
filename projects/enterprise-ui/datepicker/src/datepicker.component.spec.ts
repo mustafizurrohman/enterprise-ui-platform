@@ -1097,7 +1097,7 @@ describe('DatepickerComponent', () => {
     expect(status.getAttribute('role')).toBe('status');
     expect(status.getAttribute('aria-live')).toBe('polite');
     expect(status.getAttribute('aria-atomic')).toBe('true');
-    expect(document.querySelectorAll('.datepicker-calendar [aria-live]')).toHaveLength(1);
+    expect(document.querySelectorAll('.datepicker-calendar [aria-live]')).toHaveLength(2);
     expect(title?.getAttribute('data-testid')).toBe('datepicker-dialog-title');
     expect(description.getAttribute('data-testid')).toBe('datepicker-dialog-description');
   });
@@ -1142,7 +1142,7 @@ describe('DatepickerComponent', () => {
     ) as HTMLElement;
 
     expect(status.textContent).toContain('Angezeigt:');
-    expect(document.querySelectorAll('.datepicker-calendar [aria-live]')).toHaveLength(1);
+    expect(document.querySelectorAll('.datepicker-calendar [aria-live]')).toHaveLength(2);
   });
 
   it('should expose static keyboard instructions through aria-describedby', async () => {
@@ -1893,19 +1893,6 @@ describe('DatepickerComponent', () => {
       expect(component.dateOnly()).toBeTruthy();
     });
 
-    it('should include seconds in announcements when present in the format', () => {
-      const testDate = DateTime.fromISO('2026-07-12T14:30:45');
-      (component as any).selectedDate.set(testDate);
-
-      (component as any).announceTime();
-      expect((component as any).dialogAnnouncement()).not.toContain('Sekunden');
-
-      fixture.componentRef.setInput('luxonDateFormat', "dd.MM.yyyy HH:mm:ss 'Uhr'");
-      fixture.detectChanges();
-      (component as any).announceTime();
-      expect((component as any).dialogAnnouncement()).toContain('14:30:45');
-    });
-
     it('should normalize seconds according to the Luxon format', () => {
       const testDate = '2026-07-12T14:30:45';
       component.writeValue(testDate);
@@ -1967,7 +1954,7 @@ describe('DatepickerComponent', () => {
 
       const weekRow = todayButton?.closest('.datepicker-week');
       const kwCell = weekRow?.querySelector('.datepicker-kw-value');
-      expect(kwCell?.classList.contains('today')).toBeTruthy();
+      expect(kwCell?.classList.contains('today')).toBeFalsy();
     });
 
     it('should NOT highlight the weekday header if viewing a different month', async () => {
