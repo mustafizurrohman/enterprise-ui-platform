@@ -16,45 +16,45 @@ To insulate test suites from internal DOM changes, the component supports a `tes
 
 ### Component Surface & Input Elements
 
-| Selector                                | Description                                                |
-| :-------------------------------------- | :--------------------------------------------------------- |
-| `[data-testid="your-id"]`               | Component host container.                                  |
-| `[data-testid="your-id-label"]`         | Associated floating label or static label element.         |
-| `[data-testid="your-id-input-wrapper"]` | Flex container for input and action triggers.              |
-| `[data-testid="your-id-input"]`         | Primary interactive text input for manual entry.           |
-| `[data-testid="your-id-clear"]`         | Value reset trigger.                                       |
-| `[data-testid="your-id-now-input"]`     | "Now/Today" temporal shortcut.                             |
-| `[data-testid="your-id-toggle"]`        | Calendar dialog trigger.                                   |
-| `[data-testid="your-id-hint"]`          | Visually hidden format instructions for screen readers.    |
-| `[data-testid="your-id-input-status"]`  | ARIA live region for manual input state changes.           |
-| `[data-testid="your-id-error"]`         | Validation error message container.                        |
+| Selector                                | Description                                             |
+| :-------------------------------------- | :------------------------------------------------------ |
+| `[data-testid="your-id"]`               | Component host container.                               |
+| `[data-testid="your-id-label"]`         | Associated floating label or static label element.      |
+| `[data-testid="your-id-input-wrapper"]` | Flex container for input and action triggers.           |
+| `[data-testid="your-id-input"]`         | Primary interactive text input for manual entry.        |
+| `[data-testid="your-id-clear"]`         | Value reset trigger.                                    |
+| `[data-testid="your-id-now-input"]`     | "Now/Today" temporal shortcut.                          |
+| `[data-testid="your-id-toggle"]`        | Calendar dialog trigger.                                |
+| `[data-testid="your-id-hint"]`          | Visually hidden format instructions for screen readers. |
+| `[data-testid="your-id-input-status"]`  | ARIA live region for manual input state changes.        |
+| `[data-testid="your-id-error"]`         | Validation error message container.                     |
 
 ### Calendar Dialog & Selection Grid
 
-| Selector                                                | Description                                                |
-| :------------------------------------------------------ | :--------------------------------------------------------- |
-| `[data-testid="your-id-dialog"]`                        | Overlay container (Material CDK Portal).                   |
-| `[data-testid="your-id-dialog-description"]`            | Live region for modal navigation state.                    |
-| `[data-testid="your-id-month-navigation"]`              | Controls for month-level traversal.                        |
-| `[data-testid="your-id-previous-month"]` / `next-month` | Directional month stepping.                                |
-| `[data-testid="your-id-month-reset"]`                   | Temporal anchor to return to the current month.            |
-| `[data-testid="your-id-month-select"]`                  | Direct month selection dropdown.                           |
-| `[data-testid="your-id-year-navigation"]`               | Controls for year-level traversal.                         |
-| `[data-testid="your-id-year-display"]`                  | Direct year input field.                                   |
+| Selector                                                | Description                                            |
+| :------------------------------------------------------ | :----------------------------------------------------- |
+| `[data-testid="your-id-dialog"]`                        | Overlay container (Material CDK Portal).               |
+| `[data-testid="your-id-dialog-description"]`            | Live region for modal navigation state.                |
+| `[data-testid="your-id-month-navigation"]`              | Controls for month-level traversal.                    |
+| `[data-testid="your-id-previous-month"]` / `next-month` | Directional month stepping.                            |
+| `[data-testid="your-id-month-reset"]`                   | Temporal anchor to return to the current month.        |
+| `[data-testid="your-id-month-select"]`                  | Direct month selection dropdown.                       |
+| `[data-testid="your-id-year-navigation"]`               | Controls for year-level traversal.                     |
+| `[data-testid="your-id-year-display"]`                  | Direct year input field.                               |
 | `[data-testid="your-id-calendar-grid"]`                 | Interactive date selection grid (role="grid").         |
-| `[data-testid="your-id-day-YYYY-MM-DD"]`                | Individual day cells (e.g., `your-id-day-2026-07-19`).     |
-| `[data-testid="your-id-date-status"]`                   | Live region for date selection confirmation.               |
+| `[data-testid="your-id-day-YYYY-MM-DD"]`                | Individual day cells (e.g., `your-id-day-2026-07-19`). |
+| `[data-testid="your-id-date-status"]`                   | Live region for date selection confirmation.           |
 
 ### Time Selection Engine
 
-| Selector                                                               | Description                                         |
-| :--------------------------------------------------------------------- | :-------------------------------------------------- |
-| `[data-testid="your-id-time-picker"]`                                  | Container for temporal selection components.        |
-| `[data-testid="your-id-time-wheels"]`                                  | Flex group for hour, minute, and second controls.   |
-| `[data-testid="your-id-hour-input"]` / `minute-input` / `second-input` | High-precision inputs for specific units.           |
-| `[data-testid="your-id-meridiem-toggle"]`                              | Radio group for AM/PM selection.                    |
-| `[data-testid="your-id-time-adjustments"]`                             | Quick-adjustment button groups.                     |
-| `[data-testid="your-id-time-status"]`                                  | Live region for auditory time selection updates.    |
+| Selector                                                               | Description                                       |
+| :--------------------------------------------------------------------- | :------------------------------------------------ |
+| `[data-testid="your-id-time-picker"]`                                  | Container for temporal selection components.      |
+| `[data-testid="your-id-time-wheels"]`                                  | Flex group for hour, minute, and second controls. |
+| `[data-testid="your-id-hour-input"]` / `minute-input` / `second-input` | High-precision inputs for specific units.         |
+| `[data-testid="your-id-meridiem-toggle"]`                              | Radio group for AM/PM selection.                  |
+| `[data-testid="your-id-time-adjustments"]`                             | Quick-adjustment button groups.                   |
+| `[data-testid="your-id-time-status"]`                                  | Live region for auditory time selection updates.  |
 
 ## Architectural Standards
 
@@ -68,7 +68,9 @@ The component's architecture is optimized for modern Angular testing paradigms:
 ## Verifying Complex Interactions
 
 ### Paste Normalization Testing
+
 When validating the "Intelligent Paste" feature:
+
 1. Dispatch a `ClipboardEvent` of type `paste` to the input element.
 2. Verify that the `[data-testid="your-id-input-status"]` live region announces "Eingefügtes Datum übernommen".
 3. Assert that the underlying `FormControl` value reflects the correctly parsed ISO or Luxon date object.

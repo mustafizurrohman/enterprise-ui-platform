@@ -679,9 +679,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
   }
 
   private getNavigationDirection(key: string): 1 | -1 {
-    return key === 'ArrowLeft' || key === 'ArrowUp' || key === 'PageUp' || key === 'End'
-      ? -1
-      : 1;
+    return key === 'ArrowLeft' || key === 'ArrowUp' || key === 'PageUp' || key === 'End' ? -1 : 1;
   }
 
   private findEnabledDate(date: DateTime, direction: 1 | -1): DateTime {

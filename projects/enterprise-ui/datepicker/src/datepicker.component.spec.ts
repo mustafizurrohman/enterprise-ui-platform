@@ -1104,7 +1104,9 @@ describe('DatepickerComponent', () => {
 
   it('should make background content inert while the modal dialog is open', async () => {
     const host = fixture.nativeElement as HTMLElement;
-    const bodyChild = Array.from(document.body.children).find((child) => child.contains(host)) as HTMLElement;
+    const bodyChild = Array.from(document.body.children).find((child) =>
+      child.contains(host),
+    ) as HTMLElement;
     const toggle = fixture.nativeElement.querySelector(
       '[data-testid="datepicker-toggle"]',
     ) as HTMLButtonElement;
@@ -1160,9 +1162,7 @@ describe('DatepickerComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const dialog = document.querySelector(
-      '[data-testid="datepicker-dialog"]',
-    ) as HTMLElement;
+    const dialog = document.querySelector('[data-testid="datepicker-dialog"]') as HTMLElement;
     const instructions = document.querySelector(
       '[data-testid="datepicker-dialog-description"]',
     ) as HTMLElement;
