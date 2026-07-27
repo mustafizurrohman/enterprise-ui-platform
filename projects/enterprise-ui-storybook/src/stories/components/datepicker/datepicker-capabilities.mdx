@@ -1,4 +1,5 @@
-import { Meta } from '@storybook/addon-docs/blocks';
+import { Canvas, Meta } from '@storybook/addon-docs/blocks';
+
 import * as DateTimeStories from './date-time/date-time.stories';
 
 <Meta
@@ -6,36 +7,341 @@ import * as DateTimeStories from './date-time/date-time.stories';
   name="Capabilities"
 />
 
-# Key Capabilities & Technical Architecture
+# Datepicker capabilities
 
-The `DatepickerComponent` is designed for complex enterprise ecosystems, offering a robust set of features that balance developer flexibility with end-user precision.
+The datepicker uses one Luxon format for display, manual parsing, paste parsing, placeholder generation, and mode selection. The model value remains a JavaScript `Date` after successful user interaction; the format controls only the textual representation and the available date/time controls.
 
-## Core Capabilities
+<Canvas of={DateTimeStories.DateTime} />
 
-- **Intelligent Mode Switching:** The component dynamically adapts its UI and internal logic based on the provided `luxonDateFormat`. It automatically toggles between date-only and date-time modes, including smart inference for 12/24-hour cycles and seconds visibility.
-- **Flexible Data Binding:** Implements `ControlValueAccessor` for integration with Angular Reactive and Template-driven forms. Supports bidirectional `value` binding for programmatic state management.
-- **Enterprise-Grade Localization:** Leverages the [Luxon](https://moment.github.io/luxon/) library for high-fidelity internationalization, supporting diverse locales and complex temporal formatting macros.
-- **Precision Time Selection:** Features high-precision time wheels and optional quick-adjustment controls (`showQuickTimeControls`) for rapid temporal modifications.
-- **Testability & Observability:** Integrated `testId` prefixing system and `aria-live` regions provide hooks for both automated testing and accessibility monitoring.
+## Format-derived mode
 
-## Advanced Manual Entry & Paste Parsing
+The component inspects unquoted Luxon tokens in the active format:
 
-For high-throughput data entry scenarios, the `DatepickerComponent` employs a sophisticated parsing engine powered by the `DatepickerParserService`.
+- A format without a time field renders date-only mode.
+- `H`, `HH`, `h`, `hh`, minute tokens, second tokens, and supported time macros render time controls.
+- `s`, `ss`, fractional-second tokens, or a supported macro containing seconds render the seconds control.
+- `h` or `hh` renders a 12-hour control and AM/PM selection.
+- Locale-sensitive time macros use the locale's resolved hour cycle.
 
-### Intelligent Paste Strategy
+Changing the format at runtime updates the placeholder and reformats the selected value. It also normalizes the value: date-only formats reset the time to the start of day, and date-time formats without seconds reset seconds and milliseconds to zero.
 
-The component implements a resilient "Intelligent Paste" strategy that prioritizes data integrity by rebuilding input based on the configured Luxon format:
+### Date-only input
 
-1.  **Standalone Parsing:** Independently validates clipboard content against ISO 8601, localized strings, or Unix timestamps.
-2.  **Separator Normalization:** Automatically maps alphanumeric segments of the pasted string to the expected `luxonDateFormat`. This allows users to paste dates with arbitrary delimiters (e.g., `2024/07/24` into a `dd.MM.yyyy` field) while preserving field order.
-3.  **Contextual Merging:** Non-standalone date text is merged at the selection point and re-evaluated through the autocomplete parser.
-4.  **Unix Epoch Support:** Direct support for Unix seconds or milliseconds, with automatic conversion to the active localized display format.
-5.  **Heuristic Resilience:** Bypasses complex Luxon tokens (macros, zones, literals) during normalization, delegating to the core parser to ensure accuracy in punctuation-rich formats.
+```ts
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  DATE_FORMATS,
+  DatepickerComponent,
+} from '@mr/enterprise-ui/datepicker';
 
-### Localization & Manual Overrides
+@Component({
+  selector: 'app-date-only-example',
+  standalone: true,
+  imports: [DatepickerComponent],
+  template: `
+    <datepicker
+      label="Start date"
+      [luxonDateFormat]="format"
+      [(value)]="value"
+    />
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class DateOnlyExampleComponent {
+  readonly format = DATE_FORMATS.ISO_DATE;
+  readonly value = signal<Date | null>(null);
+}
+```
 
-Manual entry supports Luxon-based localization macros and domain-specific notations:
+A selected calendar day is emitted at `00:00:00.000` in the local zone.
 
-- **"Uhr" Notation:** Optional during input in German locales but preserved in formatting to maintain consistency.
-- **Localized Months:** Supports full and abbreviated month names based on the active `locale`.
-- **Autocomplete Parser:** Provides real-time feedback and correction during manual entry to minimize input errors.
+### Date and time with seconds
+
+```ts
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  DATE_FORMATS,
+  DatepickerComponent,
+} from '@mr/enterprise-ui/datepicker';
+
+@Component({
+  selector: 'app-date-time-seconds-example',
+  standalone: true,
+  imports: [DatepickerComponent],
+  template: `
+    <datepicker
+      label="Execution time"
+      [luxonDateFormat]="format"
+      [showQuickTimeControls]="true"
+      [(value)]="value"
+    />
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class DateTimeSecondsExampleComponent {
+  readonly format = DATE_FORMATS.ISO_DATETIME_SECONDS;
+  readonly value = signal<Date | null>(null);
+}
+```
+
+Selecting another day preserves the current time when a value already exists. With no selected value, selecting a day starts at midnight. Changing a time control before selecting a date starts from the local start of the current day.
+
+### 12-hour input with AM/PM
+
+```ts
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  DATE_FORMATS,
+  DatepickerComponent,
+} from '@mr/enterprise-ui/datepicker';
+
+@Component({
+  selector: 'app-us-date-time-example',
+  standalone: true,
+  imports: [DatepickerComponent],
+  template: `
+    <datepicker
+      label="Appointment"
+      locale="en-US"
+      [luxonDateFormat]="format"
+      [(value)]="value"
+    />
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class UsDateTimeExampleComponent {
+  readonly format = DATE_FORMATS.US_DATETIME_SLASH_PADDED;
+  readonly value = signal<Date | null>(null);
+}
+```
+
+The hour spinbutton displays `1` through `12`, while the model retains the corresponding `0` through `23` hour. AM/PM is implemented as a native radio group.
+
+## Formatting and parsing model
+
+| Concern | Behavior |
+| --- | --- |
+| Configured format | `luxonDateFormat` is preferred. `dateFormat` is an alias. If both are present, `luxonDateFormat` wins. |
+| Displayed text | The selected `DateTime` is formatted with Luxon using the active locale and format. |
+| Placeholder | The literal format string with single quote delimiters removed; for example, `dd.MM.yyyy HH:mm 'Uhr'` becomes `dd.MM.yyyy HH:mm Uhr`. |
+| Manual typing | Numeric date/time formats receive incremental padding and separator insertion. Complete valid values are converted to `Date`. Incomplete values are committed on blur or Enter. |
+| Paste | The component first tries the complete clipboard value, then a separator-normalized value, then insertion at the current selection. |
+| Model | Valid user input and selection produce `Date`; clearing produces `null`. Strings are accepted for programmatic input and normalized when parseable. |
+| Locale | Controls textual months, weekdays, macros, date labels, and the hour cycle of locale-sensitive macros. It does not translate the component's fixed German UI strings. |
+
+## Supported Luxon tokens
+
+Format validation accepts the following parseable Luxon tokens. Other tokens are rejected before the component can render the format.
+
+| Category | Supported tokens |
+| --- | --- |
+| Era and year | `G`, `GG`, `y`, `yy`, `yyyy`, `yyyyy`, `yyyyyy` |
+| Month | `M`, `MM`, `MMM`, `MMMM`, `L`, `LL`, `LLL`, `LLLL` |
+| Day, ordinal, quarter, and week | `d`, `dd`, `o`, `ooo`, `q`, `qq`, `kk`, `kkkk`, `W`, `WW`, `E`, `EEE`, `EEEE`, `c`, `ccc`, `cccc` |
+| Time | `H`, `HH`, `h`, `hh`, `m`, `mm`, `s`, `ss`, `S`, `SSS`, `u`, `uu`, `uuu`, `a` |
+| Offset and zone | `Z`, `ZZ`, `ZZZ`, `z` |
+| Locale macros | `D`, `DD`, `DDD`, `DDDD`, `t`, `tt`, `ttt`, `tttt`, `T`, `TT`, `TTT`, `TTTT`, `f`, `ff`, `fff`, `ffff`, `F`, `FF`, `FFF`, `FFFF` |
+
+Quoted literals are supported, including escaped quote handling. The implementation rejects empty formats, literal-only formats, unclosed literals, unknown or format-only tokens such as `X` and `ZZZZ`, and a combination of `H`/`HH` with `a`.
+
+### Smart typing versus complete parsing
+
+Incremental autocomplete is intentionally narrower than complete Luxon parsing. It handles these numeric field tokens directly:
+
+- `yy`, `yyyy`
+- `M`, `MM`
+- `d`, `dd`
+- `H`, `HH`, `h`, `hh`
+- `m`, `mm`
+- `s`, `ss`
+- `a`
+
+For these formats, the component can pad an unambiguous field and append the configured separator while the user types. For example, `3` becomes `03-` with `MM-dd-yyyy`, and `20263` becomes `2026-03-` with `yyyy-MM-dd`.
+
+Textual months, week dates, ordinal dates, zones, eras, fractional seconds, and locale macros are parsed by Luxon as complete values on blur, Enter, or paste. They do not receive the same incremental separator-completion behavior.
+
+## Common formats
+
+`DATE_FORMATS` provides named formats and `COMMON_LUXON_DATE_FORMATS` exposes their values for controls such as the Storybook format selector.
+
+| Use case | Constant | Format |
+| --- | --- | --- |
+| German date | `DATE_FORMATS.GERMAN_DATE_PADDED` | `dd.MM.yyyy` |
+| Default German date-time | `DATE_FORMATS.GERMAN_DATETIME_DEFAULT` | `dd.MM.yyyy HH:mm 'Uhr'` |
+| German date-time with seconds | `DATE_FORMATS.GERMAN_DATETIME_UHR_PADDED` | `dd.MM.yyyy HH:mm:ss 'Uhr'` |
+| ISO-style date | `DATE_FORMATS.ISO_DATE` | `yyyy-MM-dd` |
+| ISO-style date-time | `DATE_FORMATS.ISO_DATETIME` | `yyyy-MM-dd HH:mm` |
+| ISO-style `T` date-time | `DATE_FORMATS.ISO_DATETIME_T_SECONDS` | `yyyy-MM-dd'T'HH:mm:ss` |
+| European slash date | `DATE_FORMATS.EU_DATE_SLASH_PADDED` | `dd/MM/yyyy` |
+| US 12-hour date-time | `DATE_FORMATS.US_DATETIME_SLASH_PADDED` | `MM/dd/yyyy hh:mm a` |
+| German textual month | `DATE_FORMATS.EU_DATE_FULL_MONTH` | `dd MMMM yyyy` |
+| US textual month | `DATE_FORMATS.US_DATE_FULL_MONTH` | `MMMM dd, yyyy` |
+
+## Runtime format changes
+
+Both format inputs are reactive. Prefer changing only one of them.
+
+```ts
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { DatepickerComponent } from '@mr/enterprise-ui/datepicker';
+
+@Component({
+  selector: 'app-runtime-format-example',
+  standalone: true,
+  imports: [DatepickerComponent],
+  template: `
+    <button type="button" (click)="useIsoFormat()">Use ISO</button>
+    <button type="button" (click)="useGermanFormat()">Use German</button>
+
+    <datepicker
+      label="Timestamp"
+      [luxonDateFormat]="format()"
+      [(value)]="value"
+    />
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class RuntimeFormatExampleComponent {
+  readonly format = signal('dd.MM.yyyy HH:mm:ss');
+  readonly value = signal<Date | null>(new Date(2026, 6, 15, 16, 59, 11));
+
+  useIsoFormat(): void {
+    this.format.set('yyyy-MM-dd HH:mm:ss');
+  }
+
+  useGermanFormat(): void {
+    this.format.set('dd.MM.yyyy HH:mm:ss');
+  }
+}
+```
+
+An invalid runtime format throws an `Error` beginning with `Invalid Luxon date format` during evaluation.
+
+## Locale behavior
+
+When `locale` is null or empty, the component uses the first non-empty entry from `navigator.languages`, then `navigator.language`, then the runtime `Intl` locale. Locale affects:
+
+- formatted textual month and weekday tokens;
+- month and weekday names in the calendar;
+- accessible date labels;
+- locale macros;
+- whether a time macro resolves to a 12-hour or 24-hour UI.
+
+The component does not use Angular's `LOCALE_ID`, `MAT_DATE_LOCALE`, or a Material date adapter. Its fixed labels, instructions, status messages, and validation message are currently German.
+
+## Manual entry
+
+The text input uses `type="text"` and `autocomplete="off"`. It does not open the calendar on click or Enter. Enter commits the current text; ArrowDown opens the dialog.
+
+For numeric smart formats, the parser:
+
+- inserts configured literals and separators;
+- pads an unambiguous one-digit field;
+- validates ranges and day/month combinations as information becomes available;
+- validates leap years when the year is complete;
+- normalizes one-letter `a`/`p` input to `AM`/`PM` on commit;
+- keeps invalid text visible and exposes the `invalidDate` validator error.
+
+The literal `Uhr` has specific compatibility handling. It is case-insensitive during paste, may be omitted when the configured format contains it, and a single pasted suffix is removed when the format omits it. A duplicated suffix is invalid.
+
+## Paste handling
+
+For supported numeric and textual segment tokens, pasted separators are normalized to the configured format while preserving field order. With `dd.MM.yyyy`, values such as `20-07-2024`, `20/07/2024`, `20 07 2024`, `20,07,2024`, and `20-07/2024` normalize to `20.07.2024`.
+
+Letters are not treated as arbitrary separators, and normalization does not make an impossible date valid. Complex macros, zones, and punctuation-rich tokens are delegated to Luxon's complete parser rather than rewritten heuristically.
+
+Pasted Unix epochs are also supported. Unambiguous 9- to 13-digit values, explicitly signed values up to 13 digits, and `0` are interpreted as seconds below an absolute value of `10_000_000_000` and as milliseconds otherwise. The resulting value is normalized to the active format and date-only/seconds mode.
+
+## Programmatic values
+
+The model accepts:
+
+- a JavaScript `Date`;
+- a string matching the configured format;
+- an ISO string;
+- a SQL date/time string;
+- `null`, `undefined`, or `''` to clear.
+
+Use `Date | null` for new form APIs. String support is useful when adapting existing data, but the component normalizes successful values back to `Date` during two-way model binding.
+
+## Calendar behavior
+
+The calendar is Monday-first, shows calendar week numbers, and leaves cells outside the displayed month empty. It does not render adjacent-month dates in the grid.
+
+The dialog can be opened by:
+
+- the calendar toggle button;
+- ArrowDown or Alt+ArrowDown from the input.
+
+It can be closed by:
+
+- the toggle button;
+- Escape;
+- backdrop click.
+
+Selecting a day updates the value but deliberately leaves the dialog open. Escape closes without clearing or reverting the selected value. Focus returns to the element that opened the dialog.
+
+The header provides previous/next month and year buttons, a native month select, a four-digit year input, and controls for the current month number and current year. Month and year navigation preserves the active day where possible and clamps it to the target month's last day.
+
+## Disabling calendar dates
+
+`dateFilter` receives Luxon `DateTime` values. Returning `false` disables the native day button, marks the grid cell with `aria-disabled`, prevents pointer selection, and causes keyboard navigation to skip the date.
+
+```ts
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { DateTime } from 'luxon';
+import {
+  DatepickerComponent,
+  DEFAULT_DATE_FORMAT,
+} from '@mr/enterprise-ui/datepicker';
+
+@Component({
+  selector: 'app-working-day-example',
+  standalone: true,
+  imports: [DatepickerComponent],
+  template: `
+    <datepicker
+      label="Working day"
+      [luxonDateFormat]="format"
+      [dateFilter]="workingDaysOnly"
+    />
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class WorkingDayExampleComponent {
+  readonly format = DEFAULT_DATE_FORMAT;
+
+  readonly workingDaysOnly = (date: DateTime): boolean => date.weekday <= 5;
+}
+```
+
+`dateFilter` is not applied by `validate`, manual parsing, `writeValue`, or the `value` model. Add an Angular validator when the same rule must reject typed or programmatic values.
+
+## Time controls
+
+Each time unit is a text-backed `spinbutton` with native increment and decrement buttons. Direct typing keeps at most two digits and clamps the committed value to the unit's range. Keyboard stepping wraps through the underlying `DateTime`, so crossing midnight can change the selected date.
+
+When `showQuickTimeControls` is true, date-time mode adds:
+
+- `-30`, `-15`, `+15`, and `+30` minute buttons;
+- `-12`, `-6`, `+6`, and `+12` hour buttons.
+
+These controls use Luxon duration arithmetic and can cross day or month boundaries. They are absent in date-only mode.
+
+## Current date and clearing
+
+When enabled, the input has an adjacent current-date/current-time action. It writes `DateTime.now()`, normalizes it to the active format, closes an open dialog, and returns focus to the input when invoked while the dialog is closed.
+
+The clear button is rendered only when a value is selected and the component is enabled. It writes `null`, marks the control touched, announces the change, and restores focus to the input.
+
+## Unsupported configuration
+
+The current public API does not provide:
+
+- `min` or `max` inputs;
+- a built-in minimum/maximum validator;
+- a `readonly` input;
+- consumer-provided hint, error, or `aria-describedby` inputs;
+- a separate date-selection or time-selection output beyond the `value` model and forms API.
+
+Use `dateFilter` plus an Angular validator for range constraints. For a read-only presentation, render formatted text rather than treating `disabled` as a read-only substitute.
