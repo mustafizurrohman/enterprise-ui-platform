@@ -1,0 +1,119 @@
+.docs-code-tabs {
+  margin-block: 24px;
+  overflow: hidden;
+  border: 1px solid rgb(0 0 0 / 12%);
+  border-radius: 6px;
+  background: #fff;
+
+  &__tab-list {
+    display: flex;
+    gap: 4px;
+    padding: 8px 8px 0;
+    overflow-x: auto;
+    border-bottom: 1px solid rgb(0 0 0 / 12%);
+    background: #f7f7f7;
+
+    // Hide scrollbar but allow scrolling
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__tab {
+    position: relative;
+    min-height: 40px;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 4px 4px 0 0;
+    background: transparent;
+    color: rgb(0 0 0 / 65%);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background 0.2s ease,
+      color 0.2s ease;
+
+    &:hover {
+      background: rgb(0 0 0 / 5%);
+      color: rgb(0 0 0 / 87%);
+    }
+
+    &[aria-selected='true'] {
+      background: #fff;
+      color: rgb(0 0 0 / 87%);
+
+      &::after {
+        position: absolute;
+        right: 0;
+        bottom: -1px;
+        left: 0;
+        height: 2px;
+        background: #0271d1; // Storybook primary blue or similar
+        content: '';
+      }
+    }
+
+    &:focus-visible {
+      z-index: 1;
+      outline: 2px solid #0271d1;
+      outline-offset: -2px;
+    }
+  }
+
+  &__panel {
+    min-width: 0;
+
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #0271d1;
+      outline-offset: -2px;
+    }
+
+    // Storybook Source block resets
+    > div {
+      margin: 0 !important;
+      border-radius: 0 !important;
+    }
+
+    pre {
+      max-height: 640px;
+      margin: 0 !important;
+      overflow: auto;
+      border-radius: 0 !important;
+    }
+  }
+}
+
+// Dark mode support if Storybook uses [data-theme='dark'] or similar
+[data-theme='dark'] {
+  .docs-code-tabs {
+    border-color: rgb(255 255 255 / 12%);
+    background: #1e1e1e;
+
+    &__tab-list {
+      border-bottom-color: rgb(255 255 255 / 12%);
+      background: #252525;
+    }
+
+    &__tab {
+      color: rgb(255 255 255 / 65%);
+
+      &:hover {
+        background: rgb(255 255 255 / 5%);
+        color: rgb(255 255 255 / 87%);
+      }
+
+      &[aria-selected='true'] {
+        background: #1e1e1e;
+        color: rgb(255 255 255 / 87%);
+      }
+    }
+  }
+}
