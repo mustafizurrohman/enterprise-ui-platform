@@ -191,6 +191,11 @@ const FORMAT_VALIDATION_DATE = DateTime.fromObject(
   { zone: 'Europe/Berlin' },
 );
 
+/**
+ * A specialized autocomplete and parser for date and time input strings,
+ * designed to work with Luxon format strings. It provides real-time
+ * suggestions, partial completion, and validation as the user types.
+ */
 export class LuxonDateInputAutocomplete {
   public static readonly DEFAULT_FORMAT = DEFAULT_DATE_FORMAT;
   public static readonly DEFAULT_DATETIME_FORMAT = DEFAULT_DATETIME_FORMAT;
@@ -203,6 +208,12 @@ export class LuxonDateInputAutocomplete {
   private readonly hasUhrLiteral: boolean;
   private readonly hasMeridiem: boolean;
 
+  /**
+   * Creates a new instance of LuxonDateInputAutocomplete.
+   *
+   * @param dateFormat The Luxon format string to use for parsing and display.
+   * @param locale The locale to use for localized date components (default: 'de-DE').
+   */
   constructor(dateFormat: string, locale = 'de-DE') {
     this.locale = locale;
     this.dateFormat = LuxonDateInputAutocomplete.assertValidFormat(dateFormat, locale);
@@ -216,6 +227,15 @@ export class LuxonDateInputAutocomplete {
     this.hasMeridiem = formatParts.some((part) => !part.literal && part.value === 'a');
   }
 
+  /**
+   * Validates that a given Luxon format string is supported by the autocomplete engine.
+   * It checks for unsupported tokens and ensures the format can produce valid dates.
+   *
+   * @param dateFormat The format string to validate.
+   * @param locale The locale to use for validation.
+   * @returns The normalized format string if valid.
+   * @throws Error if the format is invalid or contains unsupported tokens.
+   */
   public static assertValidFormat(dateFormat: string, locale = 'de-DE'): string {
     if (typeof dateFormat !== 'string') {
       throw invalidFormatError(String(dateFormat), 'the format must be a string');
@@ -288,14 +308,26 @@ export class LuxonDateInputAutocomplete {
     return normalizedFormat;
   }
 
+  /**
+   * Gets the configured Luxon format string.
+   */
   public getDateFormat(): string {
     return this.dateFormat;
   }
 
+  /**
+   * Gets the configured locale.
+   */
   public getLocale(): string {
     return this.locale;
   }
 
+  /**
+   * Returns a default format string based on the provided options.
+   *
+   * @param options Options to specify date-only or inclusion of seconds.
+   * @returns A Luxon format string.
+   */
   public static getFormat(options: { dateOnly?: boolean; showSeconds?: boolean }): string {
     if (options.dateOnly) {
       return this.DEFAULT_FORMAT;
@@ -306,6 +338,12 @@ export class LuxonDateInputAutocomplete {
       : this.DEFAULT_DATETIME_FORMAT;
   }
 
+  /**
+   * Returns a human-readable description of the format (placeholder-like).
+   *
+   * @param options Options to specify date-only or inclusion of seconds.
+   * @returns A description string.
+   */
   public static getFormatDescription(options: {
     dateOnly?: boolean;
     showSeconds?: boolean;
@@ -317,6 +355,14 @@ export class LuxonDateInputAutocomplete {
     return options.showSeconds ? 'TT.MM.JJJJ HH:mm:ss Uhr' : 'TT.MM.JJJJ HH:mm Uhr';
   }
 
+  /**
+   * Processes a raw input string, providing suggestions, validation, and parsed dates.
+   * This is typically called on every keystroke in an input field.
+   *
+   * @param rawValue The current raw string value of the input.
+   * @param options Autocomplete options (e.g., commit flag, current time context).
+   * @returns An autocomplete result containing suggestions and validation state.
+   */
   public process(
     rawValue: string,
     options: DateInputAutocompleteOptions = {},
@@ -378,6 +424,14 @@ export class LuxonDateInputAutocomplete {
     };
   }
 
+  /**
+   * Specifically handles parsing for pasted values, which may be complete
+   * standalone dates or timestamps (epochs).
+   *
+   * @param rawValue The raw string pasted from the clipboard.
+   * @param options Autocomplete options.
+   * @returns An autocomplete result.
+   */
   public processPastedValue(
     rawValue: string,
     options: Omit<DateInputAutocompleteOptions, 'commit' | 'isDeletion'> = {},
@@ -803,6 +857,17 @@ export class LuxonDateInputAutocomplete {
   }
 }
 
+/**
+ * Reads a numeric field from the source string starting at a given index.
+ * It handles padding, unambiguous single-digit entry, and explicit separation.
+ *
+ * @param source The source input string.
+ * @param startIndex The index to start reading from.
+ * @param token The numeric field token definition.
+ * @param nextToken The next token in the format (used for detecting separators).
+ * @param commit Whether to treat the input as final.
+ * @returns An object containing the extracted value, next index, and completeness flag.
+ */
 function readNumericField(
   source: string,
   startIndex: number,
@@ -848,6 +913,14 @@ function readNumericField(
   };
 }
 
+/**
+ * Reads a meridiem (AM/PM) indicator from the source string.
+ *
+ * @param source The source input string.
+ * @param startIndex The index to start reading from.
+ * @param commit Whether to treat the input as final.
+ * @returns An object containing the extracted value, next index, and completeness flag.
+ */
 function readMeridiem(
   source: string,
   startIndex: number,
@@ -873,6 +946,15 @@ function readMeridiem(
   };
 }
 
+/**
+ * Formats a date using the provided Luxon format, ensuring the resulting string
+ * is compatible with the datepicker's parser.
+ *
+ * @param date The DateTime to format.
+ * @param format The Luxon format string.
+ * @param locale The locale to use.
+ * @returns The formatted string.
+ */
 function formatInputValue(date: DateTime, format: string, locale: string): string {
   const localizedDate = date.setLocale(locale);
   const formattedValue = localizedDate.toFormat(format);
@@ -1035,6 +1117,12 @@ function parseEpoch(value: string, locale: string): DateTime | null {
   return date.isValid ? date : null;
 }
 
+/**
+ * Parses a string into Luxon format parts, handling both literals and tokens.
+ *
+ * @param format The Luxon format string.
+ * @returns A list of LuxonFormatPart objects.
+ */
 export function parseLuxonFormat(format: string): readonly LuxonFormatPart[] {
   const parts: LuxonFormatPart[] = [];
   let index = 0;

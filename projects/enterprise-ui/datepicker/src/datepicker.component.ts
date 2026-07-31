@@ -47,6 +47,11 @@ import {
   resolveDatepickerLocale,
 } from './datepicker-date.utils';
 
+/**
+ * The main datepicker component providing a text input with autocomplete
+ * and a dropdown calendar for date and time selection.
+ * It supports various date formats, locales, and accessibility features.
+ */
 @Component({
   selector: 'datepicker',
   standalone: true,
@@ -75,38 +80,90 @@ import {
   ],
 })
 export class DatepickerComponent implements ControlValueAccessor, Validator, OnDestroy {
+  // -------------------------------------------------------------------------
+  // 1. Injected services
+  // -------------------------------------------------------------------------
+
+  /** Service for managing element IDs and test IDs. */
   private readonly idService = inject(DatepickerIdService);
+  /** Injector instance for dynamic service resolution. */
   private readonly injector = inject(Injector);
+  /** Service for parsing date and time input strings. */
   private readonly parser = inject(DatepickerParserService);
 
+  // -------------------------------------------------------------------------
+  // 2. Inputs & Models (documented)
+  // -------------------------------------------------------------------------
+
+  /** The label for the input field. */
   readonly label = input<string>('Datum auswählen');
+  /** The date to be considered "today". Defaults to DateTime.now(). */
   readonly today = input<DateTime>(DateTime.now());
+  /** An optional stable ID for testing purposes. */
   readonly testId = input<string | null>(null);
+  /** The locale to use for formatting and parsing. Defaults to browser locale. */
   readonly locale = input<string | null>(null);
+  /** An explicit Luxon format string for the date value. */
   readonly luxonDateFormat = input<string | null>(null);
+  /** Alias for luxonDateFormat. */
   readonly dateFormatInput = input<string | null>(null, {
     alias: 'dateFormat',
   });
+  /** Whether the component is disabled. */
   readonly disabled = input(false, { transform: booleanAttribute });
+  /** Whether to show quick time selection controls (e.g., +/- 15 min). */
   readonly showQuickTimeControls = input(false, {
     transform: booleanAttribute,
   });
+  /** A filter function to disable specific dates in the calendar. */
   readonly dateFilter = input<(date: DateTime) => boolean>(() => true);
+  /** The current value of the datepicker, supporting Date objects, ISO strings, or null. */
   readonly value = model<Date | string | null | undefined>(undefined);
 
-  private readonly disabledByForm = signal(false);
+  // -------------------------------------------------------------------------
+  // 3. Internal state signals (documented)
+  // -------------------------------------------------------------------------
 
+  /** Whether the component is disabled via an Angular Form. */
+  private readonly disabledByForm = signal(false);
+  /** The currently selected date as a Luxon DateTime object. */
+  readonly selectedDate = signal<DateTime | null>(null);
+  /** The current value displayed in the text input. */
+  protected readonly inputDisplayValue = signal('');
+  /** Whether the current manual input is invalid. */
+  private readonly manualInputError = signal(false);
+  /** The date currently being viewed in the calendar dropdown. */
+  readonly viewDate = signal<DateTime>(DateTime.now());
+  /** Whether the calendar dropdown is currently open. */
+  protected readonly isOpen = signal(false);
+  /** The date currently having active focus in the calendar grid. */
+  protected readonly activeDate = signal<DateTime>(DateTime.local().startOf('day'));
+  /** SR announcement for the dialog. */
+  protected readonly dialogAnnouncement = signal('');
+  /** SR announcement for the input field. */
+  protected readonly inputAnnouncement = signal('');
+
+  // -------------------------------------------------------------------------
+  // 4. Computed properties (documented)
+  // -------------------------------------------------------------------------
+
+  /** Combined disabled state from input and form. */
   protected readonly computedDisabled = computed(() => this.disabled() || this.disabledByForm());
 
+  /** Resolved locale based on configuration and environment. */
   protected readonly resolvedLocale = computed(() => resolveDatepickerLocale(this.locale()));
 
+  /** Collection of unique IDs for sub-elements. */
   protected readonly ids = this.idService.ids;
+  /** The prefix used for test ID attributes. */
   protected readonly testIdPrefix = this.idService.testIdPrefix;
 
+  /** The configured format string before validation. */
   private readonly configuredDateFormat = computed(
     () => this.luxonDateFormat() ?? this.dateFormatInput(),
   );
 
+  /** The validated and resolved Luxon format string. */
   protected readonly dateFormat = computed(() =>
     LuxonDateInputAutocomplete.assertValidFormat(
       this.configuredDateFormat() ?? LuxonDateInputAutocomplete.DEFAULT_DATETIME_FORMAT,
@@ -114,26 +171,35 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     ),
   );
 
+  /** Capabilities inferred from the resolved date format. */
   private readonly dateFormatCapabilities = computed(() =>
     getLuxonFormatCapabilities(this.dateFormat(), this.resolvedLocale()),
   );
 
+  /** Whether the format only includes date components. */
   readonly dateOnly = computed(() => !this.dateFormatCapabilities().hasTime);
 
+  /** Whether the format includes seconds. */
   readonly showSeconds = computed(() => this.dateFormatCapabilities().hasSeconds);
 
+  /** Whether the format uses a 12-hour clock. */
   readonly uses12HourClock = computed(() => this.dateFormatCapabilities().uses12HourClock);
 
+  /** Whether the format requires a meridiem (AM/PM) indicator. */
   readonly showMeridiem = computed(() => this.dateFormatCapabilities().showMeridiem);
 
+  /** Description of the expected date format for screen readers. */
   protected readonly dateFormatDescription = computed(() => this.dateFormat());
 
+  /** Type description for screen readers. */
   protected readonly inputTypeDescription = computed(() =>
     this.dateOnly() ? 'Datumseingabe' : 'Datum- und Uhrzeiteingabe',
   );
 
+  /** Placeholder text derived from the date format. */
   protected readonly placeholder = computed(() => this.dateFormat().replace(/'/g, ''));
 
+  /** Accessible label for the calendar toggle button. */
   protected readonly calendarToggleLabel = computed(() => {
     if (this.isOpen()) {
       return 'Kalender schließen';
@@ -149,64 +215,27 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
       : baseLabel;
   });
 
+  /** Accessible label for the "Select Now" action. */
   protected readonly selectNowLabel = computed(() =>
     this.dateOnly() ? 'Heutiges Datum auswählen' : 'Aktuelles Datum und aktuelle Uhrzeit auswählen',
   );
 
+  /** Title for the calendar dialog. */
   protected readonly dialogTitle = computed(() =>
     this.dateOnly() ? 'Datum auswählen' : 'Datum und Uhrzeit auswählen',
   );
 
+  /** Formatted month and year for the calendar header. */
   protected readonly formattedMonth = computed(() =>
     this.viewDate().setLocale(this.resolvedLocale()).toFormat('LLLL yyyy'),
   );
 
-  readonly selectedDate = signal<DateTime | null>(null);
-  protected readonly inputDisplayValue = signal('');
-  private readonly manualInputError = signal(false);
+  /** Autocomplete engine instance for manual input handling. */
   private readonly inputAutocomplete = computed(
     () => new LuxonDateInputAutocomplete(this.dateFormat(), this.resolvedLocale()),
   );
-  readonly viewDate = signal<DateTime>(DateTime.now());
-  protected readonly isOpen = signal(false);
-  protected readonly activeDate = signal<DateTime>(DateTime.local().startOf('day'));
-  protected readonly dialogAnnouncement = signal('');
-  protected readonly inputAnnouncement = signal('');
 
-  private readonly dateInput = viewChild<ElementRef<HTMLInputElement>>('dateInput');
-  private readonly calendarDialog = viewChild(DatepickerDialogComponent);
-
-  protected readonly overlayPositions: ConnectedPosition[] = [
-    {
-      originX: 'start',
-      originY: 'bottom',
-      overlayX: 'start',
-      overlayY: 'top',
-      offsetY: 8,
-    },
-    {
-      originX: 'end',
-      originY: 'bottom',
-      overlayX: 'end',
-      overlayY: 'top',
-      offsetY: 8,
-    },
-    {
-      originX: 'start',
-      originY: 'top',
-      overlayX: 'start',
-      overlayY: 'bottom',
-      offsetY: -8,
-    },
-    {
-      originX: 'end',
-      originY: 'top',
-      overlayX: 'end',
-      overlayY: 'bottom',
-      offsetY: -8,
-    },
-  ];
-
+  /** List of weekdays for the grid header. */
   readonly daysOfWeek = computed(() => {
     const locale = this.resolvedLocale();
     const longWeekdays = Info.weekdays('long', { locale });
@@ -218,10 +247,13 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }));
   });
 
+  /** List of long month names for month selection. */
   readonly months = computed(() => Info.months('long', { locale: this.resolvedLocale() }));
 
+  /** The calendar grid for the current view date. */
   readonly grid = computed(() => buildCalendarWeeks(this.viewDate()));
 
+  /** Context object passed to the datepicker dialog component. */
   protected readonly dialogContext = computed<DatepickerDialogContext>(() => ({
     dialogId: this.ids().dialog,
     dialogTitleId: this.ids().dialogTitle,
@@ -258,12 +290,57 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     showQuickTimeControls: this.showQuickTimeControls(),
   }));
 
+  // -------------------------------------------------------------------------
+  // 5. View queries & Overlay settings (documented)
+  // -------------------------------------------------------------------------
+
+  /** Reference to the native date input element. */
+  private readonly dateInput = viewChild<ElementRef<HTMLInputElement>>('dateInput');
+  /** Reference to the internal calendar dialog component. */
+  private readonly calendarDialog = viewChild(DatepickerDialogComponent);
+
+  /** Preferred positions for the overlay relative to the input trigger. */
+  protected readonly overlayPositions: ConnectedPosition[] = [
+    {
+      originX: 'start',
+      originY: 'bottom',
+      overlayX: 'start',
+      overlayY: 'top',
+      offsetY: 8,
+    },
+    {
+      originX: 'end',
+      originY: 'bottom',
+      overlayX: 'end',
+      overlayY: 'top',
+      offsetY: 8,
+    },
+    {
+      originX: 'start',
+      originY: 'top',
+      overlayX: 'start',
+      overlayY: 'bottom',
+      offsetY: -8,
+    },
+    {
+      originX: 'end',
+      originY: 'top',
+      overlayX: 'end',
+      overlayY: 'bottom',
+      offsetY: -8,
+    },
+  ];
+
+  // -------------------------------------------------------------------------
+  // 6. ControlValueAccessor & Validator methods (documented)
+  // -------------------------------------------------------------------------
+
+  /** Callback function called when the value changes. */
   onChange: (value: Date | null) => void = () => {};
+  /** Callback function called when the control is touched. */
   onTouched: () => void = () => {};
 
-  private ngControlInstance: NgControl | null = null;
-  private lastFocusedTrigger: HTMLElement | null = null;
-
+  /** The NgControl instance associated with this component, if any. */
   protected get ngControl(): NgControl | null {
     if (!this.ngControlInstance) {
       this.ngControlInstance = this.injector.get(NgControl, null, {
@@ -273,6 +350,124 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }
     return this.ngControlInstance;
   }
+
+  /**
+   * Sets the value of the control.
+   * Part of ControlValueAccessor.
+   */
+  writeValue(value: Date | string | null | undefined): void {
+    if (this.value() !== value) {
+      this.value.set(value);
+    }
+    this.updateInternalState(value);
+  }
+
+  /**
+   * Registers a callback for value changes.
+   * Part of ControlValueAccessor.
+   */
+  registerOnChange(fn: (value: Date | null) => void): void {
+    this.onChange = fn;
+  }
+
+  /**
+   * Registers a callback for touched state.
+   * Part of ControlValueAccessor.
+   */
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn;
+  }
+
+  /**
+   * Sets the disabled state from the form API.
+   * Part of ControlValueAccessor.
+   */
+  setDisabledState(isDisabled: boolean): void {
+    this.disabledByForm.set(isDisabled);
+  }
+
+  /**
+   * Performs validation on the control value.
+   * Part of Validator.
+   */
+  validate(control: AbstractControl): ValidationErrors | null {
+    if (this.manualInputError()) {
+      return { invalidDate: true };
+    }
+    const value = control.value;
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    let date: DateTime;
+    if (value instanceof Date) {
+      date = DateTime.fromJSDate(value);
+    } else {
+      date = DateTime.fromISO(value);
+      if (!date.isValid) {
+        date = DateTime.fromSQL(value);
+      }
+    }
+    return date.isValid ? null : { invalidDate: true };
+  }
+
+  // -------------------------------------------------------------------------
+  // 7. Public API (documented)
+  // -------------------------------------------------------------------------
+
+  /** Navigates the calendar view to the previous month. */
+  prevMonth(): void {
+    this.changeViewMonth(-1);
+  }
+
+  /** Navigates the calendar view to the next month. */
+  nextMonth(): void {
+    this.changeViewMonth(1);
+  }
+
+  /** Navigates the calendar view to the previous year. */
+  prevYear(): void {
+    this.changeViewYear(-1);
+  }
+
+  /** Navigates the calendar view to the next year. */
+  nextYear(): void {
+    this.changeViewYear(1);
+  }
+
+  /** Sets the calendar view to a specific month (1-12). */
+  setMonth(month: number): void {
+    this.updateCalendarView(this.viewDate().set({ month }));
+  }
+
+  /** Sets the calendar view to a specific year. */
+  setYear(year: number): void {
+    this.updateCalendarView(this.viewDate().set({ year }));
+  }
+
+  /** Checks if a specific date is currently selected. */
+  isSelected(date: DateTime | null): boolean {
+    const selectedDate = this.selectedDate();
+    return !!date && !!selectedDate && date.hasSame(selectedDate, 'day');
+  }
+
+  /** Checks if a specific date matches the "today" input. */
+  isToday(date: DateTime | null): boolean {
+    return !!date && date.hasSame(this.today(), 'day');
+  }
+
+  /** Checks if a calendar week contains the current "today". */
+  isCurrentWeek(week: DatepickerWeek): boolean {
+    return week.days.some((day) => this.isToday(day));
+  }
+
+  /** Checks if a weekday index is the weekday of "today" in the current view. */
+  isCurrentWeekday(weekday: number): boolean {
+    return this.today().weekday === weekday && this.today().hasSame(this.viewDate(), 'month');
+  }
+
+  // -------------------------------------------------------------------------
+  // 8. Lifecycle hooks (documented)
+  // -------------------------------------------------------------------------
 
   constructor() {
     effect(() => {
@@ -313,17 +508,23 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     });
   }
 
+  /** Lifecycle hook: clean up background inert states when destroyed. */
   ngOnDestroy(): void {
     this.restoreModalBackground();
   }
 
-  writeValue(value: Date | string | null | undefined): void {
-    if (this.value() !== value) {
-      this.value.set(value);
-    }
-    this.updateInternalState(value);
-  }
+  // -------------------------------------------------------------------------
+  // 9. Internal helpers & event handlers (documented)
+  // -------------------------------------------------------------------------
 
+  /** Internal reference tracker for the NgControl. */
+  private ngControlInstance: NgControl | null = null;
+  /** Stores the element that had focus before opening the calendar for focus restoration. */
+  private lastFocusedTrigger: HTMLElement | null = null;
+  /** State storage for tracking elements that were made inert while the dialog was open. */
+  private readonly modalBackgroundState = new Map<HTMLElement, boolean>();
+
+  /** Updates internal signals and UI based on external value changes. */
   private updateInternalState(value: Date | string | null | undefined, emit = false): void {
     if (value === null || value === undefined || value === '') {
       if (this.selectedDate() !== null || this.manualInputError()) {
@@ -440,38 +641,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }
   }
 
-  registerOnChange(fn: (value: Date | null) => void): void {
-    this.onChange = fn;
-  }
-
-  registerOnTouched(fn: () => void): void {
-    this.onTouched = fn;
-  }
-
-  setDisabledState(isDisabled: boolean): void {
-    this.disabledByForm.set(isDisabled);
-  }
-
-  validate(control: AbstractControl): ValidationErrors | null {
-    if (this.manualInputError()) {
-      return { invalidDate: true };
-    }
-    const value = control.value;
-    if (value === null || value === undefined || value === '') {
-      return null;
-    }
-    let date: DateTime;
-    if (value instanceof Date) {
-      date = DateTime.fromJSDate(value);
-    } else {
-      date = DateTime.fromISO(value);
-      if (!date.isValid) {
-        date = DateTime.fromSQL(value);
-      }
-    }
-    return date.isValid ? null : { invalidDate: true };
-  }
-
+  /** Opens the calendar overlay and records the focus trigger. */
   protected openCalendar(trigger?: HTMLElement): void {
     if (this.computedDisabled()) {
       return;
@@ -488,6 +658,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }
   }
 
+  /** Processes keyboard shortcuts for the text input. */
   protected handleInputKeydown(event: KeyboardEvent, input: HTMLInputElement): void {
     if (event.key === 'ArrowDown' && !event.ctrlKey && !event.metaKey) {
       event.preventDefault();
@@ -520,6 +691,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }
   }
 
+  /** Callback when the overlay is attached to the DOM. */
   protected onOverlayAttached(): void {
     this.makeModalBackgroundInert();
 
@@ -541,6 +713,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     });
   }
 
+  /** Callback when the overlay is removed from the DOM. */
   protected onOverlayDetached(): void {
     this.restoreModalBackground();
 
@@ -549,10 +722,12 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }
   }
 
+  /** Attempts to focus the current active date in the calendar dialog. */
   private focusActiveDate(): boolean {
     return this.calendarDialog()?.focusDate(this.activeDate()) ?? false;
   }
 
+  /** Closes the calendar overlay and restores focus. */
   protected closeCalendar(): void {
     const wasOpen = this.isOpen();
     this.isOpen.set(false);
@@ -568,6 +743,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }
   }
 
+  /** Toggles the open/closed state of the calendar overlay. */
   protected toggleCalendar(trigger: HTMLElement): void {
     if (this.computedDisabled()) {
       return;
@@ -581,6 +757,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.openCalendar(trigger);
   }
 
+  /** Handles keydown events targeting the overlay. */
   protected handleOverlayKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
       event.preventDefault();
@@ -588,6 +765,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }
   }
 
+  /** Manages complex keyboard navigation within the calendar grid. */
   protected handleCalendarKeydown(event: KeyboardEvent, date: DateTime): void {
     let nextDate: DateTime | null = null;
 
@@ -649,6 +827,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.moveFocusToDate(nextDate, this.getNavigationDirection(event.key));
   }
 
+  /** Calculates a new date by adding/subtracting months while handling month lengths. */
   private moveDateByMonths(date: DateTime, monthDifference: number): DateTime {
     const targetMonth = date.startOf('month').plus({ months: monthDifference });
     const targetDay = Math.min(date.day, targetMonth.daysInMonth ?? 1);
@@ -656,6 +835,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     return targetMonth.set({ day: targetDay });
   }
 
+  /** Calculates a new date by adding/subtracting years while handling leap years. */
   private moveDateByYears(date: DateTime, yearDifference: number): DateTime {
     const targetYear = date.startOf('year').plus({ years: yearDifference });
     const targetMonth = targetYear.set({ month: date.month }).startOf('month');
@@ -664,6 +844,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     return targetMonth.set({ day: targetDay });
   }
 
+  /** Changes the focused active date and adjusts view month if necessary. */
   private moveFocusToDate(date: DateTime, direction: 1 | -1): void {
     const normalizedDate = this.findEnabledDate(date.startOf('day'), direction);
     const monthChanged = !this.viewDate().hasSame(normalizedDate, 'month');
@@ -678,10 +859,12 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     requestAnimationFrame(() => this.focusActiveDate());
   }
 
+  /** Identifies whether a navigation key implies forward or backward movement. */
   private getNavigationDirection(key: string): 1 | -1 {
     return key === 'ArrowLeft' || key === 'ArrowUp' || key === 'PageUp' || key === 'End' ? -1 : 1;
   }
 
+  /** Traverses from a start date in a direction to find the first enabled date. */
   private findEnabledDate(date: DateTime, direction: 1 | -1): DateTime {
     let candidate = date.startOf('day');
 
@@ -692,48 +875,29 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     return candidate;
   }
 
+  /** Compares a date to the current active calendar focus. */
   protected isActiveDate(date: DateTime): boolean {
     return this.activeDate().hasSame(date, 'day');
   }
 
+  /** Updates the active focus in the calendar if the target date is valid. */
   protected setActiveDate(date: DateTime): void {
     if (!this.isDateDisabled(date)) {
       this.activeDate.set(date.startOf('day'));
     }
   }
 
-  prevMonth(): void {
-    this.changeViewMonth(-1);
-  }
-
-  nextMonth(): void {
-    this.changeViewMonth(1);
-  }
-
-  prevYear(): void {
-    this.changeViewYear(-1);
-  }
-
-  nextYear(): void {
-    this.changeViewYear(1);
-  }
-
-  setMonth(month: number): void {
-    this.updateCalendarView(this.viewDate().set({ month }));
-  }
-
-  setYear(year: number): void {
-    this.updateCalendarView(this.viewDate().set({ year }));
-  }
-
+  /** Internal helper for changing view month with associated active date update. */
   private changeViewMonth(monthDifference: number): void {
     this.updateCalendarView(this.viewDate().plus({ months: monthDifference }));
   }
 
+  /** Internal helper for changing view year with associated active date update. */
   private changeViewYear(yearDifference: number): void {
     this.updateCalendarView(this.viewDate().plus({ years: yearDifference }));
   }
 
+  /** Common logic for updating the month view and the corresponding active date. */
   private updateCalendarView(date: DateTime): void {
     const nextViewDate = date.startOf('month');
     const targetDay = Math.min(this.activeDate().day, nextViewDate.daysInMonth ?? 1);
@@ -744,6 +908,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.announceDisplayedMonth();
   }
 
+  /** Updates the selected date from a user selection in the grid. */
   protected selectDate(date: DateTime): void {
     if (this.isDateDisabled(date)) {
       return;
@@ -773,6 +938,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.announceDialog(`Ausgewählt: ${this.getAccessibleDateLabel(newSelectedDate)}.`);
   }
 
+  /** Selection action for "Today" / "Now". */
   protected selectNow(): void {
     const wasOpen = this.isOpen();
     const now = normalizeDateForFormat(DateTime.now(), this.dateOnly(), this.showSeconds());
@@ -798,6 +964,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }
   }
 
+  /** Resets the value to null and clears the text input. */
   protected clearValue(event: MouseEvent, input: HTMLInputElement): void {
     event.stopPropagation();
 
@@ -815,6 +982,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     requestAnimationFrame(() => input.focus());
   }
 
+  /** Handles raw text input events to provide autocomplete suggestions. */
   protected onManualInput(input: HTMLInputElement): void {
     this.inputAnnouncement.set('');
 
@@ -828,6 +996,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.applyManualInputResult(input, result, false);
   }
 
+  /** Finalizes a manual input after it has been finished by the user. */
   protected commitManualInput(input: HTMLInputElement): void {
     const result = this.inputAutocomplete().process(input.value, {
       commit: true,
@@ -839,6 +1008,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.onTouched();
   }
 
+  /** Handles clipboard pasting into the text input. */
   protected handlePaste(event: ClipboardEvent, input: HTMLInputElement): void {
     const clipboardData = event.clipboardData;
     const pastedValue = clipboardData?.getData('text/plain') || clipboardData?.getData('text');
@@ -877,6 +1047,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     input.setSelectionRange(input.value.length, input.value.length);
   }
 
+  /** Logic to synchronize autocomplete result with internal component state. */
   private applyManualInputResult(
     input: HTMLInputElement,
     result: DateInputAutocompleteResult,
@@ -900,6 +1071,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }
   }
 
+  /** Accepts a fully parsed and validated manual date entry. */
   private applyManualDate(parsedDate: DateTime): void {
     const normalizedDate = normalizeDateForFormat(parsedDate, this.dateOnly(), this.showSeconds());
     const jsDate = normalizedDate.toJSDate();
@@ -912,6 +1084,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.onChange(jsDate);
   }
 
+  /** Callback from time selection controls in the dialog. */
   protected updateTime(unit: TimeUnit, rawValue: string | number): void {
     const value = Number(rawValue);
 
@@ -926,12 +1099,14 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.applyTimeChange(currentDate.set({ [unit]: normalizedValue }));
   }
 
+  /** Shortcut actions for relative time adjustments. */
   protected adjustTime(adjustment: { hours?: number; minutes?: number; seconds?: number }): void {
     const currentDate = this.selectedDate() ?? DateTime.local().startOf('day');
 
     this.applyTimeChange(currentDate.plus(adjustment));
   }
 
+  /** Common logic for applying time-specific updates to selection. */
   private applyTimeChange(date: DateTime): void {
     const jsDate = date.toJSDate();
 
@@ -948,10 +1123,12 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.announceTime();
   }
 
+  /** Helper to convert a DateTime object into a string for display. */
   private formatDate(date: DateTime): string {
     return date.setLocale(this.resolvedLocale()).toFormat(this.dateFormat());
   }
 
+  /** Announces a human-friendly description of the selected time. */
   private announceTime(): void {
     const date = this.selectedDate();
 
@@ -967,22 +1144,24 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.announceDialog(`Uhrzeit: ${timeText}.`);
   }
 
+  /** Triggers SR announcement of currently visible calendar month. */
   private announceDisplayedMonth(): void {
     this.announceDialog(`Angezeigt: ${this.formattedMonth()}.`);
   }
 
+  /** Dispatches an announcement to the input's SR live region. */
   private announceInput(message: string): void {
     this.inputAnnouncement.set('');
     queueMicrotask(() => this.inputAnnouncement.set(message));
   }
 
+  /** Dispatches an announcement to the dialog's SR live region. */
   private announceDialog(message: string): void {
     this.dialogAnnouncement.set('');
     queueMicrotask(() => this.dialogAnnouncement.set(message));
   }
 
-  private readonly modalBackgroundState = new Map<HTMLElement, boolean>();
-
+  /** Injects the `inert` attribute to non-dialog body content for a modal experience. */
   private makeModalBackgroundInert(): void {
     if (typeof document === 'undefined' || this.modalBackgroundState.size > 0) {
       return;
@@ -1004,6 +1183,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     }
   }
 
+  /** Reverts `inert` changes made to background body elements. */
   private restoreModalBackground(): void {
     for (const [element, hadInert] of this.modalBackgroundState) {
       if (hadInert) {
@@ -1016,28 +1196,12 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     this.modalBackgroundState.clear();
   }
 
+  /** Public/Protected check if a date is currently selectable. */
   protected isDateDisabled(date: DateTime): boolean {
     return !this.dateFilter()(date);
   }
 
-  isSelected(date: DateTime | null): boolean {
-    const selectedDate = this.selectedDate();
-
-    return !!date && !!selectedDate && date.hasSame(selectedDate, 'day');
-  }
-
-  isToday(date: DateTime | null): boolean {
-    return !!date && date.hasSame(this.today(), 'day');
-  }
-
-  isCurrentWeek(week: DatepickerWeek): boolean {
-    return week.days.some((day) => this.isToday(day));
-  }
-
-  isCurrentWeekday(weekday: number): boolean {
-    return this.today().weekday === weekday && this.today().hasSame(this.viewDate(), 'month');
-  }
-
+  /** Generates an SR accessible date label. */
   protected getAccessibleDateLabel(date: DateTime): string {
     return date.setLocale(this.resolvedLocale()).toLocaleString({
       weekday: 'long',
@@ -1047,6 +1211,7 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     });
   }
 
+  /** Composite status checking for input validity. */
   protected hasInputError(): boolean {
     return (
       this.manualInputError() ||
@@ -1054,16 +1219,19 @@ export class DatepickerComponent implements ControlValueAccessor, Validator, OnD
     );
   }
 
+  /** Helper to manage ARIA description ID list based on error state. */
   protected inputDescriptionIds(): string {
     return this.hasInputError()
       ? `${this.ids().inputHint} ${this.ids().inputError}`
       : this.ids().inputHint;
   }
 
+  /** Generates specific test ID strings. */
   protected testIdFor(part?: string): string {
     return this.idService.testIdFor(part);
   }
 
+  /** Attempts to locate an appropriate UI element to take focus on calendar close. */
   private getCurrentTrigger(): HTMLElement | null {
     if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
       return document.activeElement;

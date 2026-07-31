@@ -2,6 +2,9 @@ import { DateTime } from 'luxon';
 import type { DatepickerWeek } from './datepicker-grid.types';
 import type { LuxonFormatCapabilities } from './datepicker.types';
 
+/**
+ * Set of tokens that represent time fields in Luxon formats.
+ */
 const TIME_FIELD_TOKENS = new Set([
   'H',
   'HH',
@@ -19,8 +22,14 @@ const TIME_FIELD_TOKENS = new Set([
   'a',
 ]);
 
+/**
+ * Set of tokens that represent second-level precision fields in Luxon formats.
+ */
 const SECOND_FIELD_TOKENS = new Set(['s', 'ss', 'S', 'SSS', 'u', 'uu', 'uuu']);
 
+/**
+ * Set of macro tokens that include time components in Luxon formats.
+ */
 const TIME_MACRO_TOKENS = new Set([
   't',
   'tt',
@@ -40,6 +49,9 @@ const TIME_MACRO_TOKENS = new Set([
   'FFFF',
 ]);
 
+/**
+ * Set of macro tokens that include second-level precision in Luxon formats.
+ */
 const SECOND_MACRO_TOKENS = new Set([
   'tt',
   'ttt',
@@ -53,7 +65,13 @@ const SECOND_MACRO_TOKENS = new Set([
   'FFFF',
 ]);
 
-/** Builds a Monday-first calendar grid without rendering adjacent-month days. */
+/**
+ * Builds a Monday-first calendar grid without rendering adjacent-month days.
+ * Adjacent days are represented as null values to maintain the grid structure.
+ *
+ * @param viewDate The date indicating the month to build the grid for.
+ * @returns An array of DatepickerWeek objects representing the calendar grid.
+ */
 export function buildCalendarWeeks(viewDate: DateTime): DatepickerWeek[] {
   const startOfMonth = viewDate.startOf('month');
   const cells: (DateTime | null)[] = Array.from({ length: startOfMonth.weekday - 1 }, () => null);
@@ -78,7 +96,15 @@ export function buildCalendarWeeks(viewDate: DateTime): DatepickerWeek[] {
   });
 }
 
-/** Keeps the selected value aligned with the configured date format. */
+/**
+ * Keeps the selected value aligned with the configured date format by stripping
+ * unnecessary time components.
+ *
+ * @param date The date to normalize.
+ * @param dateOnly Whether the format supports only date components.
+ * @param showSeconds Whether the format supports second-level precision.
+ * @returns A normalized DateTime object.
+ */
 export function normalizeDateForFormat(
   date: DateTime,
   dateOnly: boolean,
@@ -91,6 +117,14 @@ export function normalizeDateForFormat(
   return showSeconds ? date : date.set({ second: 0, millisecond: 0 });
 }
 
+/**
+ * Analyzes a Luxon format string and its locale to determine the datepicker's
+ * functional capabilities (e.g., if it has time, seconds, or uses a 12-hour clock).
+ *
+ * @param format The Luxon format string.
+ * @param locale The locale to use for determining defaults.
+ * @returns A LuxonFormatCapabilities object.
+ */
 export function getLuxonFormatCapabilities(
   format: string,
   locale = resolveDatepickerLocale(null),
@@ -113,6 +147,13 @@ export function getLuxonFormatCapabilities(
   };
 }
 
+/**
+ * Resolves the locale to be used by the datepicker, falling back to browser settings
+ * or a default 'en-US' locale if none is provided.
+ *
+ * @param configuredLocale An optional explicitly configured locale.
+ * @returns The resolved locale string.
+ */
 export function resolveDatepickerLocale(configuredLocale: string | null): string {
   const normalizedLocale = configuredLocale?.trim();
 
@@ -132,6 +173,12 @@ export function resolveDatepickerLocale(configuredLocale: string | null): string
   return Intl.DateTimeFormat().resolvedOptions().locale || 'en-US';
 }
 
+/**
+ * Determines if a given locale uses a 12-hour clock by default.
+ *
+ * @param locale The locale to check.
+ * @returns True if the locale uses a 12-hour clock, false otherwise.
+ */
 function is12HourLocale(locale: string): boolean {
   const hourCycle = new Intl.DateTimeFormat(locale, {
     hour: 'numeric',
@@ -140,11 +187,17 @@ function is12HourLocale(locale: string): boolean {
   return hourCycle === 'h11' || hourCycle === 'h12';
 }
 
+/**
+ * Extracts all non-literal (unquoted) tokens from a Luxon format string.
+ *
+ * @param format The Luxon format string.
+ * @returns An array of extracted tokens.
+ */
 function getUnquotedLuxonTokens(format: string): string[] {
   const tokens: string[] = [];
   let insideLiteral = false;
 
-  for (let index = 0; index < format.length;) {
+  for (let index = 0; index < format.length; ) {
     const character = format[index];
 
     if (character === "'") {

@@ -20,6 +20,10 @@ const TIME_ADJUSTMENT_KEYS = {
   second: 'seconds',
 } as const;
 
+/**
+ * Component for selecting and adjusting time (hours, minutes, and optionally seconds).
+ * It supports both manual entry via unit controls and quick adjustments via preset buttons.
+ */
 @Component({
   selector: 'time-picker',
   standalone: true,
@@ -28,17 +32,28 @@ const TIME_ADJUSTMENT_KEYS = {
   styleUrl: './time-picker.component.scss',
 })
 export class TimePickerComponent {
+  /** Service for generating unique and test IDs. */
   private readonly idService = inject(DatepickerIdService);
 
+  /** The context containing configuration and state for the datepicker dialog. */
   readonly context = input.required<DatepickerDialogContext>();
 
+  /** Emitted when a specific time unit (hour, minute, second) is changed. */
   readonly timeChanged = output<DatepickerTimeChange>();
+
+  /** Emitted when the time is adjusted by a relative amount (e.g., +/- 15 minutes). */
   readonly timeAdjusted = output<{ hours?: number; minutes?: number }>();
 
+  /** Whether to show the seconds selector. */
   protected readonly showSeconds = computed(() => this.context().showSeconds);
+
+  /** Whether to show the meridiem (AM/PM) selector. */
   protected readonly showMeridiem = computed(() => this.context().showMeridiem);
+
+  /** Whether to show quick time adjustment controls. */
   protected readonly showQuickTimeControls = computed(() => this.context().showQuickTimeControls);
 
+  /** The available meridiem choices (AM/PM) with their respective labels and IDs. */
   protected readonly meridiemChoices = computed(() => [
     {
       value: 'AM' as const,
@@ -54,6 +69,44 @@ export class TimePickerComponent {
     },
   ]);
 
+  /** The current meridiem (AM or PM) based on the selected hour. */
+  protected readonly meridiem = computed<DatepickerMeridiem>(() =>
+    (this.context().selectedDate?.hour ?? 0) >= 12 ? 'PM' : 'AM',
+  );
+
+  /** Context for the hour unit control. */
+  protected readonly hourControlContext = computed<TimeUnitControlContext>(() =>
+    this.createTimeUnitControlContext('hour'),
+  );
+
+  /** Context for the minute unit control. */
+  protected readonly minuteControlContext = computed<TimeUnitControlContext>(() =>
+    this.createTimeUnitControlContext('minute'),
+  );
+
+  /** Context for the second unit control. */
+  protected readonly secondControlContext = computed<TimeUnitControlContext>(() =>
+    this.createTimeUnitControlContext('second'),
+  );
+
+  /** The list of time units (hours, minutes, and optionally seconds) to be displayed. */
+  protected readonly timeUnits = computed(() => {
+    const units: { type: TimeUnit; context: TimeUnitControlContext }[] = [
+      { type: 'hour', context: this.hourControlContext() },
+      { type: 'minute', context: this.minuteControlContext() },
+    ];
+
+    if (this.showSeconds()) {
+      units.push({
+        type: 'second',
+        context: this.secondControlContext(),
+      });
+    }
+
+    return units;
+  });
+
+  /** Available minute adjustments for quick time selection. */
   protected readonly minuteAdjustments = [
     { value: -30, label: '30 Minuten abziehen', id: 'subtract-30-mins' },
     { value: -15, label: '15 Minuten abziehen', id: 'subtract-15-mins' },
@@ -61,6 +114,7 @@ export class TimePickerComponent {
     { value: 30, label: '30 Minuten hinzufügen', id: 'add-30-mins' },
   ] as const;
 
+  /** Available hour adjustments for quick time selection. */
   protected readonly hourAdjustments = [
     { value: -12, label: '12 Stunden abziehen', id: 'subtract-12-hrs' },
     { value: -6, label: '6 Stunden abziehen', id: 'subtract-6-hrs' },
@@ -68,6 +122,7 @@ export class TimePickerComponent {
     { value: 12, label: '12 Stunden hinzufügen', id: 'add-12-hrs' },
   ] as const;
 
+  /** Configuration for grouping time adjustments in the UI. */
   protected readonly adjustmentGroups = [
     {
       unit: 'minutes' as const,
@@ -97,46 +152,33 @@ export class TimePickerComponent {
     },
   ] as const;
 
-  protected readonly meridiem = computed<DatepickerMeridiem>(() =>
-    (this.context().selectedDate?.hour ?? 0) >= 12 ? 'PM' : 'AM',
-  );
-
-  protected readonly hourControlContext = computed<TimeUnitControlContext>(() =>
-    this.createTimeUnitControlContext('hour'),
-  );
-  protected readonly minuteControlContext = computed<TimeUnitControlContext>(() =>
-    this.createTimeUnitControlContext('minute'),
-  );
-  protected readonly secondControlContext = computed<TimeUnitControlContext>(() =>
-    this.createTimeUnitControlContext('second'),
-  );
-
-  protected readonly timeUnits = computed(() => {
-    const units: { type: TimeUnit; context: TimeUnitControlContext }[] = [
-      { type: 'hour', context: this.hourControlContext() },
-      { type: 'minute', context: this.minuteControlContext() },
-    ];
-
-    if (this.showSeconds()) {
-      units.push({
-        type: 'second',
-        context: this.secondControlContext(),
-      });
-    }
-
-    return units;
-  });
-
+  /**
+   * Emits a time change event for a specific unit.
+   *
+   * @param unit The time unit that changed.
+   * @param value The new value for the unit.
+   */
   protected emitTimeChange(unit: TimeUnit, value: number): void {
     this.timeChanged.emit({ unit, value });
   }
 
+  /**
+   * Emits a time adjustment event.
+   *
+   * @param unit The unit being adjusted.
+   * @param value The amount to adjust by.
+   */
   protected emitTimeAdjustment(unit: TimeAdjustmentUnit, value: number): void {
     const adjustmentKey = TIME_ADJUSTMENT_KEYS[unit];
 
     this.timeAdjusted.emit({ [adjustmentKey]: value });
   }
 
+  /**
+   * Selects the meridiem (AM/PM) and updates the hour accordingly.
+   *
+   * @param meridiem The selected meridiem.
+   */
   protected selectMeridiem(meridiem: DatepickerMeridiem): void {
     const selectedDate = this.context().selectedDate;
 
@@ -150,14 +192,32 @@ export class TimePickerComponent {
     this.timeChanged.emit({ unit: 'hour', value: hour });
   }
 
+  /**
+   * Generates a unique ID for a component part based on the dialog ID.
+   *
+   * @param part The name of the component part.
+   * @returns A unique ID string.
+   */
   protected idFor(part: string): string {
     return this.idService.idFor(part, this.context().dialogId);
   }
 
+  /**
+   * Generates a test ID for a component part based on the test ID prefix.
+   *
+   * @param part The name of the component part.
+   * @returns A test ID string.
+   */
   protected testIdFor(part: string): string {
     return this.idService.testIdFor(part, this.context().testIdPrefix);
   }
 
+  /**
+   * Creates the context for a time unit control.
+   *
+   * @param unit The time unit to create the context for.
+   * @returns The unit control context.
+   */
   private createTimeUnitControlContext(unit: TimeUnit): TimeUnitControlContext {
     const context = this.context();
 
@@ -173,6 +233,13 @@ export class TimePickerComponent {
     };
   }
 
+  /**
+   * Extracts the value for a specific time unit from a DateTime object.
+   *
+   * @param date The date to extract the value from.
+   * @param unit The time unit.
+   * @returns The value of the unit, or 0 if date is null.
+   */
   private getTimeValue(date: DateTime | null, unit: TimeUnit): number {
     if (!date) {
       return 0;
@@ -188,6 +255,14 @@ export class TimePickerComponent {
     }
   }
 
+  /**
+   * Retrieves the ID (either control or label) for a specific time unit from the dialog context.
+   *
+   * @param context The dialog context.
+   * @param unit The time unit.
+   * @param type Whether to return the control ID or the label ID.
+   * @returns The requested ID string.
+   */
   private getTimeId(
     context: DatepickerDialogContext,
     unit: TimeUnit,
