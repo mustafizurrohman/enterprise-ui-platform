@@ -16,6 +16,11 @@ $calendar-header-background: rgba(63, 81, 181, 0.06);
   border-radius: 6px;
   overflow: hidden;
 
+  abbr {
+    text-decoration: none;
+    border-bottom: none;
+  }
+
   .datepicker-weekday-row,
   .datepicker-week {
     display: grid;

@@ -34,6 +34,11 @@ $divider: rgba(0, 0, 0, 0.12);
     .datepicker-grid {
       border: 0 !important;
 
+      abbr {
+        text-decoration: none !important;
+        border-bottom: none !important;
+      }
+
       .datepicker-weekday-row {
         border-bottom: 0 !important;
       }

@@ -151,6 +151,11 @@ $calendar-header-background: #f5f5f5; // Added this line to ensure $calendar-hea
     border-radius: 6px;
     overflow: hidden;
 
+    abbr {
+      text-decoration: none;
+      border-bottom: none;
+    }
+
     .datepicker-weekday-row,
     .datepicker-week {
       display: grid;
