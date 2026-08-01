@@ -30,6 +30,16 @@
     [attr.aria-labelledby]="idFor('time-picker-legend')"
     [attr.data-testid]="testIdFor('time-wheels')"
   >
+    <button
+      type="button"
+      class="datepicker-now-button"
+      [attr.aria-label]="showMeridiem() ? 'Aktuelle Uhrzeit (AM/PM)' : 'Aktuelle Uhrzeit'"
+      (click)="setCurrentTime()"
+      [attr.data-testid]="testIdFor('set-now')"
+    >
+      <mat-icon aria-hidden="true">history</mat-icon>
+    </button>
+
     @for (unit of timeUnits(); track unit.type; let last = $last) {
       <time-unit-control
         [context]="unit.context"

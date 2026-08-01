@@ -21,11 +21,46 @@ $divider: rgba(0, 0, 0, 0.12);
   background: rgb(250 250 252);
 }
 
-.datepicker-time-wheels {
+.datepicker-now-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  color: #007aff;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 150ms ease;
+  margin-right: 8px;
+  align-self: flex-start;
+
+  &:hover {
+    background: #f2f2f7;
+  }
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #007aff;
+    outline-offset: -2px;
+  }
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.datepicker-time-wheels {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
   margin-left: 0;
   margin-top: 10px;
 }
@@ -36,6 +71,7 @@ $divider: rgba(0, 0, 0, 0.12);
   gap: 4px;
   align-items: stretch;
   min-width: 88px;
+  margin-left: 8px;
 }
 
 .datepicker-meridiem-toggle {
@@ -47,7 +83,6 @@ $divider: rgba(0, 0, 0, 0.12);
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 10px;
   background: #fff;
-  margin-left: 15px;
 }
 
 .datepicker-meridiem-choice {
@@ -179,14 +214,17 @@ $divider: rgba(0, 0, 0, 0.12);
 }
 
 .datepicker-time-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   align-self: flex-start;
   height: 40px;
-  margin-right: 5px;
-  margin-left: 5px;
+  margin-right: 2px;
+  margin-left: 2px;
   color: #1c1c1e;
   font-size: 28px;
   font-weight: 800;
-  line-height: 36px;
+  line-height: 1;
 }
 
 @media (forced-colors: active) {

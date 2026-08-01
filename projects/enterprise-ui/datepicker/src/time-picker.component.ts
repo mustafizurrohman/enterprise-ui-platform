@@ -193,6 +193,20 @@ export class TimePickerComponent {
   }
 
   /**
+   * Sets the time to the current system time.
+   */
+  protected setCurrentTime(): void {
+    const now = DateTime.now();
+
+    this.timeChanged.emit({ unit: 'hour', value: now.hour });
+    this.timeChanged.emit({ unit: 'minute', value: now.minute });
+
+    if (this.showSeconds()) {
+      this.timeChanged.emit({ unit: 'second', value: now.second });
+    }
+  }
+
+  /**
    * Generates a unique ID for a component part based on the dialog ID.
    *
    * @param part The name of the component part.
