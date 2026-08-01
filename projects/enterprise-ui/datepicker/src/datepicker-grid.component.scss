@@ -36,10 +36,6 @@ $calendar-header-background: rgba(63, 81, 181, 0.06);
     border-bottom: 1px solid $divider;
   }
 
-  .datepicker-week.current-week {
-    background-color: $calendar-header-background;
-  }
-
   .datepicker-gridcell {
     display: flex;
     align-items: center;

@@ -48,7 +48,6 @@
       class="datepicker-week"
       [id]="idFor('week-' + weekIndex)"
       [attr.aria-rowindex]="weekIndex + 2"
-      [class.current-week]="isCurrentWeek(weekInfo)"
       [attr.data-testid]="testIdFor('week-' + weekIndex)"
     >
       <div
@@ -57,7 +56,6 @@
         class="datepicker-kw-value"
         [id]="idFor('week-number-' + weekIndex)"
         [attr.aria-label]="weekLabel(weekInfo)"
-        [class.current-week]="isCurrentWeek(weekInfo)"
         [attr.data-testid]="testIdFor('week-number-' + weekIndex)"
       >
         @if (hasDates(weekInfo)) {
