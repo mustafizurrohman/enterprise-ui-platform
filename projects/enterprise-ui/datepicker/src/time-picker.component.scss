@@ -34,8 +34,8 @@ $divider: rgba(0, 0, 0, 0.12);
   cursor: pointer;
   padding: 0;
   transition: background-color 150ms ease;
-  align-self: flex-start;
   margin-right: 8px;
+  margin-top: 2px;
 
   &:hover {
     background: #f2f2f7;
@@ -66,6 +66,10 @@ $divider: rgba(0, 0, 0, 0.12);
   margin-top: 0;
 }
 
+time-unit-control {
+  margin-top: 2px;
+}
+
 .datepicker-meridiem-control {
   display: grid;
   grid-template-rows: 36px auto;
@@ -73,6 +77,7 @@ $divider: rgba(0, 0, 0, 0.12);
   align-items: stretch;
   min-width: 75px;
   margin-left: 8px;
+  margin-top: 2px;
 }
 
 .datepicker-meridiem-toggle {
@@ -218,8 +223,8 @@ $divider: rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: flex-start;
   height: 36px;
+  margin: 2px 2px 0;
   color: #1c1c1e;
   font-size: 24px;
   font-weight: 800;
