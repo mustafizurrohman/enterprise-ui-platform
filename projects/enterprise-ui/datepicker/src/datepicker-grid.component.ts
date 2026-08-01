@@ -228,6 +228,15 @@ export class DatepickerGridComponent {
   }
 
   /**
+   * Formats a number to a two-digit string.
+   * @param value The number to format.
+   * @returns The formatted string.
+   */
+  protected formatTwoDigits(value: number): string {
+    return value.toString().padStart(2, '0');
+  }
+
+  /**
    * Generates a unique ID for a specific part of the grid.
    * @param part The part name.
    * @returns The generated ID.

@@ -48,19 +48,21 @@
       class="datepicker-week"
       [id]="idFor('week-' + weekIndex)"
       [attr.aria-rowindex]="weekIndex + 2"
+      [class.current-week]="isCurrentWeek(weekInfo)"
       [attr.data-testid]="testIdFor('week-' + weekIndex)"
     >
       <div
         role="rowheader"
         aria-colindex="1"
         class="datepicker-kw-value"
+        [class.current-week]="isCurrentWeek(weekInfo)"
         [id]="idFor('week-number-' + weekIndex)"
         [attr.aria-label]="weekLabel(weekInfo)"
         [attr.data-testid]="testIdFor('week-number-' + weekIndex)"
       >
         @if (hasDates(weekInfo)) {
-          <abbr [title]="'KW ' + weekInfo.weekNumber + '-' + viewDate().year">
-            <strong>{{ weekInfo.weekNumber }}</strong>
+          <abbr [title]="'KW ' + formatTwoDigits(weekInfo.weekNumber) + '-' + viewDate().year">
+            <strong>{{ formatTwoDigits(weekInfo.weekNumber) }}</strong>
           </abbr>
         }
       </div>
@@ -100,7 +102,7 @@
               (keydown)="handleDateKeydown($event, calendarDate)"
               [attr.data-testid]="testIdFor('day-' + dateIso(calendarDate))"
             >
-              {{ calendarDate.day }}
+              {{ formatTwoDigits(calendarDate.day) }}
             </button>
           }
         </div>
