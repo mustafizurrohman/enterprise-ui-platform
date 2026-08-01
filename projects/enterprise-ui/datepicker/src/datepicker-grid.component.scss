@@ -81,9 +81,9 @@ $calendar-header-background: rgba(63, 81, 181, 0.06);
     background: none;
     border: none;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    margin: 1px;
+    width: 36px;
+    height: 36px;
+    margin: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -106,9 +106,9 @@ $calendar-header-background: rgba(63, 81, 181, 0.06);
     }
 
     &.selected {
-      width: 36px;
-      height: 36px;
-      margin: 3px;
+      width: 32px;
+      height: 32px;
+      margin: 5px;
       background-color: $primary !important;
       color: $primary-contrast !important;
     }
@@ -126,9 +126,9 @@ $calendar-header-background: rgba(63, 81, 181, 0.06);
     }
 
     &:focus-visible {
-      width: 36px;
-      height: 36px;
-      margin: 3px;
+      width: 32px;
+      height: 32px;
+      margin: 5px;
       outline: 2px solid $primary;
       outline-offset: 2px;
     }
