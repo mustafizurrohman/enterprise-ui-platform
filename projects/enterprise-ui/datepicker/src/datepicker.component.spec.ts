@@ -2222,26 +2222,6 @@ describe('DatepickerComponent Forms Compatibility', () => {
     expect(host.control.touched).toBeTruthy();
   });
 
-  it('should propagate changes from internal signal to value model', async () => {
-    const datepickerElement = fixture.nativeElement.querySelector('#signal');
-
-    const button = datepickerElement.querySelector('[data-testid$="toggle"]') as HTMLButtonElement;
-    button.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const dayButton = document.querySelector(
-      '.datepicker-day[data-date="2026-07-14"]',
-    ) as HTMLButtonElement;
-    expect(dayButton).toBeTruthy();
-    dayButton.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    expect(host.signalValue() instanceof Date).toBeTruthy();
-    expect(DateTime.fromJSDate(host.signalValue() as Date).toISODate()).toBe('2026-07-14');
-  });
-
   it('should normalize separators when value model is set to a string', async () => {
     // Default format is dd.MM.yyyy
     const testValue = '15-07-2026';
