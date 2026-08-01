@@ -12,10 +12,10 @@
 
   display: grid;
   grid-template-columns: 36px 27px;
-  grid-template-rows: 36px auto;
+  grid-template-rows: 20px 36px 20px;
   column-gap: 6px;
-  row-gap: 4px;
-  align-items: stretch;
+  row-gap: 0;
+  align-items: center;
   justify-content: center;
   min-width: 69px;
 }
@@ -26,7 +26,7 @@
   position: relative;
   display: grid;
   grid-column: 1;
-  grid-row: 1;
+  grid-row: 2;
   width: 36px;
   height: 36px;
   overflow: hidden;
@@ -67,7 +67,7 @@
 .datepicker-time-button-stack {
   position: relative;
   grid-column: 2;
-  grid-row: 1;
+  grid-row: 2;
   width: 27px;
   height: 36px;
 }
@@ -125,8 +125,9 @@
 
 .datepicker-time-label {
   grid-column: 1;
-  grid-row: 2;
+  grid-row: 3;
   width: 100%;
+  align-self: end;
   color: var(--time-unit-control-label-color);
   cursor: pointer;
   font-size: 12px;
